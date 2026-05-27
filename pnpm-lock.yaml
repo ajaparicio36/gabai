@@ -226,6 +226,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.6(react@19.2.6)
 
+  libs/platform: {}
+
 packages:
   '@alloc/quick-lru@5.2.0':
     resolution:

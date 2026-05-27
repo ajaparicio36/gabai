@@ -1,6 +1,7 @@
 packages:
   - 'packages/*'
   - 'apps/gabai/*'
+  - 'libs/*'
 allowBuilds:
   '@nestjs/core': true
   '@parcel/watcher': true
