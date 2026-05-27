@@ -16,19 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          filter: tree:0
           fetch-depth: 0
-
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
 
       - uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      # Cache node_modules
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -36,9 +29,27 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Prepend any command with "nx record --" to record its logs to Nx Cloud
-      - run: pnpm nx record -- pnpm nx format:check --base="remotes/origin/main"
-      - run: pnpm nx run-many -t lint test build typecheck e2e-ci
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
-      - run: pnpm nx fix-ci
-        if: always()
+      - uses: nrwl/nx-set-shas@v4
+
+      - run: pnpm nx format:check
+      - run: pnpm nx affected -t lint test build typecheck
+
+  sidecar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/gabai/sidecar
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/gabai/sidecar/pyproject.toml
+
+      - run: uv sync
+      - run: uv run ruff check src/
+      - run: uv run ruff format --check src/
+      - run: uv run pytest tests/

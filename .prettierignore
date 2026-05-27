@@ -4,3 +4,15 @@
 /.nx/cache
 /.nx/workspace-data
 .nx/self-healing
+
+# Agent skill files (externally managed)
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.opencode/
+.github/agents/
+.github/prompts/
+.github/skills/
+.github/instructions/
