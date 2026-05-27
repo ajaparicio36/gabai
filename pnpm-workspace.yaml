@@ -1,2 +1,10 @@
 packages:
   - 'packages/*'
+  - 'apps/gabai/*'
+allowBuilds:
+  '@nestjs/core': true
+  '@parcel/watcher': true
+  less: true
+  nx: true
+  sharp: true
+  unrs-resolver: true

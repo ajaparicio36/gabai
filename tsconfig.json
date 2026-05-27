@@ -2,5 +2,12 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./apps/gabai/nest"
+    },
+    {
+      "path": "./apps/gabai/web"
+    }
+  ]
 }
