@@ -82,17 +82,5 @@
       "ruff check --fix --unsafe-fixes",
       "ruff format"
     ]
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@parcel/watcher",
-      "@swc/core",
-      "esbuild",
-      "less",
-      "nx",
-      "sharp",
-      "unrs-resolver"
-    ]
   }
 }
