@@ -65,6 +65,13 @@
       },
       "cache": true
     },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/gabai/sidecar",
+        "command": "uv run uvicorn src.sidecar.main:app --reload --host 0.0.0.0 --port 8000"
+      }
+    },
     "install": {
       "executor": "@nxlv/python:install",
       "options": {
