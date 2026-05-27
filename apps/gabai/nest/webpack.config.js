@@ -9,6 +9,18 @@ module.exports = {
       devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     }),
   },
+  resolve: {
+    alias: {
+      'class-transformer/storage': join(
+        __dirname,
+        'node_modules/class-transformer/cjs/storage.js',
+      ),
+      'class-transformer/cjs/storage': join(
+        __dirname,
+        'node_modules/class-transformer/cjs/storage.js',
+      ),
+    },
+  },
   plugins: [
     new NxAppWebpackPlugin({
       target: 'node',
