@@ -10,7 +10,7 @@ const swcJestConfig = JSON.parse(
 swcJestConfig.swcrc = false;
 
 module.exports = {
-  displayName: '@org/platform',
+  displayName: '@gabai/platform',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {

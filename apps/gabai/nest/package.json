@@ -1,5 +1,5 @@
 {
-  "name": "@org/nest",
+  "name": "@gabai/nest",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -63,15 +63,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@org/nest:build",
+          "buildTarget": "@gabai/nest:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@org/nest:build:development"
+            "buildTarget": "@gabai/nest:build:development"
           },
           "production": {
-            "buildTarget": "@org/nest:build:production"
+            "buildTarget": "@gabai/nest:build:production"
           }
         }
       },
@@ -83,14 +83,25 @@
     }
   },
   "dependencies": {
+    "@gabai/platform": "workspace:*",
     "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.4.4",
+    "@nestjs/throttler": "^6.5.0",
+    "@scalar/nestjs-api-reference": "^1.1.19",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.4.1",
+    "class-validator": "^0.15.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@nestjs/testing": "^11.0.0"
+    "@nestjs/testing": "^11.0.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6"
   }
 }

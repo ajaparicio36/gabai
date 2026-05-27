@@ -1,8 +1,10 @@
 {
-  "name": "@org/web",
+  "name": "@gabai/web",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "@tanstack/react-query": "^5.100.14",
+    "axios": "^1.16.1",
     "next": "~16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

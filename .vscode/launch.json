@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @org/nest with Nx",
+      "name": "Debug @gabai/nest with Nx",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["exec", "nx", "serve", "@org/nest"],
+      "runtimeArgs": ["exec", "nx", "serve", "@gabai/nest"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
