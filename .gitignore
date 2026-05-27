@@ -52,3 +52,6 @@ test-output
 # Next.js
 .next
 out
+.env
+apps/gabai/web/next-env.d.ts
+apps/gabai/web/next-env.d.ts

@@ -26,10 +26,10 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[x]`  | Next.js app generated (`apps/gabai/web`)                                 | —                                            |
 | `[x]`  | Python sidecar generated (`apps/gabai/sidecar`)                          | —                                            |
 | `[x]`  | ESLint, Jest, Prettier, commitlint, husky configured                     | —                                            |
-| `[ ]`  | `libs/platform` NestJS lib generated (Prisma client, schema, migrations) | [02-database.md](./02-database.md)           |
-| `[ ]`  | `libs/shared-types` lib generated (TypeScript types, Zod schemas, DTOs)  | [06-api-design.md](./06-api-design.md)       |
+| `[x]`  | `libs/platform` NestJS lib populated (Prisma client, schema, migrations) | [02-database.md](./02-database.md)           |
+| `[x]`  | Shared types, DTOs, error codes consolidated in `libs/platform`          | [06-api-design.md](./06-api-design.md)       |
 | `[ ]`  | `libs/pipeline` lib generated (scraping, enrichment, geocoding services) | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | AGENTS.md updated with GABAI project details                             | —                                            |
+| `[x]`  | AGENTS.md updated with GABAI project details                             | —                                            |
 
 ---
 
@@ -37,17 +37,22 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                        | Detail Doc                                     |
 | ------ | ----------------------------------------------------------- | ---------------------------------------------- |
-| `[ ]`  | Prisma schema: all models defined                           | [02-database.md](./02-database.md)             |
+| `[x]`  | Prisma schema: all models defined                           | [02-database.md](./02-database.md)             |
 | `[ ]`  | PostGIS extension enabled, spatial index created            | [02-database.md](./02-database.md)             |
 | `[ ]`  | Prisma migration: initial schema                            | [02-database.md](./02-database.md)             |
 | `[ ]`  | `DATABASE_URL` in `.env` (local Postgres)                   | [10-infrastructure.md](./10-infrastructure.md) |
 | `[ ]`  | Redis running locally, `REDIS_URL` in `.env`                | [10-infrastructure.md](./10-infrastructure.md) |
-| `[ ]`  | `.env.example` created with all required vars               | [10-infrastructure.md](./10-infrastructure.md) |
+| `[x]`  | `.env.example` created with all required vars               | [10-infrastructure.md](./10-infrastructure.md) |
 | `[ ]`  | Docker Compose: `api`, `web`, `ml`, `db` (postgis), `redis` | [10-infrastructure.md](./10-infrastructure.md) |
 | `[ ]`  | Per-project Dockerfiles (nest, web, sidecar)                | [10-infrastructure.md](./10-infrastructure.md) |
 | `[ ]`  | BullMQ queues: `scraping`, `enrichment`, `heatmap-regen`    | [04-data-pipeline.md](./04-data-pipeline.md)   |
-| `[ ]`  | NestJS config module: validated env vars                    | [10-infrastructure.md](./10-infrastructure.md) |
-| `[ ]`  | Python sidecar bumped to Python 3.12                        | [05-avm-engine.md](./05-avm-engine.md)         |
+| `[x]`  | NestJS config module: validated env vars                    | [10-infrastructure.md](./10-infrastructure.md) |
+| `[x]`  | Python sidecar bumped to Python 3.12                        | [05-avm-engine.md](./05-avm-engine.md)         |
+| `[x]`  | Global exception filter (BaseExceptionFilter)               | [06-api-design.md](./06-api-design.md)         |
+| `[x]`  | Global response interceptor (`{ data, error }` envelope)    | [06-api-design.md](./06-api-design.md)         |
+| `[x]`  | Global ValidationPipe (class-validator)                     | [06-api-design.md](./06-api-design.md)         |
+| `[x]`  | OpenAPI / Scalar docs at `/v1/docs`                         | [06-api-design.md](./06-api-design.md)         |
+| `[x]`  | API versioning via `/api/v1/` prefix                        | [06-api-design.md](./06-api-design.md)         |
 
 ---
 
@@ -55,25 +60,39 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                                                | Detail Doc                 |
 | ------ | ----------------------------------------------------------------------------------- | -------------------------- |
-| `[ ]`  | `User` model: email, password hash, role (user/admin), timestamps                   | [03-auth.md](./03-auth.md) |
-| `[ ]`  | `RefreshToken` model: userId, token hash, expiresAt, revokedAt                      | [03-auth.md](./03-auth.md) |
-| `[ ]`  | `ApiKey` model: userId, key hash, tier (free/paid), rateLimit, expiresAt, revokedAt | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Email/password signup endpoint (`POST /auth/signup`)                                | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Login endpoint (`POST /auth/login`) — returns access + refresh tokens               | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Refresh endpoint (`POST /auth/refresh`) — rotates refresh token                     | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Logout endpoint (`POST /auth/logout`) — revokes refresh token                       | [03-auth.md](./03-auth.md) |
-| `[ ]`  | JWT access tokens: 15min expiry, RS256 or HS256                                     | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Opaque refresh tokens: 7d expiry, SHA-256 hashed in DB, revocable                   | [03-auth.md](./03-auth.md) |
-| `[ ]`  | `JwtAuthGuard` — validates access token, attaches `req.user`                        | [03-auth.md](./03-auth.md) |
-| `[ ]`  | `AdminGuard` — checks `req.user.role === 'admin'`                                   | [03-auth.md](./03-auth.md) |
-| `[ ]`  | `ApiKeyGuard` — validates API key from `Authorization: Bearer <key>` header         | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Prisma seed: insert one admin user                                                  | [03-auth.md](./03-auth.md) |
-| `[ ]`  | NestJS ThrottlerModule: rate limit config per guard tier                            | [03-auth.md](./03-auth.md) |
-| `[ ]`  | API key generation endpoint (`POST /auth/api-keys`)                                 | [03-auth.md](./03-auth.md) |
-| `[ ]`  | API key rotation endpoint (`POST /auth/api-keys/:id/rotate`)                        | [03-auth.md](./03-auth.md) |
+| `[x]`  | `User` model: email, password hash, role (user/admin), timestamps                   | [03-auth.md](./03-auth.md) |
+| `[x]`  | `RefreshToken` model: userId, token hash, expiresAt, revokedAt                      | [03-auth.md](./03-auth.md) |
+| `[x]`  | `ApiKey` model: userId, key hash, tier (free/paid), rateLimit, expiresAt, revokedAt | [03-auth.md](./03-auth.md) |
+| `[x]`  | Email/password signup endpoint (`POST /auth/signup`)                                | [03-auth.md](./03-auth.md) |
+| `[x]`  | Login endpoint (`POST /auth/login`) — returns access + refresh tokens               | [03-auth.md](./03-auth.md) |
+| `[x]`  | Refresh endpoint (`POST /auth/refresh`) — rotates refresh token                     | [03-auth.md](./03-auth.md) |
+| `[x]`  | Logout endpoint (`POST /auth/logout`) — revokes refresh token                       | [03-auth.md](./03-auth.md) |
+| `[x]`  | JWT access tokens: 15min expiry, HS256                                              | [03-auth.md](./03-auth.md) |
+| `[x]`  | Opaque refresh tokens: 7d expiry, SHA-256 hashed in DB, revocable                   | [03-auth.md](./03-auth.md) |
+| `[x]`  | `JwtAuthGuard` — validates access token, attaches `req.user`                        | [03-auth.md](./03-auth.md) |
+| `[x]`  | `AdminGuard` — checks `req.user.role === 'admin'`                                   | [03-auth.md](./03-auth.md) |
+| `[x]`  | `ApiKeyGuard` — validates API key from `X-API-Key` or `Authorization` header        | [03-auth.md](./03-auth.md) |
+| `[x]`  | Prisma seed: insert one admin user                                                  | [03-auth.md](./03-auth.md) |
+| `[x]`  | NestJS ThrottlerModule: rate limit config per guard tier                            | [03-auth.md](./03-auth.md) |
+| `[x]`  | API key generation endpoint (`POST /auth/api-keys`)                                 | [03-auth.md](./03-auth.md) |
+| `[x]`  | API key rotation endpoint (`POST /auth/api-keys/:id/rotate`)                        | [03-auth.md](./03-auth.md) |
 | `[D]`  | Xendit sandbox: invoice creation for pay-as-you-go credits                          | [03-auth.md](./03-auth.md) |
 | `[D]`  | Xendit webhook: payment success → upgrade user tier, generate API key               | [03-auth.md](./03-auth.md) |
 | `[D]`  | Access tier gating: `paid` tier required for `/valuation`, `/report/*`              | [03-auth.md](./03-auth.md) |
+
+---
+
+## Phase 2.5 — Web & Sidecar Foundation
+
+| Status | Task                                                        | Detail Doc                             |
+| ------ | ----------------------------------------------------------- | -------------------------------------- |
+| `[x]`  | Next.js Axios instance with request/response interceptors   | [07-frontend.md](./07-frontend.md)     |
+| `[x]`  | TanStack React Query provider + `QueryClientProvider` setup | [07-frontend.md](./07-frontend.md)     |
+| `[x]`  | Auth provider (React context) with login/signup/logout      | [07-frontend.md](./07-frontend.md)     |
+| `[x]`  | FastAPI app with `/api/v1/` prefix + CORS                   | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI unified response models (`ApiResponse`, `ApiError`) | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI exception handlers + error codes                    | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI OpenAPI docs at `/v1/docs`                          | [05-avm-engine.md](./05-avm-engine.md) |
 
 ---
 
@@ -81,9 +100,9 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                                         | Detail Doc                                   |
 | ------ | ---------------------------------------------------------------------------- | -------------------------------------------- |
-| `[ ]`  | `ScrapingTarget` model: url, urlHash, status, location, propertyType         | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | `PendingTrainingRecord` model: all scraped fields, status, flagged           | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | `ScrapingJob` model: source, status, recordCount, errorLog                   | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | `ScrapingTarget` model: url, urlHash, status, location, propertyType         | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | `PendingTrainingRecord` model: all scraped fields, status, flagged           | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | `ScrapingJob` model: source, status, recordCount, errorLog                   | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | BrightData Discover endpoint (`POST /admin/discover`)                        | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | Admin discover page: query form + URL review table + approve action          | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | BullMQ `scraping` worker: BrightData Web Scraper API per URL                 | [04-data-pipeline.md](./04-data-pipeline.md) |
@@ -94,7 +113,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[ ]`  | Google Places Nearby Search: schools, hospitals, malls, transit per property | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | Google Distance Matrix: driving travel time to top-1 amenity per category    | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | Proximity scores computed and stored (0–1)                                   | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | `GovernmentReference` model: barangay + city key, zonalValue, risk scores    | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | `GovernmentReference` model: barangay + city key, zonalValue, risk scores    | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | Government data seeded for Metro Cebu (BIR zonal, PHIVOLCS, PAGASA)          | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | Gov reference join at enrichment time (fast, free, no API calls)             | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[ ]`  | Foreclosed property keyword filter at scrape time                            | [04-data-pipeline.md](./04-data-pipeline.md) |
@@ -115,7 +134,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[ ]`  | FastAPI sidecar: `/model/info` endpoint                                               | [05-avm-engine.md](./05-avm-engine.md) |
 | `[ ]`  | FastAPI sidecar: `/admin/retrain` endpoint (internal)                                 | [05-avm-engine.md](./05-avm-engine.md) |
 | `[ ]`  | FastAPI sidecar: `/admin/load` hot-swap endpoint                                      | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | `ModelVersion` model: version, modelPath, status, mape, trainingRecords               | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | `ModelVersion` model: version, modelPath, status, mape, trainingRecords               | [05-avm-engine.md](./05-avm-engine.md) |
 | `[ ]`  | NestJS `ValuationModule`: assemble features, call ML sidecar via HTTP (internal-only) | [06-api-design.md](./06-api-design.md) |
 | `[ ]`  | `POST /valuation` endpoint (internal-only — no public API)                            | [06-api-design.md](./06-api-design.md) |
 | `[ ]`  | `GET /valuation/:id` endpoint (internal-only)                                         | [06-api-design.md](./06-api-design.md) |
@@ -133,7 +152,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                                                       | Detail Doc                                           |
 | ------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| `[ ]`  | `AreaIntelligence` model: latKey, lngKey, radiusM, bulletPoints, sourceArticles, expiresAt | [08-area-intelligence.md](./08-area-intelligence.md) |
+| `[x]`  | `AreaIntelligence` model: latKey, lngKey, radiusM, bulletPoints, sourceArticles, expiresAt | [08-area-intelligence.md](./08-area-intelligence.md) |
 | `[ ]`  | Area key rounding: 500m grid (lat/lng rounded to 3 decimal places)                         | [08-area-intelligence.md](./08-area-intelligence.md) |
 | `[ ]`  | Cache lookup: check DB → return cached if valid, else fetch fresh                          | [08-area-intelligence.md](./08-area-intelligence.md) |
 | `[ ]`  | BrightData Discover for area news (infrastructure/development queries)                     | [08-area-intelligence.md](./08-area-intelligence.md) |
@@ -170,7 +189,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | Status | Task                                                                               | Detail Doc                             |
 | ------ | ---------------------------------------------------------------------------------- | -------------------------------------- |
 | `[ ]`  | PDF report generation (`POST /report/generate`, `GET /report/:id`) — internal-only | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | `Report` model: valuationId, pdfUrl, verificationHash                              | [02-database.md](./02-database.md)     |
+| `[x]`  | `Report` model: valuationId, pdfUrl, verificationHash                              | [02-database.md](./02-database.md)     |
 | `[ ]`  | Legal disclaimer in UI: "This is not a professional appraisal"                     | [07-frontend.md](./07-frontend.md)     |
 | `[ ]`  | Undertrained model caveat in UI                                                    | [07-frontend.md](./07-frontend.md)     |
 | `[ ]`  | Demo script / walkthrough prepared                                                 | —                                      |
@@ -200,49 +219,37 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 ```
 apps/gabai/nest/src/
+├── common/
+│   ├── filters/
+│   │   └── global-exception.filter.ts  ← BaseExceptionFilter, error code mapping
+│   └── interceptors/
+│       └── response.interceptor.ts     ← ApiResponseDto envelope wrapper
+├── config/
+│   └── env.validation.ts              ← validated env vars
 ├── modules/
 │   ├── auth/
 │   │   ├── auth.module.ts
 │   │   ├── auth.controller.ts        ← signup, login, refresh, logout, api-keys
 │   │   ├── auth.service.ts           ← password hashing, token issuance, refresh rotation
 │   │   ├── auth.repository.ts        ← User, RefreshToken, ApiKey DB access
-│   │   └── guards/
-│   │       ├── jwt.guard.ts           ← validates access token
-│   │       ├── admin.guard.ts         ← checks role === 'admin'
-│   │       └── api-key.guard.ts       ← validates API key + tier check
-│   ├── pipeline/
-│   │   ├── pipeline.module.ts
-│   │   ├── scraping.service.ts       ← BrightData REST calls, BullMQ job dispatch
-│   │   ├── scraping.repository.ts
-│   │   ├── geocoder.service.ts       ← Google Geocoding + Places + Distance Matrix
-│   │   └── enrichment.service.ts     ← Gov reference join, proximity score calc, C_rep inference
-│   ├── valuation/
-│   │   ├── valuation.module.ts
-│   │   ├── valuation.service.ts      ← assemble features, call ML sidecar via HTTP
-│   │   ├── valuation.repository.ts
-│   │   └── valuation.controller.ts   ← POST /valuation, GET /valuation/:id
-│   ├── heatmap/
-│   │   ├── heatmap.module.ts
-│   │   ├── heatmap.service.ts        ← aggregate per-sqm by geo tile, Redis cache
-│   │   └── heatmap.controller.ts     ← GET /heatmap/tiles, GET /heatmap/estimate
-│   ├── area/
-│   │   ├── area.module.ts
-│   │   ├── area-intelligence.service.ts  ← cache lookup → Discover → Gemini
-│   │   └── area.controller.ts        ← GET /area/intelligence
-│   ├── report/
-│   │   ├── report.module.ts
-│   │   ├── report.service.ts         ← PDF generation, verification hash
-│   │   └── report.controller.ts
-│   ├── admin/
-│   │   ├── admin.module.ts
-│   │   ├── discover.controller.ts    ← POST /admin/discover, POST /admin/discover/approve
-│   │   ├── scrape.controller.ts      ← POST /admin/scrape/run, POST /admin/scrape/approve
-│   │   ├── train.controller.ts       ← POST /admin/train/run, GET /admin/train/status
-│   │   └── deploy.controller.ts      ← POST /admin/deploy/:versionId
-│   └── payment/
-│       ├── payment.module.ts
-│       ├── payment.controller.ts     ← Xendit webhook handler
-│       └── payment.service.ts        ← invoice creation, webhook verification
+│   │   ├── auth.openapi.ts           ← applyDecorators for Swagger/OpenAPI
+│   │   ├── dto/
+│   │   │   ├── signup.dto.ts
+│   │   │   ├── login.dto.ts
+│   │   │   └── refresh.dto.ts
+│   │   ├── guards/
+│   │   │   ├── jwt.guard.ts           ← validates access token
+│   │   │   ├── admin.guard.ts         ← checks role === 'admin'
+│   │   │   └── api-key.guard.ts       ← validates API key + tier check
+│   │   └── types/
+│   │       └── auth.types.ts
+│   ├── pipeline/                      ← [ ] Not yet implemented
+│   ├── valuation/                     ← [ ] Not yet implemented
+│   ├── heatmap/                       ← [ ] Not yet implemented
+│   ├── area/                          ← [ ] Not yet implemented
+│   ├── report/                        ← [ ] Not yet implemented
+│   ├── admin/                         ← [ ] Not yet implemented
+│   └── payment/                       ← [D] Deferred
 ```
 
 ---
@@ -250,22 +257,24 @@ apps/gabai/nest/src/
 ## Frontend Route Map (Next.js)
 
 ```
-apps/gabai/web/src/app/
-├── layout.tsx                        ← global layout, providers
-├── page.tsx                          ← landing / redirect to map
-├── auth/
-│   ├── login/page.tsx
-│   └── signup/page.tsx
-├── map/
-│   └── page.tsx                      ← main map with three views
-├── admin/
-│   ├── layout.tsx                    ← admin JWT guard + sidebar
-│   ├── discover/page.tsx
-│   ├── scrape/page.tsx
-│   ├── train/
-│   │   ├── page.tsx
-│   │   └── sandbox/page.tsx
-│   └── deploy/page.tsx
-└── api/
-    └── (Next.js API routes if needed — prefer NestJS)
+apps/gabai/web/src/
+├── lib/
+│   ├── api.ts                      ← Axios instance + request/response interceptors
+│   └── auth.ts                     ← token storage, refresh logic
+├── providers/
+│   ├── Providers.tsx               ← composed client providers wrapper
+│   ├── QueryProvider.tsx           ← TanStack QueryClientProvider
+│   └── AuthProvider.tsx            ← React context for auth state
+├── hooks/                           ← [ ] Not yet populated
+├── app/
+│   ├── layout.tsx                  ← global layout + Providers
+│   ├── page.tsx                    ← landing page
+│   ├── auth/
+│   │   ├── login/page.tsx          ← [ ] Not yet implemented
+│   │   └── signup/page.tsx         ← [ ] Not yet implemented
+│   ├── map/
+│   │   └── page.tsx                ← [ ] Not yet implemented
+│   ├── admin/                       ← [ ] Not yet implemented
+│   └── api/
+│       └── (Next.js API routes if needed — prefer NestJS)
 ```
