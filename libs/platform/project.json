@@ -1,0 +1,50 @@
+{
+  "name": "@gabai/platform",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/platform/src",
+  "projectType": "library",
+  "targets": {
+    "prisma-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/platform",
+        "command": "prisma generate"
+      }
+    },
+    "prisma-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/platform",
+        "command": "prisma migrate dev"
+      }
+    },
+    "prisma-reset": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/platform",
+        "command": "prisma migrate reset --force"
+      }
+    },
+    "prisma-seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/platform",
+        "command": "tsx prisma/seed.ts"
+      }
+    },
+    "prisma-studio": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/platform",
+        "command": "prisma studio"
+      }
+    },
+    "prisma-migrate-prod": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/platform",
+        "command": "prisma migrate deploy"
+      }
+    }
+  }
+}

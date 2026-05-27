@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String
+  role           String         @default("user")
+  tier           String         @default("free")
+  emailVerified  Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  refreshTokens  RefreshToken[]
+  apiKeys        ApiKey[]
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  keyHash     String    @unique
+  keyPrefix   String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier        String    @default("free")
+  rateLimit   Int       @default(100)
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Property {
+  id                 String     @id @default(cuid())
+  sourceUrl          String?
+  scrapedAt          DateTime
+  rawTitle           String?
+  addressRaw         String?
+  googlePlaceId      String?
+  city               String?
+  barangay           String?
+  lat                Float?
+  lng                Float?
+  propertyType       String
+  listingType        String     @default("standard")
+  lotAreaSqm         Float?
+  floorAreaSqm       Float?
+  bedrooms           Int?
+  bathrooms          Int?
+  buildingAgeYears   Int?
+  developer          String?
+  askingPricePhp     Float
+  pricePerSqmPhp     Float?
+  listingDate        DateTime?
+  zonalValuePhp      Float?
+  landClassification String?
+  proximityScores    Json?
+  phivolcsRisk       Float?
+  floodRisk          Float?
+  crepTier           String?
+  crepPhp            Float?
+  userSubmitted      Boolean    @default(false)
+  approved           Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  valuations         Valuation[]
+
+  @@index([lat, lng])
+  @@index([barangay, city])
+  @@index([propertyType])
+  @@index([googlePlaceId])
+  @@index([listingType])
+}
+
+model Valuation {
+  id                 String    @id @default(cuid())
+  inputLat           Float?
+  inputLng           Float?
+  inputAddress       String?
+  propertyType       String
+  lotAreaSqm         Float?
+  floorAreaSqm       Float?
+  pointEstimatePhp   Float
+  confidenceLowPhp   Float
+  confidenceHighPhp  Float
+  confidenceScore    Float
+  dataCompleteness   Float     @default(1.0)
+  comparablesUsed    Json
+  proximityBreakdown Json
+  birCompliance      Json?
+  modelVersion       String
+  createdAt          DateTime  @default(now())
+  property           Property? @relation(fields: [propertyId], references: [id])
+  propertyId         String?
+  report             Report?
+}
+
+model Report {
+  id               String    @id @default(cuid())
+  valuationId      String    @unique
+  valuation        Valuation @relation(fields: [valuationId], references: [id])
+  pdfUrl           String
+  verificationHash String    @unique
+  createdAt        DateTime  @default(now())
+}
+
+model AreaIntelligence {
+  id            String   @id @default(cuid())
+  latKey        Float
+  lngKey        Float
+  radiusM       Int      @default(1500)
+  bulletPoints  String[]
+  sourceArticles Json
+  fetchedAt     DateTime @default(now())
+  expiresAt     DateTime
+
+  @@unique([latKey, lngKey, radiusM])
+}
+
+model ScrapingJob {
+  id          String    @id @default(cuid())
+  source      String
+  status      String
+  startedAt   DateTime?
+  completedAt DateTime?
+  recordCount Int?
+  errorLog    String?
+  createdAt   DateTime  @default(now())
+}
+
+model ScrapingTarget {
+  id           String   @id @default(cuid())
+  url          String   @unique
+  urlHash      String   @unique
+  status       String
+  location     String?
+  propertyType String?
+  discoveredAt DateTime @default(now())
+  scrapedAt    DateTime?
+  recordCount  Int?
+  errorLog     String?
+}
+
+model PendingTrainingRecord {
+  id             String    @id @default(cuid())
+  sourceUrl      String?
+  status         String
+  title          String?
+  addressRaw     String?
+  city           String?
+  barangay       String?
+  propertyType   String?
+  lotAreaSqm     Float?
+  floorAreaSqm   Float?
+  bedrooms       Int?
+  bathrooms      Int?
+  askingPricePhp Float?
+  pricePerSqmPhp Float?
+  listingDate    DateTime?
+  developer      String?
+  flagged        Boolean   @default(false)
+  flagReason     String?
+  createdAt      DateTime  @default(now())
+}
+
+model GovernmentReference {
+  id                 String   @id @default(cuid())
+  barangay           String
+  city               String
+  zonalValuePhp      Float?
+  landClassification String?
+  phivolcsRisk       Float?
+  floodRisk          Float?
+  barangayMultiplier Float?
+  priceTrend6m       Float?
+  lguAssessedValue   Float?
+  assessmentLevel    Float?
+  farMultiplier      Float?
+  updatedAt          DateTime @updatedAt
+
+  @@unique([barangay, city])
+}
+
+model ZonalValue {
+  id            String   @id @default(cuid())
+  city          String
+  barangay      String
+  streetOrSubd  String?
+  zoneType      String
+  zonalValuePhp Float
+  rdoSource     String
+  extractedAt   DateTime @default(now())
+
+  @@index([barangay, city])
+  @@index([city])
+}
+
+model ModelVersion {
+  id              String    @id @default(cuid())
+  version         String    @unique
+  modelPath       String
+  status          String
+  mape            Float?
+  trainingRecords Int?
+  jobId           String?
+  deployedAt      DateTime?
+  createdAt       DateTime  @default(now())
+}
