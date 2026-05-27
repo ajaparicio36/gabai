@@ -2,15 +2,18 @@
 
 AI-powered Automated Valuation Model for Philippine real estate.
 
+> **Decision:** Valuation, heatmap, area-intelligence, and report endpoints are **internal-only** (called by our Next.js frontend, not exposed as a public API). The paid-tier `/valuation` external API and Xendit payment flow are deferred pending discussion. See `[D]` marker.
+
 ---
 
 ## Status Legend
 
-| Marker | Meaning     |
-| ------ | ----------- |
-| `[ ]`  | Not started |
-| `[~]`  | In progress |
-| `[x]`  | Done        |
+| Marker | Meaning                                        |
+| ------ | ---------------------------------------------- |
+| `[ ]`  | Not started                                    |
+| `[~]`  | In progress                                    |
+| `[x]`  | Done                                           |
+| `[D]`  | Deferred (internal-only / no external API yet) |
 
 ---
 
@@ -68,9 +71,9 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[ ]`  | NestJS ThrottlerModule: rate limit config per guard tier                            | [03-auth.md](./03-auth.md) |
 | `[ ]`  | API key generation endpoint (`POST /auth/api-keys`)                                 | [03-auth.md](./03-auth.md) |
 | `[ ]`  | API key rotation endpoint (`POST /auth/api-keys/:id/rotate`)                        | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Xendit sandbox: invoice creation for pay-as-you-go credits                          | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Xendit webhook: payment success → upgrade user tier, generate API key               | [03-auth.md](./03-auth.md) |
-| `[ ]`  | Access tier gating: `paid` tier required for `/valuation`, `/report/*`              | [03-auth.md](./03-auth.md) |
+| `[D]`  | Xendit sandbox: invoice creation for pay-as-you-go credits                          | [03-auth.md](./03-auth.md) |
+| `[D]`  | Xendit webhook: payment success → upgrade user tier, generate API key               | [03-auth.md](./03-auth.md) |
+| `[D]`  | Access tier gating: `paid` tier required for `/valuation`, `/report/*`              | [03-auth.md](./03-auth.md) |
 
 ---
 
@@ -102,27 +105,27 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 ## Phase 4 — AVM Engine
 
-| Status | Task                                                                        | Detail Doc                             |
-| ------ | --------------------------------------------------------------------------- | -------------------------------------- |
-| `[ ]`  | Feature engineering: full feature set extracted from approved records       | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | XGBoost training script (`scripts/train.py`)                                | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | Single model with property type one-hot encoded                             | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | Formula-based heuristics for property types with <50 records                | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/infer` endpoint                                          | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/model/info` endpoint                                     | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/admin/retrain` endpoint (internal)                       | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/admin/load` hot-swap endpoint                            | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | `ModelVersion` model: version, modelPath, status, mape, trainingRecords     | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | NestJS `ValuationModule`: assemble features, call ML sidecar via HTTP       | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | `POST /valuation` endpoint                                                  | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | `GET /valuation/:id` endpoint                                               | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | Confidence scoring: comparables density + data completeness heuristic       | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | BIR compliance floor: F_BIR compute + audit risk score (prototype, flagged) | [09-bir-zonal.md](./09-bir-zonal.md)   |
-| `[ ]`  | Heatmap tile endpoint (`GET /heatmap/tiles`)                                | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | Quick pin estimate (`GET /heatmap/estimate`)                                | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | Admin train page: training pool summary + trigger button + version history  | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Admin sandbox preview: read-only map with new model loaded                  | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Admin deploy page: version table + Promote button → hot-swap                | [07-frontend.md](./07-frontend.md)     |
+| Status | Task                                                                                  | Detail Doc                             |
+| ------ | ------------------------------------------------------------------------------------- | -------------------------------------- |
+| `[ ]`  | Feature engineering: full feature set extracted from approved records                 | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | XGBoost training script (`scripts/train.py`)                                          | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | Single model with property type one-hot encoded                                       | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | Formula-based heuristics for property types with <50 records                          | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | FastAPI sidecar: `/infer` endpoint                                                    | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | FastAPI sidecar: `/model/info` endpoint                                               | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | FastAPI sidecar: `/admin/retrain` endpoint (internal)                                 | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | FastAPI sidecar: `/admin/load` hot-swap endpoint                                      | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | `ModelVersion` model: version, modelPath, status, mape, trainingRecords               | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | NestJS `ValuationModule`: assemble features, call ML sidecar via HTTP (internal-only) | [06-api-design.md](./06-api-design.md) |
+| `[ ]`  | `POST /valuation` endpoint (internal-only — no public API)                            | [06-api-design.md](./06-api-design.md) |
+| `[ ]`  | `GET /valuation/:id` endpoint (internal-only)                                         | [06-api-design.md](./06-api-design.md) |
+| `[ ]`  | Confidence scoring: comparables density + data completeness heuristic                 | [05-avm-engine.md](./05-avm-engine.md) |
+| `[ ]`  | BIR compliance floor: F_BIR compute + audit risk score (prototype, flagged)           | [09-bir-zonal.md](./09-bir-zonal.md)   |
+| `[ ]`  | Heatmap tile endpoint (`GET /heatmap/tiles`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
+| `[ ]`  | Quick pin estimate (`GET /heatmap/estimate`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
+| `[ ]`  | Admin train page: training pool summary + trigger button + version history            | [07-frontend.md](./07-frontend.md)     |
+| `[ ]`  | Admin sandbox preview: read-only map with new model loaded                            | [07-frontend.md](./07-frontend.md)     |
+| `[ ]`  | Admin deploy page: version table + Promote button → hot-swap                          | [07-frontend.md](./07-frontend.md)     |
 
 ---
 
@@ -135,7 +138,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[ ]`  | Cache lookup: check DB → return cached if valid, else fetch fresh                          | [08-area-intelligence.md](./08-area-intelligence.md) |
 | `[ ]`  | BrightData Discover for area news (infrastructure/development queries)                     | [08-area-intelligence.md](./08-area-intelligence.md) |
 | `[ ]`  | Gemini Flash summarization: summarize-only, source attribution, no synthesis               | [08-area-intelligence.md](./08-area-intelligence.md) |
-| `[ ]`  | `GET /area/intelligence` endpoint (JWT-gated: registered users only)                       | [06-api-design.md](./06-api-design.md)               |
+| `[ ]`  | `GET /area/intelligence` endpoint (JWT-gated: registered users only, internal-only)        | [06-api-design.md](./06-api-design.md)               |
 
 ---
 
@@ -164,14 +167,14 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 ## Phase 7 — Polish & Demo
 
-| Status | Task                                                               | Detail Doc                             |
-| ------ | ------------------------------------------------------------------ | -------------------------------------- |
-| `[ ]`  | PDF report generation (`POST /report/generate`, `GET /report/:id`) | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | `Report` model: valuationId, pdfUrl, verificationHash              | [02-database.md](./02-database.md)     |
-| `[ ]`  | Legal disclaimer in UI: "This is not a professional appraisal"     | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Undertrained model caveat in UI                                    | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Demo script / walkthrough prepared                                 | —                                      |
-| `[ ]`  | README.md updated with project description                         | —                                      |
+| Status | Task                                                                               | Detail Doc                             |
+| ------ | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| `[ ]`  | PDF report generation (`POST /report/generate`, `GET /report/:id`) — internal-only | [06-api-design.md](./06-api-design.md) |
+| `[ ]`  | `Report` model: valuationId, pdfUrl, verificationHash                              | [02-database.md](./02-database.md)     |
+| `[ ]`  | Legal disclaimer in UI: "This is not a professional appraisal"                     | [07-frontend.md](./07-frontend.md)     |
+| `[ ]`  | Undertrained model caveat in UI                                                    | [07-frontend.md](./07-frontend.md)     |
+| `[ ]`  | Demo script / walkthrough prepared                                                 | —                                      |
+| `[ ]`  | README.md updated with project description                                         | —                                      |
 
 ---
 
