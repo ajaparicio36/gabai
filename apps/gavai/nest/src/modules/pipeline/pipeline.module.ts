@@ -26,6 +26,7 @@ import { EnrichmentProcessor } from './enrichment.processor';
             ) || 6379,
           password:
             new URL(configService.getOrThrow<string>('REDIS_URL')).password ||
+            configService.get<string>('REDIS_PASSWORD') ||
             undefined,
         },
       }),

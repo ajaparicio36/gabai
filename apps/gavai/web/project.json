@@ -6,7 +6,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/gavai/web",
-        "command": "next dev"
+        "command": "next dev -p ${NEXT_PORT:-4200}"
       },
       "dependsOn": ["build-deps"]
     }

@@ -9,7 +9,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
 
   app.enableVersioning({
     type: VersioningType.URI,
