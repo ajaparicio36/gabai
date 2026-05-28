@@ -68,7 +68,7 @@ export class SpatialService {
     lat: number,
     lng: number,
     radiusM: number,
-    daysBack: number = 30,
+    daysBack = 30,
   ): Promise<number> {
     const rows: { count: bigint }[] = await this.prisma.$queryRaw`
       SELECT COUNT(*) as count
@@ -87,7 +87,7 @@ export class SpatialService {
   async getMedianPriceMovement(
     barangay: string,
     city: string,
-    daysBack: number = 90,
+    daysBack = 90,
   ): Promise<number | null> {
     const recent: { median: number | null }[] = await this.prisma.$queryRaw`
       SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "pricePerSqmPhp") AS median
