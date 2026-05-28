@@ -28,7 +28,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[x]`  | ESLint, Jest, Prettier, commitlint, husky configured                     | —                                            |
 | `[x]`  | `libs/platform` NestJS lib populated (Prisma client, schema, migrations) | [02-database.md](./02-database.md)           |
 | `[x]`  | Shared types, DTOs, error codes consolidated in `libs/platform`          | [06-api-design.md](./06-api-design.md)       |
-| `[ ]`  | `libs/pipeline` lib generated (scraping, enrichment, geocoding services) | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | `libs/pipeline` lib generated (scraping, enrichment, geocoding services) | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[x]`  | AGENTS.md updated with GABAI project details                             | —                                            |
 
 ---
@@ -38,14 +38,14 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | Status | Task                                                        | Detail Doc                                     |
 | ------ | ----------------------------------------------------------- | ---------------------------------------------- |
 | `[x]`  | Prisma schema: all models defined                           | [02-database.md](./02-database.md)             |
-| `[ ]`  | PostGIS extension enabled, spatial index created            | [02-database.md](./02-database.md)             |
-| `[ ]`  | Prisma migration: initial schema                            | [02-database.md](./02-database.md)             |
-| `[ ]`  | `DATABASE_URL` in `.env` (local Postgres)                   | [10-infrastructure.md](./10-infrastructure.md) |
-| `[ ]`  | Redis running locally, `REDIS_URL` in `.env`                | [10-infrastructure.md](./10-infrastructure.md) |
+| `[x]`  | PostGIS extension enabled, spatial index created            | [02-database.md](./02-database.md)             |
+| `[x]`  | Prisma migration: initial schema                            | [02-database.md](./02-database.md)             |
+| `[x]`  | `DATABASE_URL` in `.env` (local Postgres)                   | [10-infrastructure.md](./10-infrastructure.md) |
+| `[x]`  | Redis running locally, `REDIS_URL` in `.env`                | [10-infrastructure.md](./10-infrastructure.md) |
 | `[x]`  | `.env.example` created with all required vars               | [10-infrastructure.md](./10-infrastructure.md) |
-| `[ ]`  | Docker Compose: `api`, `web`, `ml`, `db` (postgis), `redis` | [10-infrastructure.md](./10-infrastructure.md) |
-| `[ ]`  | Per-project Dockerfiles (nest, web, sidecar)                | [10-infrastructure.md](./10-infrastructure.md) |
-| `[ ]`  | BullMQ queues: `scraping`, `enrichment`, `heatmap-regen`    | [04-data-pipeline.md](./04-data-pipeline.md)   |
+| `[x]`  | Docker Compose: `api`, `web`, `ml`, `db` (postgis), `redis` | [10-infrastructure.md](./10-infrastructure.md) |
+| `[x]`  | Per-project Dockerfiles (nest, web, sidecar)                | [10-infrastructure.md](./10-infrastructure.md) |
+| `[x]`  | BullMQ queues: `scraping`, `enrichment`                     | [04-data-pipeline.md](./04-data-pipeline.md)   |
 | `[x]`  | NestJS config module: validated env vars                    | [10-infrastructure.md](./10-infrastructure.md) |
 | `[x]`  | Python sidecar bumped to Python 3.12                        | [05-avm-engine.md](./05-avm-engine.md)         |
 | `[x]`  | Global exception filter (BaseExceptionFilter)               | [06-api-design.md](./06-api-design.md)         |
@@ -103,22 +103,22 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[x]`  | `ScrapingTarget` model: url, urlHash, status, location, propertyType         | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[x]`  | `PendingTrainingRecord` model: all scraped fields, status, flagged           | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[x]`  | `ScrapingJob` model: source, status, recordCount, errorLog                   | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | BrightData Discover endpoint (`POST /admin/discover`)                        | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Admin discover page: query form + URL review table + approve action          | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | BullMQ `scraping` worker: BrightData Web Scraper API per URL                 | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | BrightData scrape schema per site (Lamudi, DotProperty, Property24, OLX)     | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Auto-flag rules: missing price, implausible area, duplicate address          | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Admin scrape page: queue list + run button + review table + approve action   | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Google Geocoding: address → lat/lng, store structured address_components     | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Google Places Nearby Search: schools, hospitals, malls, transit per property | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Google Distance Matrix: driving travel time to top-1 amenity per category    | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Proximity scores computed and stored (0–1)                                   | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | BrightData Discover endpoint (`POST /admin/discover`)                        | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[D]`  | Admin discover page: query form + URL review table + approve action          | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | BullMQ `scraping` worker: BrightData Web Scraper API per URL                 | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | BrightData scrape schema per site (Lamudi, DotProperty, Property24, OLX)     | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Auto-flag rules: missing price, implausible area, duplicate address          | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[D]`  | Admin scrape page: queue list + run button + review table + approve action   | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Google Geocoding: address → lat/lng, store structured address_components     | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Google Places Nearby Search: schools, hospitals, malls, transit per property | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Google Distance Matrix: driving travel time to top-1 amenity per category    | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Proximity scores computed and stored (0–1)                                   | [04-data-pipeline.md](./04-data-pipeline.md) |
 | `[x]`  | `GovernmentReference` model: barangay + city key, zonalValue, risk scores    | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Government data seeded for Metro Cebu (BIR zonal, PHIVOLCS, PAGASA)          | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Gov reference join at enrichment time (fast, free, no API calls)             | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | Foreclosed property keyword filter at scrape time                            | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[ ]`  | C_rep tier inference: neighborhood median + developer brand tier             | [05-avm-engine.md](./05-avm-engine.md)       |
-| `[ ]`  | Missing data threshold: tiered refusal logic                                 | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Government data seeded for Metro Cebu (BIR zonal, PHIVOLCS, PAGASA)          | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Gov reference join at enrichment time (fast, free, no API calls)             | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | Foreclosed property keyword filter at scrape time                            | [04-data-pipeline.md](./04-data-pipeline.md) |
+| `[x]`  | C_rep tier inference: neighborhood median + developer brand tier             | [05-avm-engine.md](./05-avm-engine.md)       |
+| `[x]`  | Missing data threshold: tiered refusal logic                                 | [04-data-pipeline.md](./04-data-pipeline.md) |
 
 ---
 
@@ -126,25 +126,25 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                                                  | Detail Doc                             |
 | ------ | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| `[ ]`  | Feature engineering: full feature set extracted from approved records                 | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | XGBoost training script (`scripts/train.py`)                                          | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | Single model with property type one-hot encoded                                       | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | Formula-based heuristics for property types with <50 records                          | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/infer` endpoint                                                    | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/model/info` endpoint                                               | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/admin/retrain` endpoint (internal)                                 | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | FastAPI sidecar: `/admin/load` hot-swap endpoint                                      | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | Feature engineering: full feature set extracted from approved records                 | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | XGBoost training script (`scripts/train.py`)                                          | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | Single model with property type one-hot encoded                                       | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | Formula-based heuristics for property types with <50 records                          | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI sidecar: `/infer` endpoint                                                    | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI sidecar: `/model/info` endpoint                                               | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI sidecar: `/admin/retrain` endpoint (internal)                                 | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | FastAPI sidecar: `/admin/load` hot-swap endpoint                                      | [05-avm-engine.md](./05-avm-engine.md) |
 | `[x]`  | `ModelVersion` model: version, modelPath, status, mape, trainingRecords               | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | NestJS `ValuationModule`: assemble features, call ML sidecar via HTTP (internal-only) | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | `POST /valuation` endpoint (internal-only — no public API)                            | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | `GET /valuation/:id` endpoint (internal-only)                                         | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | Confidence scoring: comparables density + data completeness heuristic                 | [05-avm-engine.md](./05-avm-engine.md) |
+| `[x]`  | NestJS `ValuationModule`: assemble features, call ML sidecar via HTTP (internal-only) | [06-api-design.md](./06-api-design.md) |
+| `[x]`  | `POST /valuation` endpoint (internal-only — no public API)                            | [06-api-design.md](./06-api-design.md) |
+| `[x]`  | `GET /valuation/:id` endpoint (internal-only)                                         | [06-api-design.md](./06-api-design.md) |
+| `[x]`  | Confidence scoring: comparables density + data completeness heuristic                 | [05-avm-engine.md](./05-avm-engine.md) |
 | `[ ]`  | BIR compliance floor: F_BIR compute + audit risk score (prototype, flagged)           | [09-bir-zonal.md](./09-bir-zonal.md)   |
 | `[ ]`  | Heatmap tile endpoint (`GET /heatmap/tiles`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
 | `[ ]`  | Quick pin estimate (`GET /heatmap/estimate`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | Admin train page: training pool summary + trigger button + version history            | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Admin sandbox preview: read-only map with new model loaded                            | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Admin deploy page: version table + Promote button → hot-swap                          | [07-frontend.md](./07-frontend.md)     |
+| `[D]`  | Admin train page: training pool summary + trigger button + version history            | [07-frontend.md](./07-frontend.md)     |
+| `[D]`  | Admin sandbox preview: read-only map with new model loaded                            | [07-frontend.md](./07-frontend.md)     |
+| `[D]`  | Admin deploy page: version table + Promote button → hot-swap                          | [07-frontend.md](./07-frontend.md)     |
 
 ---
 
@@ -243,12 +243,12 @@ apps/gabai/nest/src/
 │   │   │   └── api-key.guard.ts       ← validates API key + tier check
 │   │   └── types/
 │   │       └── auth.types.ts
-│   ├── pipeline/                      ← [ ] Not yet implemented
-│   ├── valuation/                     ← [ ] Not yet implemented
+│   ├── pipeline/                      ← [x] Done (Chapter 4)
+│   ├── valuation/                     ← [x] Done (Chapter 5)
 │   ├── heatmap/                       ← [ ] Not yet implemented
 │   ├── area/                          ← [ ] Not yet implemented
 │   ├── report/                        ← [ ] Not yet implemented
-│   ├── admin/                         ← [ ] Not yet implemented
+│   ├── admin/                         ← [x] Done (train/promote endpoints)
 │   └── payment/                       ← [D] Deferred
 ```
 
