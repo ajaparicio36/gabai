@@ -20,16 +20,19 @@ cp .env.example .env
 # Edit .env with your API keys and credentials
 
 # Start infrastructure (PostgreSQL + Redis)
-docker compose up -d db redis
+pnpm infra:up
 
-# Run migrations and seed
-pnpm nx run @gavai/platform:prisma-migrate
-pnpm nx run @gavai/platform:prisma-seed
+# Ensure DATABASE_URL is set (Prisma config reads it from env)
+export DATABASE_URL="$(grep ^DATABASE_URL .env | cut -d= -f2-)"
 
-# Start services
-pnpm nx serve @gavai/nest      # API → http://localhost:3000/api
-pnpm nx dev @gavai/web          # Web → http://localhost:4200
-pnpm nx serve @gavai/sidecar    # ML  → http://localhost:8000
+# Run migrations
+pnpx prisma migrate dev --config libs/platform/prisma.config.ts
+
+# Seed the database
+pnpx prisma db seed --config libs/platform/prisma.config.ts
+
+# Start all services (NestJS + Next.js + ML sidecar)
+pnpm run dev
 ```
 
 ## Full Docker
