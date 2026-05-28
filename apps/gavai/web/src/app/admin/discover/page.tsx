@@ -34,7 +34,7 @@ interface DiscoverTarget {
 
 export default function AdminDiscoverPage(): React.ReactNode {
   const [location, setLocation] = useState('');
-  const [propertyType, setPropertyType] = useState('');
+  const [propertyType, setPropertyType] = useState('any');
   const [discovering, setDiscovering] = useState(false);
   const [targets, setTargets] = useState<DiscoverTarget[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -46,7 +46,7 @@ export default function AdminDiscoverPage(): React.ReactNode {
     try {
       await api.post('/admin/discover', {
         location,
-        propertyType: propertyType || undefined,
+        propertyType: propertyType === 'any' ? undefined : propertyType,
       });
       toast.success('Discovery completed');
       await loadTargets();
@@ -125,7 +125,7 @@ export default function AdminDiscoverPage(): React.ReactNode {
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="residential_lot">
                     Residential Lot
                   </SelectItem>

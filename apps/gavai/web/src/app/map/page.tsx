@@ -26,7 +26,7 @@ function MapContent(): React.ReactNode {
 
   const [viewMode, setViewMode] = useState<MapViewMode>('heatmap');
   const [filters, setFilters] = useState<HeatmapFilters>({
-    propertyType: '',
+    propertyType: 'all',
     priceMin: 0,
     priceMax: 200000,
   });
@@ -37,10 +37,12 @@ function MapContent(): React.ReactNode {
   const bboxQuery = '123.7,10.1,124.0,10.5';
   const heatmapParams = {
     bbox: bboxQuery,
-    propertyType: filters.propertyType || undefined,
+    propertyType:
+      filters.propertyType === 'all' ? undefined : filters.propertyType,
   };
 
-  const { data: heatmapData } = useHeatmap(heatmapParams);
+  const { data: heatmapData, isNoData: isHeatmapNoData } =
+    useHeatmap(heatmapParams);
   const { data: quickEstimate, isLoading: isQuickEstimateLoading } =
     useQuickEstimate(selectedLat, selectedLng);
   const valuation = useValuation();
@@ -61,7 +63,7 @@ function MapContent(): React.ReactNode {
     listingsBounds.minLng,
     listingsBounds.maxLat,
     listingsBounds.maxLng,
-    filters.propertyType || undefined,
+    filters.propertyType === 'all' ? undefined : filters.propertyType,
   );
 
   useEffect(() => {
@@ -83,7 +85,10 @@ function MapContent(): React.ReactNode {
         valuation.mutate({
           lat,
           lng,
-          propertyType: filters.propertyType || 'house_and_lot',
+          propertyType:
+            filters.propertyType === 'all'
+              ? 'house_and_lot'
+              : filters.propertyType,
         });
       }
     },
@@ -118,6 +123,18 @@ function MapContent(): React.ReactNode {
 
       {viewMode === 'heatmap' && (
         <div className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow backdrop-blur">
+          {isHeatmapNoData && (
+            <div className="mb-3 rounded-md bg-muted px-3 py-2 text-center text-xs text-muted-foreground">
+              No property data yet.{' '}
+              <button
+                className="underline hover:text-primary"
+                onClick={() => router.push('/admin/discover')}
+              >
+                Go to Admin &rarr; Discover
+              </button>{' '}
+              to start finding properties.
+            </div>
+          )}
           <FilterBar onFiltersChange={setFilters} />
         </div>
       )}

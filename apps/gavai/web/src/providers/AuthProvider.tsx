@@ -8,8 +8,13 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
-import api, { setAccessToken } from '@/lib/api';
-import { storeTokens, clearTokens, isAuthenticated } from '@/lib/auth';
+import api from '@/lib/api';
+import {
+  storeTokens,
+  clearTokens,
+  isAuthenticated,
+  initializeAuth,
+} from '@/lib/auth';
 
 interface User {
   id: string;
@@ -48,9 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await api.post('/auth/login', { email, password });
-    const { accessToken, user: userData } = response.data.data;
-    storeTokens({ accessToken });
-    setAccessToken(accessToken);
+    const { accessToken, refreshToken, user: userData } = response.data.data;
+    storeTokens({ accessToken, refreshToken });
     setUser(userData);
   }, []);
 
@@ -69,11 +73,14 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && isAuthenticated()) {
-      refreshUser();
-    } else {
-      setIsLoading(false);
+    if (typeof window !== 'undefined') {
+      initializeAuth();
+      if (isAuthenticated()) {
+        refreshUser();
+        return;
+      }
     }
+    setIsLoading(false);
   }, [refreshUser]);
 
   return (

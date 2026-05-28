@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 let accessToken: string | null = null;
+let refreshTokenValue: string | null = null;
 let refreshPromise: Promise<string> | null = null;
 
 export function setAccessToken(token: string | null): void {
@@ -9,6 +10,33 @@ export function setAccessToken(token: string | null): void {
 
 export function getAccessToken(): string | null {
   return accessToken;
+}
+
+export function setRefreshToken(token: string | null): void {
+  refreshTokenValue = token;
+}
+
+export function getRefreshToken(): string | null {
+  return refreshTokenValue;
+}
+
+function readCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const encoded = encodeURIComponent(name);
+  const match = document.cookie.match(new RegExp(`(?:^|; )${encoded}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export function initializeTokenFromCookie(): void {
+  if (accessToken) return;
+  const token = readCookie('accessToken');
+  if (token) {
+    accessToken = token;
+  }
+  const rt = readCookie('refreshToken');
+  if (rt) {
+    refreshTokenValue = rt;
+  }
 }
 
 const api = axios.create({
@@ -68,10 +96,16 @@ api.interceptors.response.use(
 async function refreshAccessToken(): Promise<string> {
   const response = await axios.post(
     `${api.defaults.baseURL}/auth/refresh`,
-    {},
+    { refreshToken: refreshTokenValue },
     { withCredentials: true },
   );
-  return response.data.data.accessToken;
+  const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+    response.data.data;
+  accessToken = newAccessToken;
+  if (newRefreshToken) {
+    refreshTokenValue = newRefreshToken;
+  }
+  return newAccessToken;
 }
 
 export default api;

@@ -22,7 +22,7 @@ interface FilterBarProps {
 }
 
 const PROPERTY_TYPES = [
-  { value: '', label: 'All Types' },
+  { value: 'all', label: 'All Types' },
   { value: 'residential_lot', label: 'Residential Lot' },
   { value: 'house_and_lot', label: 'House & Lot' },
   { value: 'condo', label: 'Condo' },
@@ -32,7 +32,7 @@ const PROPERTY_TYPES = [
 export function FilterBar({
   onFiltersChange,
 }: FilterBarProps): React.ReactNode {
-  const [propertyType, setPropertyType] = useState('');
+  const [propertyType, setPropertyType] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 200000]);
 
   useEffect(() => {
