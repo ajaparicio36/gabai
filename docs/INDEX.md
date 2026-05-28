@@ -139,9 +139,9 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | `[x]`  | `POST /valuation` endpoint (internal-only — no public API)                            | [06-api-design.md](./06-api-design.md) |
 | `[x]`  | `GET /valuation/:id` endpoint (internal-only)                                         | [06-api-design.md](./06-api-design.md) |
 | `[x]`  | Confidence scoring: comparables density + data completeness heuristic                 | [05-avm-engine.md](./05-avm-engine.md) |
-| `[ ]`  | BIR compliance floor: F_BIR compute + audit risk score (prototype, flagged)           | [09-bir-zonal.md](./09-bir-zonal.md)   |
-| `[ ]`  | Heatmap tile endpoint (`GET /heatmap/tiles`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
-| `[ ]`  | Quick pin estimate (`GET /heatmap/estimate`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
+| `[x]`  | BIR compliance floor: F_BIR compute + audit risk score (BirComplianceService)         | [09-bir-zonal.md](./09-bir-zonal.md)   |
+| `[x]`  | Heatmap tile endpoint (`GET /heatmap/tiles`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
+| `[x]`  | Quick pin estimate (`GET /heatmap/estimate`) — internal-only                          | [06-api-design.md](./06-api-design.md) |
 | `[D]`  | Admin train page: training pool summary + trigger button + version history            | [07-frontend.md](./07-frontend.md)     |
 | `[D]`  | Admin sandbox preview: read-only map with new model loaded                            | [07-frontend.md](./07-frontend.md)     |
 | `[D]`  | Admin deploy page: version table + Promote button → hot-swap                          | [07-frontend.md](./07-frontend.md)     |
@@ -153,11 +153,11 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | Status | Task                                                                                       | Detail Doc                                           |
 | ------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | `[x]`  | `AreaIntelligence` model: latKey, lngKey, radiusM, bulletPoints, sourceArticles, expiresAt | [08-area-intelligence.md](./08-area-intelligence.md) |
-| `[ ]`  | Area key rounding: 500m grid (lat/lng rounded to 3 decimal places)                         | [08-area-intelligence.md](./08-area-intelligence.md) |
-| `[ ]`  | Cache lookup: check DB → return cached if valid, else fetch fresh                          | [08-area-intelligence.md](./08-area-intelligence.md) |
-| `[ ]`  | BrightData Discover for area news (infrastructure/development queries)                     | [08-area-intelligence.md](./08-area-intelligence.md) |
-| `[ ]`  | Gemini Flash summarization: summarize-only, source attribution, no synthesis               | [08-area-intelligence.md](./08-area-intelligence.md) |
-| `[ ]`  | `GET /area/intelligence` endpoint (JWT-gated: registered users only, internal-only)        | [06-api-design.md](./06-api-design.md)               |
+| `[x]`  | Area key rounding: 500m grid (lat/lng rounded to 3 decimal places)                         | [08-area-intelligence.md](./08-area-intelligence.md) |
+| `[x]`  | Cache lookup: check DB → return cached if valid, else fetch fresh                          | [08-area-intelligence.md](./08-area-intelligence.md) |
+| `[x]`  | BrightData Discover for area news (infrastructure/development queries)                     | [08-area-intelligence.md](./08-area-intelligence.md) |
+| `[x]`  | Gemini Flash summarization: summarize-only, source attribution, no synthesis               | [08-area-intelligence.md](./08-area-intelligence.md) |
+| `[x]`  | `GET /area/intelligence` endpoint (JWT-gated: registered users only, internal-only)        | [06-api-design.md](./06-api-design.md)               |
 
 ---
 
@@ -165,22 +165,22 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                                          | Detail Doc                         |
 | ------ | ----------------------------------------------------------------------------- | ---------------------------------- |
-| `[ ]`  | Signup page (`/auth/signup`)                                                  | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Login page (`/auth/login`)                                                    | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Google Maps JS API wrapper (`MapContainer`)                                   | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Three-view toggle: Heatmap / Listings / Valuation                             | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Heatmap view: GeoJSON tile layer, filter bar (property type, price range)     | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Listings view: listing pins only, click for details, distinct color for own   | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Valuation view: drop pin → `/valuation` + `/area/intelligence` calls          | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | `ValuationPanel`: estimate, confidence band, price signal, area intel bullets | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | `ConfidenceBadge`: visual indicator of confidence level                       | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | `AreaIntelCard`: bullet point news card with source attribution               | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | TanStack Query hooks: `useValuation`, `useHeatmap`, `useAreaIntel`            | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Admin layout: JWT guard + sidebar nav                                         | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Admin discover page: query form + URL review table + approve                  | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Admin scrape page: pending queue + run button + review table + approve        | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Admin train page: pool summary + trigger + version history                    | [07-frontend.md](./07-frontend.md) |
-| `[ ]`  | Admin deploy page: version table + Promote + rollback                         | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Signup page (`/auth/signup`)                                                  | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Login page (`/auth/login`)                                                    | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Google Maps JS API wrapper (`MapContainer`)                                   | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Three-view toggle: Heatmap / Listings / Valuation                             | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Heatmap view: GeoJSON tile layer, filter bar (property type, price range)     | [07-frontend.md](./07-frontend.md) |
+| `[~]`  | Listings view: listing pins only, click for details, distinct color for own   | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Valuation view: drop pin → `/valuation` + `/area/intelligence` calls          | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | `ValuationPanel`: estimate, confidence band, price signal, area intel bullets | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | `ConfidenceBadge`: visual indicator of confidence level                       | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | `AreaIntelCard`: bullet point news card with source attribution               | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | TanStack Query hooks: `useValuation`, `useHeatmap`, `useAreaIntel`            | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Admin layout: JWT guard + sidebar nav                                         | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Admin discover page: query form + URL review table + approve                  | [07-frontend.md](./07-frontend.md) |
+| `[x]`  | Admin scrape page: pending queue + run button + review table + approve        | [07-frontend.md](./07-frontend.md) |
+| `[D]`  | Admin train page: pool summary + trigger + version history                    | [07-frontend.md](./07-frontend.md) |
+| `[D]`  | Admin deploy page: version table + Promote + rollback                         | [07-frontend.md](./07-frontend.md) |
 
 ---
 
@@ -188,10 +188,10 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 | Status | Task                                                                               | Detail Doc                             |
 | ------ | ---------------------------------------------------------------------------------- | -------------------------------------- |
-| `[ ]`  | PDF report generation (`POST /report/generate`, `GET /report/:id`) — internal-only | [06-api-design.md](./06-api-design.md) |
+| `[x]`  | PDF report generation (`POST /report/generate`, `GET /report/:id`) — internal-only | [06-api-design.md](./06-api-design.md) |
 | `[x]`  | `Report` model: valuationId, pdfUrl, verificationHash                              | [02-database.md](./02-database.md)     |
-| `[ ]`  | Legal disclaimer in UI: "This is not a professional appraisal"                     | [07-frontend.md](./07-frontend.md)     |
-| `[ ]`  | Undertrained model caveat in UI                                                    | [07-frontend.md](./07-frontend.md)     |
+| `[x]`  | Legal disclaimer in UI: "This is not a professional appraisal"                     | [07-frontend.md](./07-frontend.md)     |
+| `[x]`  | Undertrained model caveat in UI                                                    | [07-frontend.md](./07-frontend.md)     |
 | `[ ]`  | Demo script / walkthrough prepared                                                 | —                                      |
 | `[ ]`  | README.md updated with project description                                         | —                                      |
 
@@ -245,9 +245,9 @@ apps/gabai/nest/src/
 │   │       └── auth.types.ts
 │   ├── pipeline/                      ← [x] Done (Chapter 4)
 │   ├── valuation/                     ← [x] Done (Chapter 5)
-│   ├── heatmap/                       ← [ ] Not yet implemented
-│   ├── area/                          ← [ ] Not yet implemented
-│   ├── report/                        ← [ ] Not yet implemented
+│   ├── heatmap/                       ← [x] Done (GeoJSON tiles + quick estimate)
+│   ├── area/                          ← [x] Done (cache + BrightData + Gemini)
+│   ├── report/                        ← [x] Done (generate + retrieval)
 │   ├── admin/                         ← [x] Done (train/promote endpoints)
 │   └── payment/                       ← [D] Deferred
 ```
@@ -265,16 +265,25 @@ apps/gabai/web/src/
 │   ├── Providers.tsx               ← composed client providers wrapper
 │   ├── QueryProvider.tsx           ← TanStack QueryClientProvider
 │   └── AuthProvider.tsx            ← React context for auth state
-├── hooks/                           ← [ ] Not yet populated
+├── hooks/                           ← [x] Populated (useValuation, useHeatmap, useAreaIntel, useQuickEstimate, useReport)
+├── components/                       ← [x] All feature components (MapContainer, ViewToggle, HeatmapLayer, FilterBar, ValuationPanel, ConfidenceBadge, AreaIntelCard, DataCompletenessMeter, DisclaimerBanner, ModelCaveat)
+├── types/
+│   └── api.ts                      ← [x] TypeScript types for all API responses
 ├── app/
-│   ├── layout.tsx                  ← global layout + Providers
-│   ├── page.tsx                    ← landing page
+│   ├── layout.tsx                  ← [x] Global layout + Providers + Toaster + fonts
+│   ├── page.tsx                    ← [x] Landing page with hero + CTAs
+│   ├── loading.tsx                 ← [x] Loading spinner
+│   ├── error.tsx                   ← [x] Error boundary
+│   ├── not-found.tsx               ← [x] 404 page
 │   ├── auth/
-│   │   ├── login/page.tsx          ← [ ] Not yet implemented
-│   │   └── signup/page.tsx         ← [ ] Not yet implemented
+│   │   ├── layout.tsx              ← [x] Auth layout (redirect if authenticated)
+│   │   ├── login/page.tsx          ← [x] Login form (email/password)
+│   │   └── signup/page.tsx         ← [x] Signup form (email/password/confirm)
 │   ├── map/
-│   │   └── page.tsx                ← [ ] Not yet implemented
-│   ├── admin/                       ← [ ] Not yet implemented
+│   │   └── page.tsx                ← [x] Three-view map (Heatmap/Listings/Valuation)
+│   ├── admin/
+│   │   ├── layout.tsx              ← [x] Admin sidebar + JWT guard
+│   │   ├── discover/page.tsx       ← [x] Discover form + URL review table + approve
+│   │   └── scrape/page.tsx         ← [x] Run scrape + pending table + approve/reject
 │   └── api/
-│       └── (Next.js API routes if needed — prefer NestJS)
 ```
