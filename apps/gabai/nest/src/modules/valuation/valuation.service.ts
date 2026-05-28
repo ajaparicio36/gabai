@@ -6,6 +6,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ERROR_CODES, SpatialService } from '@gabai/platform';
 import { ValuationRepository } from './valuation.repository';
+import {
+  BirComplianceService,
+  BirComplianceResult,
+} from './bir-compliance.service';
 
 interface ValuationInput {
   lat: number;
@@ -30,6 +34,7 @@ export interface ValuationResult {
   comparablesUsed: number;
   proximityBreakdown: Record<string, number>;
   modelVersion: string;
+  birCompliance: BirComplianceResult | null;
   id?: string;
 }
 
@@ -41,6 +46,7 @@ export class ValuationService {
     private readonly valuationRepository: ValuationRepository,
     private readonly spatialService: SpatialService,
     private readonly configService: ConfigService,
+    private readonly birComplianceService: BirComplianceService,
   ) {
     this.sidecarUrl = this.configService.getOrThrow<string>('ML_SIDECAR_URL');
   }
@@ -50,6 +56,17 @@ export class ValuationService {
       await this.assembleFeatures(input);
 
     const dataCompleteness = this.computeDataCompleteness(input);
+
+    const barangay = comparables[0]?.barangay ?? null;
+    const city = comparables[0]?.city ?? null;
+    const birCompliance = await this.birComplianceService.computeBirFloor(
+      barangay as string | null,
+      city as string | null,
+      input.address ?? null,
+      null,
+      input.lotAreaSqm ?? null,
+      input.floorAreaSqm ?? null,
+    );
 
     let sidecarResult: {
       price_per_sqm_php: number;
@@ -104,10 +121,12 @@ export class ValuationService {
         comparablesUsed: comparables.length,
         proximityBreakdown,
         modelVersion: sidecarResult.model_version ?? 'unknown',
+        birCompliance,
       };
     } else {
       result = this.formulaFallback(input, comparables, proximityBreakdown);
       result.dataCompleteness = dataCompleteness;
+      result.birCompliance = birCompliance;
     }
 
     const valuation = await this.valuationRepository.createValuation({
@@ -129,6 +148,7 @@ export class ValuationService {
       })),
       proximityBreakdown,
       modelVersion: result.modelVersion,
+      birCompliance: birCompliance as unknown as Record<string, unknown>,
     });
 
     return { ...result, id: valuation.id };
@@ -157,6 +177,7 @@ export class ValuationService {
       proximityBreakdown:
         (valuation.proximityBreakdown as Record<string, number>) ?? {},
       modelVersion: valuation.modelVersion,
+      birCompliance: (valuation.birCompliance as BirComplianceResult) ?? null,
       id: valuation.id,
     };
   }

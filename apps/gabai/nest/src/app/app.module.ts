@@ -9,6 +9,9 @@ import { AuthModule } from '../modules/auth/auth.module';
 import { PipelineModule } from '../modules/pipeline/pipeline.module';
 import { ValuationModule } from '../modules/valuation/valuation.module';
 import { AdminModule } from '../modules/admin/admin.module';
+import { HeatmapModule } from '../modules/heatmap/heatmap.module';
+import { AreaModule } from '../modules/area/area.module';
+import { ReportModule } from '../modules/report/report.module';
 import { validateEnv } from '../config/env.validation';
 
 @Module({
@@ -28,6 +31,9 @@ import { validateEnv } from '../config/env.validation';
     PipelineModule,
     ValuationModule,
     AdminModule,
+    HeatmapModule,
+    AreaModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [

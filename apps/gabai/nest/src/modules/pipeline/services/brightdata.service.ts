@@ -52,6 +52,33 @@ export class BrightDataService {
     return { urls: data.urls ?? [] };
   }
 
+  async scrapeAsMarkdown(url: string): Promise<string | null> {
+    const scraperUrl = `${this.baseUrl}/scraper`;
+    try {
+      const response = await fetch(scraperUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url,
+          format: 'markdown',
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const text = await response.text();
+      return text.slice(0, 8000);
+    } catch {
+      return null;
+    }
+  }
+
   async scrape(params: ScrapeParams): Promise<ScrapeResult> {
     const url = `${this.baseUrl}/scraper`;
     const response = await fetch(url, {
