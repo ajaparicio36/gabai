@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev": "bash -c 'cmds=(); for p in ${@:-nest web sidecar}; do case $p in nest) cmds+=(\"pnpm exec nx serve @gabai/nest\");; web) cmds+=(\"pnpm exec nx dev @gabai/web\");; sidecar) cmds+=(\"pnpm exec nx serve @gabai/sidecar\");; esac; done; pnpm exec concurrently --raw \"${cmds[@]}\"' --",
+    "infra:up": "docker compose up -d db redis"
   },
   "private": true,
   "devDependencies": {
@@ -36,6 +38,7 @@
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "10.4.13",
     "babel-jest": "~30.3.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.8.0",
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^10.0.0",
