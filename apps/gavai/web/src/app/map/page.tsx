@@ -114,7 +114,7 @@ function MapContent(): React.ReactNode {
   return (
     <div className="relative h-screen w-full">
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
-        <span className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur">
+        <span className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border-l-2 border-l-secondary">
           GAVAI
         </span>
       </div>
@@ -122,7 +122,7 @@ function MapContent(): React.ReactNode {
       <ViewToggle value={viewMode} onChange={setViewMode} />
 
       {viewMode === 'heatmap' && (
-        <div className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow backdrop-blur">
+        <div className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow backdrop-blur border-t-2 border-t-secondary">
           {isHeatmapNoData && (
             <div className="mb-3 rounded-md bg-muted px-3 py-2 text-center text-xs text-muted-foreground">
               No property data yet.{' '}

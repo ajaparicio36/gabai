@@ -132,7 +132,7 @@ def train() -> tuple[str, str, float, int]:
         X_train,
         y_train,
         eval_set=[(X_test, y_test)],
-        early_stopping_rounds=20,
+        callbacks=[xgb.callback.EarlyStopping(rounds=20)],
         verbose=False,
     )
 

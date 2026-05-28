@@ -96,6 +96,27 @@ export class PipelineService {
     return this.pipelineRepository.findScrapingJobs();
   }
 
+  async getQueueStatus(): Promise<{
+    scraping: { active: number; waiting: number };
+    enrichment: { active: number; waiting: number };
+  }> {
+    const [
+      scrapingActive,
+      scrapingWaiting,
+      enrichmentActive,
+      enrichmentWaiting,
+    ] = await Promise.all([
+      this.scrapingQueue.getActiveCount(),
+      this.scrapingQueue.getWaitingCount(),
+      this.enrichmentQueue.getActiveCount(),
+      this.enrichmentQueue.getWaitingCount(),
+    ]);
+    return {
+      scraping: { active: scrapingActive, waiting: scrapingWaiting },
+      enrichment: { active: enrichmentActive, waiting: enrichmentWaiting },
+    };
+  }
+
   async getRecordById(id: string) {
     const record = await this.pipelineRepository.findRecordById(id);
     if (!record) {

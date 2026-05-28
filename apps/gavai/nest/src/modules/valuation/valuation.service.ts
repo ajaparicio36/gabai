@@ -209,10 +209,12 @@ export class ValuationService {
     trainingRecords: number;
   }> {
     try {
+      const records = await this.valuationRepository.getTrainingRecords();
+
       const response = await fetch(`${this.sidecarUrl}/api/v1/admin/retrain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ records }),
         signal: AbortSignal.timeout(300000),
       });
 
@@ -228,6 +230,15 @@ export class ValuationService {
         mape: number;
         trainingRecords: number;
       };
+
+      await this.valuationRepository.createModelVersion({
+        version: result.version,
+        modelPath: `models/avm-${result.version}.pkl`,
+        status: 'ready',
+        mape: result.mape,
+        trainingRecords: result.trainingRecords,
+      });
+
       return {
         version: result.version,
         mape: result.mape,

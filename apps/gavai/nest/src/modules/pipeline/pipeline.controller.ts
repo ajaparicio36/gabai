@@ -40,6 +40,11 @@ export class PipelineController {
     return this.pipelineService.getPendingTargets();
   }
 
+  @Get('scrape/queue-status')
+  async getQueueStatus() {
+    return this.pipelineService.getQueueStatus();
+  }
+
   @Get('scrape/records')
   async getScrapeRecords() {
     return this.pipelineService.getPendingRecords();

@@ -135,6 +135,7 @@ def model_info() -> dict[str, Any]:
 
 class RetrainRequest(BaseModel):
     nestjs_callback_url: str | None = None
+    records: list[dict[str, Any]] | None = None
 
 
 @app.post("/api/v1/admin/retrain")
@@ -142,24 +143,27 @@ def retrain(request: RetrainRequest | None = None) -> dict[str, Any]:
     if request is None:
         request = RetrainRequest()
 
-    import requests
+    if request.records:
+        records = request.records
+    else:
+        import httpx
 
-    nest_url = os.environ.get("NESTJS_INTERNAL_URL", "http://localhost:3000/api/v1")
+        nest_url = os.environ.get("NESTJS_INTERNAL_URL", "http://localhost:3000/api/v1")
 
-    try:
-        resp = requests.get(f"{nest_url}/admin/train/records", timeout=30)
-        resp.raise_for_status()
-        records = resp.json()
-        if isinstance(records, dict):
-            records = records.get("data", records.get("records", []))
-    except Exception as e:
-        raise HTTPException(
-            status_code=502,
-            detail={
-                "code": "VALUATION.ML_SIDECAR_ERROR",
-                "message": f"Failed to fetch training records: {e}",
-            },
-        ) from e
+        try:
+            resp = httpx.get(f"{nest_url}/admin/train/records", timeout=30)
+            resp.raise_for_status()
+            records = resp.json()
+            if isinstance(records, dict):
+                records = records.get("data", records.get("records", []))
+        except Exception as e:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "code": "VALUATION.ML_SIDECAR_ERROR",
+                    "message": f"Failed to fetch training records: {e}",
+                },
+            ) from e
 
     if len(records) == 0:
         raise HTTPException(
@@ -192,7 +196,7 @@ def retrain(request: RetrainRequest | None = None) -> dict[str, Any]:
 
     if request.nestjs_callback_url:
         with contextlib.suppress(Exception):
-            requests.post(
+            httpx.post(
                 request.nestjs_callback_url,
                 json={
                     "version": version,

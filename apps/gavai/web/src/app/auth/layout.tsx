@@ -23,5 +23,9 @@ export default function AuthLayout({
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary via-secondary to-primary p-4">
+      {children}
+    </div>
+  );
 }

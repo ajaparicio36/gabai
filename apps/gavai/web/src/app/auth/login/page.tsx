@@ -44,8 +44,8 @@ export default function LoginPage(): React.ReactNode {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <div className="flex items-center justify-center">
+      <Card className="w-full max-w-sm border-t-4 border-t-secondary">
         <CardHeader className="text-center">
           <CardTitle className="font-serif text-2xl">GAVAI</CardTitle>
           <CardDescription>Sign in to your account</CardDescription>

@@ -103,6 +103,48 @@ export interface ReportResponse {
   createdAt: string;
 }
 
+export interface ModelVersion {
+  id: string;
+  version: string;
+  modelPath: string;
+  status: string;
+  mape: number | null;
+  trainingRecords: number | null;
+  deployedAt: string | null;
+  createdAt: string;
+}
+
+export interface TrainingRecord {
+  id: string;
+  propertyType: string;
+  lotAreaSqm: number | null;
+  floorAreaSqm: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  buildingAgeYears: number | null;
+  askingPricePhp: number | null;
+  pricePerSqmPhp: number | null;
+  barangay: string | null;
+  city: string | null;
+  developer: string | null;
+  phivolcsRisk: string | null;
+  floodRisk: string | null;
+  zonalValuePhp: number | null;
+  crepPhp: number | null;
+  proximityScores: unknown;
+  createdAt: string;
+}
+
+export interface RetrainResponse {
+  version: string;
+  mape: number;
+  trainingRecords: number;
+}
+
+export interface PromoteResponse {
+  status: string;
+}
+
 export interface NearbyProperty {
   id: string;
   lat: number;

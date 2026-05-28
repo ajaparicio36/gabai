@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Search, Download, ArrowLeft, BarChart3 } from 'lucide-react';
+import { Search, Download, ArrowLeft, BarChart3, Brain } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
@@ -30,6 +30,11 @@ const navItems = [
     title: 'Scrape',
     url: '/admin/scrape',
     icon: Download,
+  },
+  {
+    title: 'Model',
+    url: '/admin/model',
+    icon: Brain,
   },
 ];
 

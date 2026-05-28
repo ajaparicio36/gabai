@@ -72,8 +72,10 @@ def train_from_records(records: list[dict[str, Any]]) -> tuple[Any, float, int]:
         area = area.replace(0, 1)
         df["price_per_sqm_php"] = df["asking_price_php"] / area
 
-    y = df["price_per_sqm_php"].fillna(0)
-    X = df[[c for c in FEATURE_ORDER if c in df.columns]]
+    y = pd.to_numeric(df["price_per_sqm_php"], errors="coerce").fillna(0)
+
+    feature_cols = [c for c in FEATURE_ORDER if c in df.columns]
+    X = df[feature_cols].apply(pd.to_numeric, errors="coerce").fillna(0)
 
     if len(X) < 20:
         logger.warning("Insufficient training data: %d records", len(X))
@@ -94,8 +96,6 @@ def train_from_records(records: list[dict[str, Any]]) -> tuple[Any, float, int]:
     model.fit(
         X_train,
         y_train,
-        eval_set=[(X_test, y_test)],
-        early_stopping_rounds=20,
         verbose=False,
     )
 

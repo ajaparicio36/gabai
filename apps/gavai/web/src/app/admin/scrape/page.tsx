@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
+interface QueueStatus {
+  scraping: { active: number; waiting: number };
+  enrichment: { active: number; waiting: number };
+}
+
 interface ScrapeRecord {
   id: string;
   status: string;
@@ -28,11 +33,29 @@ interface ScrapeRecord {
   flagReason: string | null;
 }
 
+function isBusy(status: QueueStatus): boolean {
+  const s = status.scraping.active + status.scraping.waiting;
+  const e = status.enrichment.active + status.enrichment.waiting;
+  return s > 0 || e > 0;
+}
+
+function statusLabel(status: QueueStatus): string {
+  const parts: string[] = [];
+  const scrape = status.scraping.active + status.scraping.waiting;
+  const enrich = status.enrichment.active + status.enrichment.waiting;
+  if (scrape > 0) parts.push(`Scraping: ${scrape} job${scrape > 1 ? 's' : ''}`);
+  if (enrich > 0)
+    parts.push(`Enriching: ${enrich} job${enrich > 1 ? 's' : ''}`);
+  return parts.join(' • ') || 'Idle';
+}
+
 export default function AdminScrapePage(): React.ReactNode {
   const [records, setRecords] = useState<ScrapeRecord[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [running, setRunning] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadRecords = useCallback(async (): Promise<void> => {
     try {
@@ -43,15 +66,32 @@ export default function AdminScrapePage(): React.ReactNode {
     }
   }, []);
 
+  const loadQueueStatus = useCallback(async (): Promise<void> => {
+    try {
+      const response = await api.get('/admin/scrape/queue-status');
+      setQueueStatus(response.data.data as QueueStatus);
+    } catch {
+      // silently ignore polling errors
+    }
+  }, []);
+
   useEffect(() => {
     loadRecords();
-  }, [loadRecords]);
+    loadQueueStatus();
+    pollingRef.current = setInterval(() => {
+      loadQueueStatus();
+    }, 3000);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [loadRecords, loadQueueStatus]);
 
   const handleRunScrape = async (): Promise<void> => {
     setRunning(true);
     try {
       await api.post('/admin/scrape/run');
       toast.success('Scraping job queued');
+      await loadQueueStatus();
     } catch {
       toast.error('Failed to queue scrape job');
     } finally {
@@ -111,7 +151,20 @@ export default function AdminScrapePage(): React.ReactNode {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Scraped Records</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle>Scraped Records</CardTitle>
+            {queueStatus && (
+              <Badge
+                variant={isBusy(queueStatus) ? 'default' : 'secondary'}
+                className="text-xs gap-1"
+              >
+                {isBusy(queueStatus) && (
+                  <span className="inline-block size-1.5 rounded-full bg-current animate-ping" />
+                )}
+                {statusLabel(queueStatus)}
+              </Badge>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button onClick={handleRunScrape} disabled={running}>
               {running ? 'Running...' : 'Run Scrape'}
