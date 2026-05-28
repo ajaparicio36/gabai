@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
 import { PipelineController } from './pipeline.controller';
 import { PipelineService } from './pipeline.service';
 import { PipelineRepository } from './pipeline.repository';
@@ -12,6 +13,7 @@ import { EnrichmentProcessor } from './enrichment.processor';
 
 @Module({
   imports: [
+    AuthModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
