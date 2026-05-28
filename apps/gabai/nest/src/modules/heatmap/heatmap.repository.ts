@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@gabai/platform';
+import { PrismaService, Prisma } from '@gabai/platform';
 
 export interface TileFeature {
   type: 'Feature';
@@ -30,6 +30,22 @@ export interface QuickEstimateResult {
   medianPhp: number;
   highPhp: number;
   comparablesCount: number;
+}
+
+export interface NearbyProperty {
+  id: string;
+  lat: number;
+  lng: number;
+  propertyType: string;
+  askingPricePhp: number;
+  pricePerSqmPhp: number | null;
+  lotAreaSqm: number | null;
+  floorAreaSqm: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  barangay: string | null;
+  city: string | null;
+  addressRaw: string | null;
 }
 
 @Injectable()
@@ -122,5 +138,46 @@ export class HeatmapRepository {
       high: rows[0]?.p75 ?? null,
       count: rows[0]?.count ?? 0,
     };
+  }
+
+  async getNearbyProperties(
+    minLat: number,
+    minLng: number,
+    maxLat: number,
+    maxLng: number,
+    propertyType?: string,
+  ): Promise<NearbyProperty[]> {
+    const where: Prisma.PropertyWhereInput = {
+      lat: { gte: minLat, lte: maxLat },
+      lng: { gte: minLng, lte: maxLng },
+      pricePerSqmPhp: { not: null },
+      listingType: 'standard',
+      approved: true,
+    };
+    if (propertyType) {
+      where.propertyType = propertyType;
+    }
+
+    const rows = await this.prisma.property.findMany({
+      where,
+      select: {
+        id: true,
+        lat: true,
+        lng: true,
+        propertyType: true,
+        askingPricePhp: true,
+        pricePerSqmPhp: true,
+        lotAreaSqm: true,
+        floorAreaSqm: true,
+        bedrooms: true,
+        bathrooms: true,
+        barangay: true,
+        city: true,
+        addressRaw: true,
+      },
+      take: 200,
+    });
+
+    return rows as NearbyProperty[];
   }
 }

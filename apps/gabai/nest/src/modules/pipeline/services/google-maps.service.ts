@@ -62,6 +62,43 @@ export class GoogleMapsService {
     };
   }
 
+  async reverseGeocode(
+    lat: number,
+    lng: number,
+  ): Promise<GeocodingResult | null> {
+    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
+    url.searchParams.set('latlng', `${lat},${lng}`);
+    url.searchParams.set('key', this.apiKey);
+
+    const response = await fetch(url.toString());
+    const data = (await response.json()) as {
+      status: string;
+      results: {
+        place_id: string;
+        geometry: { location: { lat: number; lng: number } };
+        address_components?: { types: string[]; long_name: string }[];
+      }[];
+    };
+
+    if (data.status !== 'OK' || !data.results[0]) {
+      return null;
+    }
+
+    const result = data.results[0];
+    const components: Record<string, string> = {};
+    for (const comp of result.address_components ?? []) {
+      const type = comp.types?.[0];
+      if (type) components[type] = comp.long_name;
+    }
+
+    return {
+      lat: result.geometry.location.lat,
+      lng: result.geometry.location.lng,
+      googlePlaceId: result.place_id,
+      addressComponents: components,
+    };
+  }
+
   async nearbySearch(lat: number, lng: number): Promise<PlacesNearbyResult> {
     const categories: Record<
       string,

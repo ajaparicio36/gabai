@@ -116,7 +116,7 @@ model Report {
   id               String    @id @default(cuid())
   valuationId      String    @unique
   valuation        Valuation @relation(fields: [valuationId], references: [id])
-  pdfUrl           String
+  pdfUrl           String?
   verificationHash String    @unique
   createdAt        DateTime  @default(now())
 }

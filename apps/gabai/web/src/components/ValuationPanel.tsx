@@ -86,13 +86,12 @@ export function ValuationPanel({
                 score={valuation.confidenceScore}
                 comparablesCount={valuation.comparablesUsed}
               />
-              {getPriceSignal(valuation.birCompliance) && (
-                <Badge
-                  variant={getPriceSignal(valuation.birCompliance)!.variant}
-                >
-                  {getPriceSignal(valuation.birCompliance)!.label}
-                </Badge>
-              )}
+              {getPriceSignal(valuation.birCompliance) &&
+                (() => {
+                  const signal = getPriceSignal(valuation.birCompliance);
+                  if (!signal) return null;
+                  return <Badge variant={signal.variant}>{signal.label}</Badge>;
+                })()}
             </div>
 
             <div className="space-y-2 rounded-md border p-3">
@@ -115,12 +114,15 @@ export function ValuationPanel({
                     {valuation.birCompliance.complianceFloorPhp.toLocaleString()}
                   </p>
                 )}
-                {valuation.birCompliance.auditRiskScore && (
+                {valuation.birCompliance.auditRiskScore != null && (
                   <p className="text-xs text-muted-foreground">
-                    Risk:{' '}
-                    {(valuation.birCompliance.auditRiskScore * 100).toFixed(0)}%
+                    Risk: {valuation.birCompliance.auditRiskScore.toFixed(1)}%
                   </p>
                 )}
+                <p className="text-xs italic text-muted-foreground">
+                  Based on BIR zonal values that may be outdated. Not a legal
+                  assessment.
+                </p>
               </div>
             )}
 

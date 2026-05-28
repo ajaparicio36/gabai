@@ -18,7 +18,7 @@ export class BirComplianceService {
     barangay: string | null,
     city: string | null,
     streetOrSubd: string | null,
-    askingPricePhp: number | null,
+    pointEstimatePhp: number | null,
     lotAreaSqm: number | null,
     floorAreaSqm: number | null,
   ): Promise<BirComplianceResult> {
@@ -61,29 +61,27 @@ export class BirComplianceService {
       where: { barangay, city },
     });
 
-    const assessmentLevel = govRef?.assessmentLevel ?? 0.02;
     const lguAssessedValue = govRef?.lguAssessedValue ?? null;
+    const assessmentLevel = govRef?.assessmentLevel ?? 0.02;
 
     const area = lotAreaSqm ?? floorAreaSqm ?? 0;
-    const complianceFloorPhp =
-      zonalValuePhp != null
-        ? Math.max(zonalValuePhp, lguAssessedValue ?? 0) * area
-        : null;
+    const zFloor = (zonalValuePhp ?? 0) * area;
+    const assessFloor =
+      lguAssessedValue != null && assessmentLevel > 0
+        ? lguAssessedValue / assessmentLevel
+        : 0;
+
+    const F_BIR = Math.max(zFloor, assessFloor);
 
     let auditRiskScore: number | null = null;
     let riskLabel: BirComplianceResult['riskLabel'] = 'unknown';
 
-    if (
-      complianceFloorPhp != null &&
-      askingPricePhp != null &&
-      complianceFloorPhp > 0
-    ) {
-      auditRiskScore =
-        (askingPricePhp - complianceFloorPhp) / complianceFloorPhp;
+    if (F_BIR > 0 && pointEstimatePhp != null) {
+      auditRiskScore = ((pointEstimatePhp - F_BIR) / F_BIR) * 100;
 
-      if (auditRiskScore <= 0.3) {
+      if (auditRiskScore > 0) {
         riskLabel = 'green';
-      } else if (auditRiskScore <= 0.7) {
+      } else if (auditRiskScore >= -5) {
         riskLabel = 'yellow';
       } else {
         riskLabel = 'red';
@@ -91,12 +89,9 @@ export class BirComplianceService {
     }
 
     return {
-      complianceFloorPhp: complianceFloorPhp
-        ? Math.round(complianceFloorPhp)
-        : null,
-      auditRiskScore: auditRiskScore
-        ? Math.round(auditRiskScore * 100) / 100
-        : null,
+      complianceFloorPhp: F_BIR > 0 ? Math.round(F_BIR) : null,
+      auditRiskScore:
+        auditRiskScore != null ? Math.round(auditRiskScore * 100) / 100 : null,
       riskLabel,
       zonalValuePhp,
       assessmentLevel,

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { DM_Sans, Playfair_Display, Fira_Code } from 'next/font/google';
 import { Providers } from '@/providers/Providers';
 import { Toaster } from '@/components/ui/sonner';
+// @ts-expect-error - global.css may not have type declarations yet
 import './global.css';
 
 const fontSans = DM_Sans({

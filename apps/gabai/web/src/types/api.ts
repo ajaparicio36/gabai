@@ -102,3 +102,19 @@ export interface ReportResponse {
   verificationHash: string;
   createdAt: string;
 }
+
+export interface NearbyProperty {
+  id: string;
+  lat: number;
+  lng: number;
+  propertyType: string;
+  askingPricePhp: number;
+  pricePerSqmPhp: number | null;
+  lotAreaSqm: number | null;
+  floorAreaSqm: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  barangay: string | null;
+  city: string | null;
+  addressRaw: string | null;
+}

@@ -14,6 +14,7 @@ import { useQuickEstimate } from '@/hooks/useQuickEstimate';
 import { useValuation } from '@/hooks/useValuation';
 import { useAreaIntel } from '@/hooks/useAreaIntel';
 import { useGenerateReport } from '@/hooks/useReport';
+import { useListings } from '@/hooks/useListings';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LogOut, Settings } from 'lucide-react';
@@ -48,6 +49,20 @@ function MapContent(): React.ReactNode {
     selectedLng,
   );
   const report = useGenerateReport();
+
+  const listingsBounds = {
+    minLat: 10.1,
+    minLng: 123.7,
+    maxLat: 10.5,
+    maxLng: 124.0,
+  };
+  const { data: listings } = useListings(
+    listingsBounds.minLat,
+    listingsBounds.minLng,
+    listingsBounds.maxLat,
+    listingsBounds.maxLng,
+    filters.propertyType || undefined,
+  );
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -139,11 +154,18 @@ function MapContent(): React.ReactNode {
           <HeatmapLayer features={heatmapData.features} />
         )}
 
-        {viewMode === 'listings' && (
-          <p className="absolute bottom-4 left-4 rounded-md border bg-background/90 p-2 text-xs shadow backdrop-blur">
-            Listings view: click the map to explore properties
-          </p>
-        )}
+        {viewMode === 'listings' &&
+          listings &&
+          listings.slice(0, 100).map((p) => (
+            <Marker
+              key={p.id}
+              position={{ lat: p.lat, lng: p.lng }}
+              icon={{
+                url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2"%3E%3Cpath d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"%3E%3C/path%3E%3Ccircle cx="12" cy="10" r="3"%3E%3C/circle%3E%3C/svg%3E',
+              }}
+              title={`PHP ${(p.pricePerSqmPhp ?? 0).toLocaleString()}/sqm — ${p.barangay ?? ''}, ${p.city ?? ''}`}
+            />
+          ))}
 
         {selectedLat != null && selectedLng != null && (
           <Marker

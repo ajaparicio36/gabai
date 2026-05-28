@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@gabai/platform';
+import { PrismaService, Prisma } from '@gabai/platform';
 
 interface CachedAreaIntel {
   id: string;
@@ -54,7 +54,7 @@ export class AreaRepository {
     lngKey: number,
     radiusM: number,
     bulletPoints: string[],
-    sourceArticles: unknown,
+    sourceArticles: Prisma.InputJsonValue,
     expiresAt: Date,
   ): Promise<void> {
     await this.prisma.areaIntelligence.upsert({

@@ -4,6 +4,7 @@ import {
   HeatmapRepository,
   GeoJsonTileResponse,
   QuickEstimateResult,
+  NearbyProperty,
 } from './heatmap.repository';
 
 @Injectable()
@@ -119,5 +120,21 @@ export class HeatmapService {
       highPhp: Math.round(estimate.high ?? 0),
       comparablesCount: estimate.count,
     };
+  }
+
+  async getNearbyProperties(
+    minLat: number,
+    minLng: number,
+    maxLat: number,
+    maxLng: number,
+    propertyType?: string,
+  ): Promise<NearbyProperty[]> {
+    return this.heatmapRepository.getNearbyProperties(
+      minLat,
+      minLng,
+      maxLat,
+      maxLng,
+      propertyType,
+    );
   }
 }

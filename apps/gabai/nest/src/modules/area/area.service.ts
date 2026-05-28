@@ -3,7 +3,7 @@ import { ERROR_CODES } from '@gabai/platform';
 import { roundToGrid } from '@gabai/pipeline';
 import { AreaRepository } from './area.repository';
 import { GeminiService } from './gemini.service';
-import { BrightdataService } from '../pipeline/services/brightdata.service';
+import { BrightDataService } from '../pipeline/services/brightdata.service';
 import { GoogleMapsService } from '../pipeline/services/google-maps.service';
 
 export interface AreaIntelligenceResult {
@@ -22,7 +22,7 @@ export class AreaService {
   constructor(
     private readonly areaRepository: AreaRepository,
     private readonly geminiService: GeminiService,
-    private readonly brightdataService: BrightdataService,
+    private readonly brightdataService: BrightDataService,
     private readonly googleMapsService: GoogleMapsService,
   ) {}
 
@@ -95,13 +95,20 @@ export class AreaService {
     lngKey: number,
     radiusM: number,
   ): Promise<AreaIntelligenceResult> {
-    const geoCoding = await this.googleMapsService.geocode(lat, lng);
+    const geoCoding = await this.googleMapsService.reverseGeocode(lat, lng);
+    const ac =
+      (geoCoding?.addressComponents as Record<string, string> | undefined) ??
+      {};
     const barangay =
-      (geoCoding?.addressComponents as Record<string, string> | undefined)
-        ?.barangay ?? '';
+      ac.administrative_area_level_4 ??
+      ac.sublocality_level_1 ??
+      ac.sublocality ??
+      '';
     const city =
-      (geoCoding?.addressComponents as Record<string, string> | undefined)
-        ?.city ?? 'Cebu';
+      ac.administrative_area_level_2 ??
+      ac.locality ??
+      ac.administrative_area_level_3 ??
+      'Cebu City';
 
     const query = `infrastructure OR expressway OR school OR development OR hospital OR mall OR road "${city}" ${
       barangay ? `"${barangay}"` : ''
@@ -149,9 +156,9 @@ export class AreaService {
             url: string;
             title: string;
             markdown: string;
-          } | null> => r.status === 'fulfilled' && r.value !== null,
+          }> => r.status === 'fulfilled' && r.value !== null,
         )
-        .map((r) => r.value!);
+        .map((r) => r.value);
 
       if (validArticles.length > 0) {
         try {
@@ -176,7 +183,7 @@ export class AreaService {
       lngKey,
       radiusM,
       bulletPoints,
-      sourceArticles as unknown as Record<string, unknown>,
+      sourceArticles,
       expiresAt,
     );
 

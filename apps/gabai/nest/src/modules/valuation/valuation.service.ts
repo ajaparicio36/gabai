@@ -129,6 +129,15 @@ export class ValuationService {
       result.birCompliance = birCompliance;
     }
 
+    if (birCompliance?.complianceFloorPhp && result.pointEstimatePhp) {
+      const floor = birCompliance.complianceFloorPhp;
+      const sRisk = ((result.pointEstimatePhp - floor) / floor) * 100;
+      birCompliance.auditRiskScore = Math.round(sRisk * 100) / 100;
+      if (sRisk > 0) birCompliance.riskLabel = 'green';
+      else if (sRisk >= -5) birCompliance.riskLabel = 'yellow';
+      else birCompliance.riskLabel = 'red';
+    }
+
     const valuation = await this.valuationRepository.createValuation({
       inputLat: input.lat,
       inputLng: input.lng,
@@ -162,10 +171,9 @@ export class ValuationService {
         message: 'Valuation not found',
       });
     }
+    const area = valuation.lotAreaSqm ?? valuation.floorAreaSqm ?? 1;
     return {
-      pricePerSqmPhp:
-        valuation.pointEstimatePhp /
-        Math.max(valuation.lotAreaSqm ?? valuation.floorAreaSqm ?? 1, 1),
+      pricePerSqmPhp: area > 0 ? valuation.pointEstimatePhp / area : 0,
       pointEstimatePhp: valuation.pointEstimatePhp,
       confidenceLowPhp: valuation.confidenceLowPhp,
       confidenceHighPhp: valuation.confidenceHighPhp,
@@ -177,7 +185,8 @@ export class ValuationService {
       proximityBreakdown:
         (valuation.proximityBreakdown as Record<string, number>) ?? {},
       modelVersion: valuation.modelVersion,
-      birCompliance: (valuation.birCompliance as BirComplianceResult) ?? null,
+      birCompliance:
+        (valuation.birCompliance as unknown as BirComplianceResult) ?? null,
       id: valuation.id,
     };
   }
@@ -290,6 +299,8 @@ export class ValuationService {
       id: string;
       distance_m: number;
       pricePerSqmPhp: number | null;
+      barangay: string | null;
+      city: string | null;
     }[];
     proximityBreakdown: Record<string, number>;
   }> {
@@ -432,6 +443,7 @@ export class ValuationService {
       comparablesUsed: 0,
       proximityBreakdown,
       modelVersion: 'formula_fallback',
+      birCompliance: null,
     };
   }
 

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { createHash, randomBytes } from 'crypto';
 import { ERROR_CODES } from '@gabai/platform';
 import { ReportRepository } from './report.repository';
@@ -24,7 +20,8 @@ export class ReportService {
   ) {}
 
   async generateReport(valuationId: string): Promise<ReportResult> {
-    const valuation = await this.valuationRepository.findById(valuationId);
+    const valuation =
+      await this.valuationRepository.findValuationById(valuationId);
 
     if (!valuation) {
       throw new NotFoundException({
