@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @gabai/nest with Nx",
+      "name": "Debug @gavai/nest with Nx",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["exec", "nx", "serve", "@gabai/nest"],
+      "runtimeArgs": ["exec", "nx", "serve", "@gavai/nest"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
@@ -15,7 +15,7 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/gabai/nest/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/gavai/nest/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

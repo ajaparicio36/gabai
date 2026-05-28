@@ -1,4 +1,4 @@
-# Agent Instructions — GABAI
+# Agent Instructions — GAVAI
 
 This is the authoritative reference for all AI agents working in this repository. Read this before taking any action.
 
@@ -6,7 +6,7 @@ This is the authoritative reference for all AI agents working in this repository
 
 ## Project Identity
 
-**GABAI** is an AI-powered Automated Valuation Model (AVM) for Philippine real estate. It scrapes property listings, enriches them with government and location data, trains an XGBoost regression model, and provides instant property valuations with confidence bands.
+**GAVAI** is an AI-powered Automated Valuation Model (AVM) for Philippine real estate. It scrapes property listings, enriches them with government and location data, trains an XGBoost regression model, and provides instant property valuations with confidence bands.
 
 - **Target market:** Metro Cebu (hackathon), expandable to national coverage
 - **Tech stack:** NestJS + Next.js 16 + Python 3.12 FastAPI + PostgreSQL/PostGIS + Redis + Prisma
@@ -44,24 +44,24 @@ This is the authoritative reference for all AI agents working in this repository
 
 ```bash
 # Build / type-check / lint / test all projects
-pnpm nx build @gabai/nest @gabai/web
-pnpm nx typecheck @gabai/nest @gabai/web
-pnpm nx lint @gabai/nest @gabai/web
-pnpm nx test @gabai/nest @gabai/web
+pnpm nx build @gavai/nest @gavai/web
+pnpm nx typecheck @gavai/nest @gavai/web
+pnpm nx lint @gavai/nest @gavai/web
+pnpm nx test @gavai/nest @gavai/web
 
 # Single project
-pnpm nx build @gabai/nest
-pnpm nx test @gabai/nest --testFile=src/modules/auth/auth.service.spec.ts
+pnpm nx build @gavai/nest
+pnpm nx test @gavai/nest --testFile=src/modules/auth/auth.service.spec.ts
 
 # Dev servers
-pnpm nx serve @gabai/nest      # NestJS → http://localhost:3000/api
-pnpm nx dev @gabai/web          # Next.js → http://localhost:4200
-pnpm nx serve @gabai/sidecar    # Python ML → http://localhost:8000
+pnpm nx serve @gavai/nest      # NestJS → http://localhost:3000/api
+pnpm nx dev @gavai/web          # Next.js → http://localhost:4200
+pnpm nx serve @gavai/sidecar    # Python ML → http://localhost:8000
 
 # Prisma
-pnpm nx run @gabai/platform:prisma-migrate   # Run migrations
-pnpm nx run @gabai/platform:prisma-seed      # Seed database (creates admin user)
-pnpm nx run @gabai/platform:prisma-studio    # Prisma Studio UI
+pnpm nx run @gavai/platform:prisma-migrate   # Run migrations
+pnpm nx run @gavai/platform:prisma-seed      # Seed database (creates admin user)
+pnpm nx run @gavai/platform:prisma-studio    # Prisma Studio UI
 
 # Format
 pnpm prettier --write .
@@ -73,7 +73,7 @@ pnpm prettier --check .
 ## Monorepo Layout
 
 ```
-apps/gabai/
+apps/gavai/
   nest/           — NestJS v11 API server (HTTP + BullMQ workers)
   web/            — Next.js 16 frontend (App Router, Tailwind)
   sidecar/        — Python 3.12 FastAPI ML inference service
@@ -86,7 +86,7 @@ scripts/          — Standalone scripts (train.py, bir_zonal_pipeline.py)
 models/           — Trained XGBoost model files (*.pkl)
 ```
 
-**Package naming:** `@gabai/<name>` (e.g., `@gabai/platform`, `@gabai/shared-types`).
+**Package naming:** `@gavai/<name>` (e.g., `@gavai/platform`, `@gavai/shared-types`).
 
 ---
 
@@ -111,7 +111,7 @@ Key decisions are documented in the [decisions log](./docs/01-architecture.md). 
 ### Module structure
 
 ```
-apps/gabai/nest/src/modules/<feature>/
+apps/gavai/nest/src/modules/<feature>/
   <feature>.module.ts
   <feature>.controller.ts        # HTTP concerns only — delegates to service
   <feature>.service.ts           # Business logic — injects repository, not DB directly
@@ -209,7 +209,7 @@ No generic `Error` throws. No swallowing exceptions without rethrow or logging.
 ### Migration workflow
 
 ```bash
-pnpm nx run @gabai/platform:prisma-migrate -- --name <description>
+pnpm nx run @gavai/platform:prisma-migrate -- --name <description>
 ```
 
 Migrations adding PostGIS features must manually add spatial statements in `up()`.
@@ -232,7 +232,7 @@ PHP amounts are stored as `Float` (double precision). Not integers/centavos. Thi
 
 - **Access:** JWT (HS256), 15min expiry, in-memory only on client
 - **Refresh:** Opaque (crypto.randomBytes), SHA-256 hashed in DB, 7d expiry, rotated on use
-- **API keys:** `gabai_sk_<32 hex>`, SHA-256 hashed in DB, returned once at creation/rotation
+- **API keys:** `gavai_sk_<32 hex>`, SHA-256 hashed in DB, returned once at creation/rotation
 
 ### Refresh token rotation + theft detection
 

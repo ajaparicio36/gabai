@@ -58,5 +58,5 @@ __pycache__/
 .next
 out
 .env
-apps/gabai/web/next-env.d.ts
-apps/gabai/web/next-env.d.ts
+apps/gavai/web/next-env.d.ts
+apps/gavai/web/next-env.d.ts

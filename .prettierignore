@@ -2,6 +2,10 @@
 /dist
 /coverage
 /.nx/cache
+**/.venv
+
+# Python sidecar (uses ruff, not prettier)
+apps/gavai/sidecar
 /.nx/workspace-data
 .nx/self-healing
 

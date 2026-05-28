@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/gabai/sidecar
+        working-directory: apps/gavai/sidecar
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,7 +47,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: apps/gabai/sidecar/pyproject.toml
+          cache-dependency-glob: apps/gavai/sidecar/pyproject.toml
 
       - run: uv sync
       - run: uv run ruff check src/

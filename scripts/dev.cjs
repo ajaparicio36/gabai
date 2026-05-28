@@ -3,8 +3,8 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 const projectAliases = new Map([
-  ['nest', '@gabai/nest'],
-  ['web', '@gabai/web'],
+  ['nest', '@gavai/nest'],
+  ['web', '@gavai/web'],
   ['sidecar', 'sidecar'],
 ]);
 
@@ -110,7 +110,7 @@ const nxArgs = [
 ];
 
 if (nxArgs.findIndex((a) => a.startsWith('--projects=')) === -1) {
-  nxArgs.push('--projects=@gabai/nest,@gabai/web,sidecar');
+  nxArgs.push('--projects=@gavai/nest,@gavai/web,sidecar');
 }
 
 const nx = runPnpm(nxArgs, { stdio: 'inherit' });

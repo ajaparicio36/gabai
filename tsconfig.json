@@ -4,10 +4,10 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/gabai/nest"
+      "path": "./apps/gavai/nest"
     },
     {
-      "path": "./apps/gabai/web"
+      "path": "./apps/gavai/web"
     },
     {
       "path": "./libs/platform"

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Standalone XGBoost training script for GABAI AVM.
+"""Standalone XGBoost training script for GAVAI AVM.
 
 Usage: python scripts/train.py
 """
+
 from __future__ import annotations
 
 import os
@@ -45,9 +46,7 @@ def prepare_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
 
     le_barangay = LabelEncoder()
     le_city = LabelEncoder()
-    X["barangay_encoded"] = le_barangay.fit_transform(
-        X["barangay"].fillna("UNKNOWN")
-    )
+    X["barangay_encoded"] = le_barangay.fit_transform(X["barangay"].fillna("UNKNOWN"))
     X["city_encoded"] = le_city.fit_transform(X["city"].fillna("UNKNOWN"))
 
     X["floor_area_sqm"] = X["floorAreaSqm"].fillna(0)

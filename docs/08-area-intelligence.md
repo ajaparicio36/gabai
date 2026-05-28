@@ -27,7 +27,7 @@ export function areaKey(lat: number, lng: number, radiusM = 1500) {
 ## Cache Lookup Flow
 
 ```typescript
-// apps/gabai/nest/src/modules/area/area-intelligence.service.ts
+// apps/gavai/nest/src/modules/area/area-intelligence.service.ts
 @Injectable()
 export class AreaIntelligenceService {
   async getIntelligence(

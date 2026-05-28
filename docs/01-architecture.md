@@ -1,8 +1,8 @@
 # 01 — Architecture Overview
 
-## What is GABAI?
+## What is GAVAI?
 
-GABAI is an AI-powered **Automated Valuation Model (AVM)** for Philippine real estate. It scrapes property listings, enriches them with government and location data, trains an XGBoost regression model, and provides instant property valuations with confidence bands. A Google Maps frontend offers three views: heatmap, listings-only, and valuation+intelligence.
+GAVAI is an AI-powered **Automated Valuation Model (AVM)** for Philippine real estate. It scrapes property listings, enriches them with government and location data, trains an XGBoost regression model, and provides instant property valuations with confidence bands. A Google Maps frontend offers three views: heatmap, listings-only, and valuation+intelligence.
 
 **Scope:** Hackathon demo focused on Metro Cebu. Extensible to national coverage post-launch.
 
@@ -32,8 +32,8 @@ GABAI is an AI-powered **Automated Valuation Model (AVM)** for Philippine real e
 ## Monorepo Structure
 
 ```
-gabai/
-├── apps/gabai/
+gavai/
+├── apps/gavai/
 │   ├── nest/           ← NestJS API server (HTTP + BullMQ workers)
 │   ├── web/            ← Next.js frontend (App Router, Tailwind)
 │   └── sidecar/        ← Python FastAPI ML inference service
@@ -50,7 +50,7 @@ gabai/
 └── docker-compose.yml   ← Local dev + deployment orchestration
 ```
 
-**Package naming convention:** `@gabai/<name>` — e.g., `@gabai/platform`, `@gabai/shared-types`.
+**Package naming convention:** `@gavai/<name>` — e.g., `@gavai/platform`, `@gavai/shared-types`.
 
 ---
 

@@ -1,4 +1,4 @@
-# GABAI — Implementation Tracker
+# GAVAI — Implementation Tracker
 
 AI-powered Automated Valuation Model for Philippine real estate.
 
@@ -22,14 +22,14 @@ AI-powered Automated Valuation Model for Philippine real estate.
 | Status | Task                                                                     | Detail Doc                                   |
 | ------ | ------------------------------------------------------------------------ | -------------------------------------------- |
 | `[x]`  | Nx monorepo scaffold                                                     | [01-architecture.md](./01-architecture.md)   |
-| `[x]`  | NestJS app generated (`apps/gabai/nest`)                                 | —                                            |
-| `[x]`  | Next.js app generated (`apps/gabai/web`)                                 | —                                            |
-| `[x]`  | Python sidecar generated (`apps/gabai/sidecar`)                          | —                                            |
+| `[x]`  | NestJS app generated (`apps/gavai/nest`)                                 | —                                            |
+| `[x]`  | Next.js app generated (`apps/gavai/web`)                                 | —                                            |
+| `[x]`  | Python sidecar generated (`apps/gavai/sidecar`)                          | —                                            |
 | `[x]`  | ESLint, Jest, Prettier, commitlint, husky configured                     | —                                            |
 | `[x]`  | `libs/platform` NestJS lib populated (Prisma client, schema, migrations) | [02-database.md](./02-database.md)           |
 | `[x]`  | Shared types, DTOs, error codes consolidated in `libs/platform`          | [06-api-design.md](./06-api-design.md)       |
 | `[x]`  | `libs/pipeline` lib generated (scraping, enrichment, geocoding services) | [04-data-pipeline.md](./04-data-pipeline.md) |
-| `[x]`  | AGENTS.md updated with GABAI project details                             | —                                            |
+| `[x]`  | AGENTS.md updated with GAVAI project details                             | —                                            |
 
 ---
 
@@ -218,7 +218,7 @@ AI-powered Automated Valuation Model for Philippine real estate.
 ## Module Map (NestJS)
 
 ```
-apps/gabai/nest/src/
+apps/gavai/nest/src/
 ├── common/
 │   ├── filters/
 │   │   └── global-exception.filter.ts  ← BaseExceptionFilter, error code mapping
@@ -257,7 +257,7 @@ apps/gabai/nest/src/
 ## Frontend Route Map (Next.js)
 
 ```
-apps/gabai/web/src/
+apps/gavai/web/src/
 ├── lib/
 │   ├── api.ts                      ← Axios instance + request/response interceptors
 │   └── auth.ts                     ← token storage, refresh logic

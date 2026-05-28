@@ -9,7 +9,7 @@ The AVM uses a **single XGBoost regression model** with property type as a one-h
 ## Feature Set
 
 ```python
-# apps/gabai/sidecar/src/sidecar/features.py
+# apps/gavai/sidecar/src/sidecar/features.py
 FEATURES = [
     # Physical
     'lot_area_sqm',
@@ -209,7 +209,7 @@ if __name__ == '__main__':
 ### `POST /infer`
 
 ```python
-# apps/gabai/sidecar/src/sidecar/main.py
+# apps/gavai/sidecar/src/sidecar/main.py
 from fastapi import FastAPI
 import joblib
 import numpy as np
@@ -393,7 +393,7 @@ Any `ready` or `archived` version can be promoted to `deployed`. The previously 
 The NestJS `ValuationService` assembles features from the `Property` record (or user input for on-demand valuations) and POSTs to the sidecar:
 
 ```typescript
-// apps/gabai/nest/src/modules/valuation/valuation.service.ts
+// apps/gavai/nest/src/modules/valuation/valuation.service.ts
 async getValuation(input: ValuationInput): Promise<ValuationResult> {
   const features = await this.assembleFeatures(input);
   const response = await this.httpService.post(`${ML_SIDECAR_URL}/infer`, features).toPromise();

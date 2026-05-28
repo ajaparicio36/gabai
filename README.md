@@ -1,8 +1,8 @@
-# GABAI
+# GAVAI
 
 AI-powered Automated Valuation Model for Philippine real estate.
 
-GABAI scrapes property listings, enriches them with government and location data, trains an XGBoost regression model, and provides instant property valuations with confidence bands via a Google Maps interface.
+GAVAI scrapes property listings, enriches them with government and location data, trains an XGBoost regression model, and provides instant property valuations with confidence bands via a Google Maps interface.
 
 **Current scope:** Hackathon demo — Metro Cebu.  
 **Tech stack:** NestJS 11 · Next.js 16 · Python 3.12 FastAPI · PostgreSQL/PostGIS · Redis · Prisma · XGBoost · BrightData · Gemini · Xendit
@@ -23,13 +23,13 @@ cp .env.example .env
 docker compose up -d db redis
 
 # Run migrations and seed
-pnpm nx run @gabai/platform:prisma-migrate
-pnpm nx run @gabai/platform:prisma-seed
+pnpm nx run @gavai/platform:prisma-migrate
+pnpm nx run @gavai/platform:prisma-seed
 
 # Start services
-pnpm nx serve @gabai/nest      # API → http://localhost:3000/api
-pnpm nx dev @gabai/web          # Web → http://localhost:4200
-pnpm nx serve @gabai/sidecar    # ML  → http://localhost:8000
+pnpm nx serve @gavai/nest      # API → http://localhost:3000/api
+pnpm nx dev @gavai/web          # Web → http://localhost:4200
+pnpm nx serve @gavai/sidecar    # ML  → http://localhost:8000
 ```
 
 ## Full Docker
@@ -43,7 +43,7 @@ docker compose up -d
 ## Project Structure
 
 ```
-apps/gabai/
+apps/gavai/
   nest/           — NestJS API server (HTTP + BullMQ workers)
   web/            — Next.js 16 frontend (App Router, Tailwind)
   sidecar/        — Python 3.12 FastAPI ML inference
@@ -78,13 +78,13 @@ See `docs/INDEX.md` for the full implementation tracker. Key docs:
 ## Commands
 
 ```bash
-pnpm nx build @gabai/nest           # Build NestJS
-pnpm nx build @gabai/web            # Build Next.js
-pnpm nx test @gabai/nest            # Run NestJS tests
-pnpm nx test @gabai/web             # Run Next.js tests
-pnpm nx lint @gabai/nest            # Lint NestJS
-pnpm nx typecheck @gabai/nest       # Type-check NestJS
-pnpm nx run @gabai/platform:prisma-studio  # Prisma Studio
+pnpm nx build @gavai/nest           # Build NestJS
+pnpm nx build @gavai/web            # Build Next.js
+pnpm nx test @gavai/nest            # Run NestJS tests
+pnpm nx test @gavai/web             # Run Next.js tests
+pnpm nx lint @gavai/nest            # Lint NestJS
+pnpm nx typecheck @gavai/nest       # Type-check NestJS
+pnpm nx run @gavai/platform:prisma-studio  # Prisma Studio
 ```
 
 ---

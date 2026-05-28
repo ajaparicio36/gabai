@@ -1,5 +1,5 @@
 {
-  "name": "@gabai/platform",
+  "name": "@gavai/platform",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/platform/src",
   "projectType": "library",

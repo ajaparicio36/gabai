@@ -63,7 +63,7 @@ model RefreshToken {
 model ApiKey {
   id          String    @id @default(cuid())
   keyHash     String    @unique // SHA-256 of the API key
-  keyPrefix   String    // First 8 chars for display: "gabai_sk_AbCd1234"
+  keyPrefix   String    // First 8 chars for display: "gavai_sk_AbCd1234"
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tier        String    @default("free") // "free" | "paid"
@@ -304,13 +304,13 @@ export class SpatialService {
 
 ```bash
 # Create a new migration after schema changes
-pnpm nx run @gabai/platform:prisma-migrate -- --name <migration_name>
+pnpm nx run @gavai/platform:prisma-migrate -- --name <migration_name>
 
 # Apply pending migrations
-pnpm nx run @gabai/platform:prisma-migrate -- --status
+pnpm nx run @gavai/platform:prisma-migrate -- --status
 
 # Seed the database
-pnpm nx run @gabai/platform:prisma-seed
+pnpm nx run @gavai/platform:prisma-seed
 ```
 
 Migrations that add PostGIS functionality must manually add `CREATE EXTENSION IF NOT EXISTS postgis;` as the first statement in `up()` and spatial index creation statements.

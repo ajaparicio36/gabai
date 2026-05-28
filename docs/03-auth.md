@@ -73,7 +73,7 @@ Every `/auth/refresh` call:
 This prevents refresh token reuse — if a revoked token is presented, **all tokens for that user are revoked** (detects token theft).
 
 ```typescript
-// apps/gabai/nest/src/modules/auth/auth.service.ts
+// apps/gavai/nest/src/modules/auth/auth.service.ts
 async refresh(oldTokenRaw: string) {
   const oldHash = createHash('sha256').update(oldTokenRaw).digest('hex');
   const stored = await this.authRepository.findRefreshToken(oldHash);
@@ -157,7 +157,7 @@ async runDiscover() { ... }
 
 ### ApiKeyGuard
 
-Validates an API key from the `Authorization: Bearer gabai_sk_...` header. Checks:
+Validates an API key from the `Authorization: Bearer gavai_sk_...` header. Checks:
 
 1. Key hash exists in DB
 2. Not revoked
@@ -195,7 +195,7 @@ export class ApiKeyGuard implements CanActivate {
 model ApiKey {
   id          String    @id @default(cuid())
   keyHash     String    @unique
-  keyPrefix   String    // "gabai_sk_" — prefix for display
+  keyPrefix   String    // "gavai_sk_" — prefix for display
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tier        String    @default("free")
@@ -216,14 +216,14 @@ POST   /auth/api-keys/:id/rotate — [JWT] revoke old, create new, return full k
 DELETE /auth/api-keys/:id        — [JWT] revoke key
 ```
 
-API key format: `gabai_sk_<32 random hex chars>`. The full key is returned **only once** at creation/rotation. The DB stores only the SHA-256 hash. The `keyPrefix` (first 12 chars) is stored for display in the UI.
+API key format: `gavai_sk_<32 random hex chars>`. The full key is returned **only once** at creation/rotation. The DB stores only the SHA-256 hash. The `keyPrefix` (first 12 chars) is stored for display in the UI.
 
 ### Rate Limiting Integration
 
 `ThrottlerModule` is configured with per-guard limits:
 
 ```typescript
-// apps/gabai/nest/src/app/app.module.ts
+// apps/gavai/nest/src/app/app.module.ts
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
@@ -287,7 +287,7 @@ Xendit sandbox uses test cards:
 Webhook URL must be publicly accessible for sandbox testing. Use ngrok or similar tunnel for local dev.
 
 ```typescript
-// apps/gabai/nest/src/modules/payment/payment.service.ts
+// apps/gavai/nest/src/modules/payment/payment.service.ts
 @Injectable()
 export class PaymentService {
   constructor(private readonly config: ConfigService) {}
@@ -297,10 +297,10 @@ export class PaymentService {
       secretKey: this.config.get('XENDIT_SECRET_KEY'),
     });
     const invoice = await xendit.Invoice.createInvoice({
-      externalId: `gabai_upgrade_${userId}_${Date.now()}`,
+      externalId: `gavai_upgrade_${userId}_${Date.now()}`,
       amount: 5000, // PHP 50.00 in centavos
       payerEmail: user.email,
-      description: 'GABAI Pro — 30 days of valuations and reports',
+      description: 'GAVAI Pro — 30 days of valuations and reports',
       successRedirectUrl: `${this.config.get('WEB_URL')}/dashboard?payment=success`,
     });
     return { invoiceUrl: invoice.invoiceUrl };
@@ -332,7 +332,7 @@ import * as crypto from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@gabai.dev';
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@gavai.dev';
   const adminPassword =
     process.env.ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex');
 
@@ -363,7 +363,7 @@ main()
 Run via:
 
 ```bash
-pnpm nx run @gabai/platform:prisma-seed
+pnpm nx run @gavai/platform:prisma-seed
 ```
 
 Or set `ADMIN_EMAIL` and `ADMIN_PASSWORD` env vars for deterministic seeding.

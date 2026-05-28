@@ -21,7 +21,7 @@ Discover (admin) → Review URLs → Queue selected
 **Backend:** Calls BrightData Discover API with a constructed query.
 
 ```typescript
-// apps/gabai/nest/src/modules/admin/discover.controller.ts
+// apps/gavai/nest/src/modules/admin/discover.controller.ts
 @Post('admin/discover')
 @UseGuards(JwtAuthGuard, AdminGuard)
 async runDiscover(@Body() dto: DiscoverDto) {
@@ -80,7 +80,7 @@ async runScrape() {
 ### BullMQ Worker
 
 ```typescript
-// apps/gabai/nest/src/modules/pipeline/scraping.worker.ts
+// apps/gavai/nest/src/modules/pipeline/scraping.worker.ts
 @Processor('scraping')
 export class ScrapingProcessor {
   @Process('scrape-url')

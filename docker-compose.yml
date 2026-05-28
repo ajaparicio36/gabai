@@ -8,12 +8,12 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-gabai}
+      POSTGRES_DB: ${POSTGRES_DB:-gavai}
     healthcheck:
       test:
         [
           'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-gabai}',
+          'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-gavai}',
         ]
       interval: 10s
       timeout: 5s
@@ -32,7 +32,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: apps/gabai/nest/Dockerfile
+      dockerfile: apps/gavai/nest/Dockerfile
     ports:
       - '3000:3000'
     depends_on:
@@ -43,7 +43,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-gabai}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-gavai}?schema=public
       REDIS_URL: redis://redis:6379
       ML_SIDECAR_URL: http://ml:8000
       NODE_ENV: ${NODE_ENV:-development}
@@ -52,7 +52,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/gabai/web/Dockerfile
+      dockerfile: apps/gavai/web/Dockerfile
     ports:
       - '4200:4200'
     depends_on:
@@ -65,7 +65,7 @@ services:
   ml:
     build:
       context: .
-      dockerfile: apps/gabai/sidecar/Dockerfile
+      dockerfile: apps/gavai/sidecar/Dockerfile
     ports:
       - '8000:8000'
     depends_on:
@@ -73,7 +73,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-gabai}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-gavai}?schema=public
       NESTJS_INTERNAL_URL: http://api:3000
 
 volumes:

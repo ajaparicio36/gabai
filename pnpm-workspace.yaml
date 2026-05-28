@@ -1,6 +1,6 @@
 packages:
   - 'packages/*'
-  - 'apps/gabai/*'
+  - 'apps/gavai/*'
   - 'libs/*'
 allowBuilds:
   '@nestjs/core': true

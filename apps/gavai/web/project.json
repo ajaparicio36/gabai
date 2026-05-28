@@ -1,0 +1,14 @@
+{
+  "name": "@gavai/web",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/gavai/web",
+        "command": "next dev"
+      },
+      "dependsOn": ["build-deps"]
+    }
+  }
+}

@@ -50,7 +50,7 @@ Every endpoint returns:
 
 ### Source location
 
-The shared DTOs and error codes live in `@gabai/platform` (`libs/platform/`), **not** a separate `shared-types` lib:
+The shared DTOs and error codes live in `@gavai/platform` (`libs/platform/`), **not** a separate `shared-types` lib:
 
 ```typescript
 // libs/platform/src/lib/api-response.dto.ts
@@ -94,7 +94,7 @@ The Axios interceptor is aware of the envelope — it accesses `response.data.da
 | Status | Method   | Path                           | Description                               |
 | ------ | -------- | ------------------------------ | ----------------------------------------- |
 | `[x]`  | `GET`    | `/auth/me`                     | Current user profile                      |
-| `[x]`  | `POST`   | `/auth/api-keys`               | Generate new API key (`gabai_sk_<32hex>`) |
+| `[x]`  | `POST`   | `/auth/api-keys`               | Generate new API key (`gavai_sk_<32hex>`) |
 | `[x]`  | `GET`    | `/auth/api-keys`               | List user's API keys (prefix only)        |
 | `[x]`  | `POST`   | `/auth/api-keys/:id/rotate`    | Rotate API key (returns new raw key)      |
 | `[x]`  | `DELETE` | `/auth/api-keys/:id`           | Revoke API key                            |
@@ -172,7 +172,7 @@ Route → JwtAuthGuard → AdminGuard (if admin)
 
 - **`JwtAuthGuard`** (custom, no Passport): Extracts `Bearer <token>` from Authorization header, verifies with `JwtService.verify<T>()`, attaches payload to `request.user`. Throws `AUTH.UNAUTHORIZED` or `AUTH.TOKEN_EXPIRED`.
 - **`AdminGuard`** (custom): Checks `request.user.role === 'admin'`. Expects `JwtAuthGuard` to have run first. Throws `AUTH.FORBIDDEN`.
-- **`ApiKeyGuard`** (custom, deferred): Checks `X-API-Key` header first, falls back to `Authorization: Bearer gabai_sk_...`. Looks up key hash in DB. Checks `revokedAt`. Attaches `request.apiKey` with the DB record. Throws `AUTH.API_KEY_INVALID` / `AUTH.API_KEY_REVOKED`.
+- **`ApiKeyGuard`** (custom, deferred): Checks `X-API-Key` header first, falls back to `Authorization: Bearer gavai_sk_...`. Looks up key hash in DB. Checks `revokedAt`. Attaches `request.apiKey` with the DB record. Throws `AUTH.API_KEY_INVALID` / `AUTH.API_KEY_REVOKED`.
 
 **(Note: `ApiKeyGuard` currently doesn't hash the incoming key before DB lookup — needs fixing.)**
 
@@ -227,14 +227,14 @@ ThrottlerModule.forRoot([
 ### Current state
 
 - All DTOs use `class-validator` decorators (`@IsEmail`, `@IsString`, `@MinLength`, etc.).
-- DTOs live **in the NestJS app module** where they are used (`apps/gabai/nest/src/modules/<feature>/dto/`).
-- The `@gabai/shared-types` library does **not exist yet**. There are no Zod schemas in the codebase.
+- DTOs live **in the NestJS app module** where they are used (`apps/gavai/nest/src/modules/<feature>/dto/`).
+- The `@gavai/shared-types` library does **not exist yet**. There are no Zod schemas in the codebase.
 - Auth DTOs built: `SignupDto`, `SignupResponseDto`, `LoginDto`, `LoginResponseDto`, `RefreshDto`
 
 ### Pattern
 
 ```typescript
-// apps/gabai/nest/src/modules/auth/dto/signup.dto.ts
+// apps/gavai/nest/src/modules/auth/dto/signup.dto.ts
 export class SignupDto {
   @IsEmail()
   email!: string;
@@ -253,7 +253,7 @@ export class SignupResponseDto {
 ### Planned DTOs (valuation example)
 
 ```typescript
-// Planned location: apps/gabai/nest/src/modules/valuation/dto/
+// Planned location: apps/gavai/nest/src/modules/valuation/dto/
 export class ValuationRequestDto {
   @IsNumber()
   @Min(-90)
@@ -351,7 +351,7 @@ throw new UnauthorizedException({
 Only the following NestJS modules exist:
 
 ```
-apps/gabai/nest/src/
+apps/gavai/nest/src/
 ├── main.ts
 ├── common/
 │   ├── filters/global-exception.filter.ts    ← [x]

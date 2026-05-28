@@ -2,7 +2,7 @@
 
 ## Overview
 
-GABAI runs on Docker Compose for deployment and CI, but supports local development without Docker. The stack includes PostgreSQL + PostGIS, Redis for BullMQ and caching, and per-project Dockerfiles for each service.
+GAVAI runs on Docker Compose for deployment and CI, but supports local development without Docker. The stack includes PostgreSQL + PostGIS, Redis for BullMQ and caching, and per-project Dockerfiles for each service.
 
 ---
 
@@ -16,11 +16,11 @@ services:
   api:
     build:
       context: .
-      dockerfile: apps/gabai/nest/Dockerfile
+      dockerfile: apps/gavai/nest/Dockerfile
     ports:
       - '3000:3000'
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gabai
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gavai
       - REDIS_URL=redis://redis:6379
       - ML_SIDECAR_URL=http://ml:8000
       - GOOGLE_MAPS_KEY=${GOOGLE_MAPS_KEY}
@@ -42,19 +42,19 @@ services:
   ml:
     build:
       context: .
-      dockerfile: apps/gabai/sidecar/Dockerfile
+      dockerfile: apps/gavai/sidecar/Dockerfile
     ports:
       - '8000:8000'
     volumes:
       - ./models:/app/models
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gabai
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gavai
       - NESTJS_INTERNAL_URL=http://api:3000
 
   web:
     build:
       context: .
-      dockerfile: apps/gabai/web/Dockerfile
+      dockerfile: apps/gavai/web/Dockerfile
     ports:
       - '4200:4200'
     environment:
@@ -66,7 +66,7 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_DB: gabai
+      POSTGRES_DB: gavai
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
@@ -98,7 +98,7 @@ volumes:
 
 ## Per-Project Dockerfiles
 
-### NestJS API (`apps/gabai/nest/Dockerfile`)
+### NestJS API (`apps/gavai/nest/Dockerfile`)
 
 ```dockerfile
 FROM node:22-alpine AS base
@@ -108,20 +108,20 @@ WORKDIR /app
 FROM base AS builder
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY package.json tsconfig.base.json tsconfig.json nx.json ./
-COPY apps/gabai/nest/package.json apps/gabai/nest/
+COPY apps/gavai/nest/package.json apps/gavai/nest/
 COPY libs/ libs/
 RUN pnpm install --frozen-lockfile
-COPY apps/gabai/nest/ apps/gabai/nest/
-RUN pnpm nx build @gabai/nest
+COPY apps/gavai/nest/ apps/gavai/nest/
+RUN pnpm nx build @gavai/nest
 
 FROM base AS runner
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist/apps/gabai/nest ./dist
+COPY --from=builder /app/dist/apps/gavai/nest ./dist
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
 ```
 
-### Next.js Web (`apps/gabai/web/Dockerfile`)
+### Next.js Web (`apps/gavai/web/Dockerfile`)
 
 ```dockerfile
 FROM node:22-alpine AS base
@@ -131,24 +131,24 @@ WORKDIR /app
 FROM base AS builder
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY package.json tsconfig.base.json tsconfig.json nx.json ./
-COPY apps/gabai/web/package.json apps/gabai/web/
+COPY apps/gavai/web/package.json apps/gavai/web/
 COPY libs/ libs/
 RUN pnpm install --frozen-lockfile
-COPY apps/gabai/web/ apps/gabai/web/
+COPY apps/gavai/web/ apps/gavai/web/
 ARG NEXT_PUBLIC_GOOGLE_MAPS_KEY
 ENV NEXT_PUBLIC_GOOGLE_MAPS_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_KEY
-RUN pnpm nx build @gabai/web
+RUN pnpm nx build @gavai/web
 
 FROM base AS runner
-COPY --from=builder /app/apps/gabai/web/.next ./.next
-COPY --from=builder /app/apps/gabai/web/public ./public
+COPY --from=builder /app/apps/gavai/web/.next ./.next
+COPY --from=builder /app/apps/gavai/web/public ./public
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/gabai/web/package.json ./
+COPY --from=builder /app/apps/gavai/web/package.json ./
 EXPOSE 4200
 CMD ["pnpm", "start"]
 ```
 
-### Python ML Sidecar (`apps/gabai/sidecar/Dockerfile`)
+### Python ML Sidecar (`apps/gavai/sidecar/Dockerfile`)
 
 ```dockerfile
 FROM python:3.12-slim
@@ -156,10 +156,10 @@ FROM python:3.12-slim
 WORKDIR /app
 
 RUN pip install --no-cache-dir uv
-COPY apps/gabai/sidecar/pyproject.toml apps/gabai/sidecar/.python-version ./
+COPY apps/gavai/sidecar/pyproject.toml apps/gavai/sidecar/.python-version ./
 RUN uv sync --frozen
 
-COPY apps/gabai/sidecar/src/ ./src/
+COPY apps/gavai/sidecar/src/ ./src/
 COPY models/ ./models/
 
 EXPOSE 8000
@@ -197,28 +197,28 @@ docker compose up -d db redis
 # Redis: redis-server
 
 # 4. Run migrations
-pnpm nx run @gabai/platform:prisma-migrate
+pnpm nx run @gavai/platform:prisma-migrate
 
 # 5. Seed the database
-pnpm nx run @gabai/platform:prisma-seed
+pnpm nx run @gavai/platform:prisma-seed
 
 # 6. Start services
-pnpm nx serve @gabai/nest     # NestJS API → http://localhost:3000/api
-pnpm nx dev @gabai/web         # Next.js → http://localhost:4200
-pnpm nx serve @gabai/sidecar   # Python ML → http://localhost:8000
+pnpm nx serve @gavai/nest     # NestJS API → http://localhost:3000/api
+pnpm nx dev @gavai/web         # Next.js → http://localhost:4200
+pnpm nx serve @gavai/sidecar   # Python ML → http://localhost:8000
 ```
 
 ### Commands
 
 ```bash
-pnpm nx build @gabai/nest       # Build NestJS
-pnpm nx build @gabai/web        # Build Next.js
-pnpm nx test @gabai/nest        # Run NestJS tests
-pnpm nx test @gabai/web         # Run Next.js tests
-pnpm nx lint @gabai/nest        # Lint NestJS
-pnpm nx lint @gabai/web         # Lint Next.js
-pnpm nx typecheck @gabai/nest   # Type-check NestJS
-pnpm nx typecheck @gabai/web    # Type-check Next.js
+pnpm nx build @gavai/nest       # Build NestJS
+pnpm nx build @gavai/web        # Build Next.js
+pnpm nx test @gavai/nest        # Run NestJS tests
+pnpm nx test @gavai/web         # Run Next.js tests
+pnpm nx lint @gavai/nest        # Lint NestJS
+pnpm nx lint @gavai/web         # Lint Next.js
+pnpm nx typecheck @gavai/nest   # Type-check NestJS
+pnpm nx typecheck @gavai/web    # Type-check Next.js
 ```
 
 ---
@@ -234,7 +234,7 @@ Three queues, all backed by Redis:
 | `heatmap-regen` | Scheduled tile regeneration                 | 1           | 7d        |
 
 ```typescript
-// apps/gabai/nest/src/modules/pipeline/pipeline.module.ts
+// apps/gavai/nest/src/modules/pipeline/pipeline.module.ts
 import { BullModule } from '@nestjs/bullmq';
 
 @Module({
@@ -257,7 +257,7 @@ export class PipelineModule {}
 # .env.example
 
 # Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/gabai
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/gavai
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -275,7 +275,7 @@ JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=7d
 
 # Admin Seed
-ADMIN_EMAIL=admin@gabai.dev
+ADMIN_EMAIL=admin@gavai.dev
 ADMIN_PASSWORD=change-me
 
 # Google Maps
@@ -316,7 +316,7 @@ jobs:
       postgres:
         image: postgis/postgis:16-3.4
         env:
-          POSTGRES_DB: gabai
+          POSTGRES_DB: gavai
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -335,11 +335,11 @@ jobs:
           node-version: 22
       - run: corepack enable && pnpm install --frozen-lockfile
       - run: pnpm nx format:check
-      - run: pnpm nx lint @gabai/nest @gabai/web
-      - run: pnpm nx typecheck @gabai/nest @gabai/web
-      - run: pnpm nx build @gabai/nest @gabai/web
-      - run: pnpm nx test @gabai/nest @gabai/web
+      - run: pnpm nx lint @gavai/nest @gavai/web
+      - run: pnpm nx typecheck @gavai/nest @gavai/web
+      - run: pnpm nx build @gavai/nest @gavai/web
+      - run: pnpm nx test @gavai/nest @gavai/web
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/gabai
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/gavai
           REDIS_URL: redis://localhost:6379
 ```

@@ -40,7 +40,7 @@ Next.js 16 (App Router) with Tailwind CSS. The client uses Axios for HTTP with a
 
 | Route          | File               | Status | Description                            |
 | -------------- | ------------------ | ------ | -------------------------------------- |
-| `/`            | `src/app/page.tsx` | `[ ]`  | Still Nx boilerplate, no GABAI content |
+| `/`            | `src/app/page.tsx` | `[ ]`  | Still Nx boilerplate, no GAVAI content |
 | `/auth/login`  | —                  | `[ ]`  | LoginForm                              |
 | `/auth/signup` | —                  | `[ ]`  | SignupForm                             |
 | `/map`         | —                  | `[ ]`  | Main map with 3-view toggle            |
@@ -225,7 +225,7 @@ All views share a single `MapContainer` component. A top-bar toggle switches mod
 ## Actual Directory Structure
 
 ```
-apps/gabai/web/src/
+apps/gavai/web/src/
 ├── app/
 │   ├── layout.tsx                       ← [x] No providers wired yet
 │   ├── page.tsx                         ← [x] Nx boilerplate
@@ -249,7 +249,7 @@ apps/gabai/web/src/
 
 ## Dependencies
 
-From `apps/gabai/web/package.json`:
+From `apps/gavai/web/package.json`:
 
 | Package                          | Status    | Purpose                 |
 | -------------------------------- | --------- | ----------------------- |

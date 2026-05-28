@@ -1,5 +1,5 @@
 """
-BIR Zonal Values Pipeline for GABAI
+BIR Zonal Values Pipeline for GAVAI
 Extracts street/subdivision-level zonal values from BIR RDO PDFs.
 Outputs JSON files per RDO for import into the ZonalValue table.
 """
