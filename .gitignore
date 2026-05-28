@@ -49,6 +49,11 @@ Thumbs.db
 .nx/self-healing
 test-output
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
 # Next.js
 .next
 out

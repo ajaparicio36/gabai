@@ -22,6 +22,9 @@
   ],
   "references": [
     {
+      "path": "../../../libs/pipeline/tsconfig.lib.json"
+    },
+    {
       "path": "../../../libs/platform/tsconfig.lib.json"
     }
   ]

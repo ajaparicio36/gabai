@@ -6,6 +6,9 @@ import { PlatformModule } from '@gabai/platform';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '../modules/auth/auth.module';
+import { PipelineModule } from '../modules/pipeline/pipeline.module';
+import { ValuationModule } from '../modules/valuation/valuation.module';
+import { AdminModule } from '../modules/admin/admin.module';
 import { validateEnv } from '../config/env.validation';
 
 @Module({
@@ -22,6 +25,9 @@ import { validateEnv } from '../config/env.validation';
     ]),
     PlatformModule,
     AuthModule,
+    PipelineModule,
+    ValuationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

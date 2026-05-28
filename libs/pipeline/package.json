@@ -1,7 +1,8 @@
 {
-  "name": "@gabai/platform",
+  "name": "@gabai/pipeline",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -12,15 +13,8 @@
     },
     "./package.json": "./package.json"
   },
-  "dependencies": {
-    "@nestjs/swagger": "^11.4.4",
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
-    "pg": "^8.21.0"
+  "nx": {
+    "name": "pipeline"
   },
-  "devDependencies": {
-    "dotenv": "^17.4.2",
-    "prisma": "^7.8.0",
-    "tsx": "^4.22.3"
-  }
+  "dependencies": {}
 }
