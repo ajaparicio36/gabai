@@ -1,0 +1,13 @@
+{
+  "name": "@gabai/web",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "next dev"
+      },
+      "dependsOn": ["build-deps"]
+    }
+  }
+}
