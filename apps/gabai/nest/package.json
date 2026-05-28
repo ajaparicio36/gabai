@@ -55,6 +55,27 @@
         ],
         "executor": "nx:noop"
       },
+      "prisma-migrate-dev": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "libs/platform",
+          "command": "prisma migrate dev"
+        }
+      },
+      "prisma-migrate-deploy": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "libs/platform",
+          "command": "prisma migrate deploy"
+        }
+      },
+      "prisma-migrate-reset": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "libs/platform",
+          "command": "prisma migrate reset --force"
+        }
+      },
       "serve": {
         "continuous": true,
         "executor": "@nx/js:node",

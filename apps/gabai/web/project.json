@@ -5,6 +5,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
+        "cwd": "apps/gabai/web",
         "command": "next dev"
       },
       "dependsOn": ["build-deps"]
