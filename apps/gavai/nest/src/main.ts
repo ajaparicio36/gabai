@@ -30,7 +30,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   app.enableCors({
-    origin: ['http://localhost:4200'],
+    origin: process.env.WEB_URL || 'http://localhost:4200',
     credentials: true,
   });
 
