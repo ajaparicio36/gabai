@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 WORKDIR /app
-COPY apps/gavai/sidecar/pyproject.toml apps/gavai/sidecar/uv.lock ./
+COPY apps/gavai/sidecar/pyproject.toml apps/gavai/sidecar/uv.lock apps/gavai/sidecar/README.md ./
 RUN mkdir -p src/sidecar && touch src/sidecar/__init__.py
 RUN pip install uv && uv sync --frozen --no-dev
 COPY apps/gavai/sidecar/ .
