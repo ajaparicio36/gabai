@@ -77,6 +77,7 @@ export class ValuationRepository {
   async updateModelVersion(
     id: string,
     data: {
+      version?: string;
       status?: string;
       mape?: number;
       trainingRecords?: number;
