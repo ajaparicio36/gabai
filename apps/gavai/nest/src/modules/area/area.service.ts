@@ -9,6 +9,10 @@ import {
   type ArticleContent,
   type ChatMessage,
 } from '../pipeline/services/aimlapi-extraction.service';
+import {
+  ArticleCacheService,
+  type CachedArticleSet,
+} from '../pipeline/services/article-cache.service';
 
 export interface AreaIntelligenceResult {
   areaName: string;
@@ -28,6 +32,7 @@ export class AreaService {
     private readonly aimlapiService: AimlapiExtractionService,
     private readonly brightdataService: BrightDataService,
     private readonly googleMapsService: GoogleMapsService,
+    private readonly articleCacheService: ArticleCacheService,
   ) {}
 
   async getIntelligence(
@@ -170,62 +175,82 @@ export class AreaService {
       barangay ? `"${barangay}"` : ''
     } 2023 OR 2024 OR 2025`;
 
+    // Check in-process article cache first (populated by YieldScoreService if
+    // it ran first for the same lat/lng within the last 5 minutes).
+    const cachedSet: CachedArticleSet | null =
+      this.articleCacheService.get(query);
+
     let articles: { title: string; url: string; domain: string }[] = [];
+    let validArticles: { url: string; title: string; markdown: string }[] = [];
 
-    try {
-      const discoverResult = await this.brightdataService.discover({
-        query,
-        limit: 10,
-      });
+    if (cachedSet) {
+      articles = cachedSet.articles;
+      validArticles = cachedSet.contents;
+    } else {
+      try {
+        const discoverResult = await this.brightdataService.discover({
+          query,
+          limit: 10,
+        });
 
-      if (discoverResult.urls && discoverResult.urls.length > 0) {
-        articles = discoverResult.urls.slice(0, 6).map((u: string) => ({
-          title: u,
-          url: u,
-          domain: this.extractDomain(u),
-        }));
+        if (discoverResult.urls && discoverResult.urls.length > 0) {
+          articles = discoverResult.urls.slice(0, 6).map((u: string) => ({
+            title: u,
+            url: u,
+            domain: this.extractDomain(u),
+          }));
+        }
+      } catch {
+        // If discover fails, proceed with empty articles
       }
-    } catch {
-      // If discover fails, proceed with empty articles
+
+      if (articles.length > 0) {
+        const articleContents = await Promise.allSettled(
+          articles.map(async (a) => {
+            try {
+              const markdown = await this.brightdataService.scrapeAsMarkdown(
+                a.url,
+              );
+              return { url: a.url, title: a.title, markdown: markdown ?? '' };
+            } catch {
+              return null;
+            }
+          }),
+        );
+
+        validArticles = articleContents
+          .filter(
+            (
+              r,
+            ): r is PromiseFulfilledResult<{
+              url: string;
+              title: string;
+              markdown: string;
+            }> =>
+              r.status === 'fulfilled' &&
+              r.value !== null &&
+              // Filter out scrapes that returned empty or near-empty content
+              r.value.markdown.length >= 200,
+          )
+          .map((r) => r.value);
+
+        // Populate the cache so YieldScoreService can reuse these results.
+        this.articleCacheService.set(query, {
+          articles,
+          contents: validArticles,
+        });
+      }
     }
 
     let bulletPoints: string[] = [];
-    let validArticles: { url: string; title: string; markdown: string }[] = [];
 
-    if (articles.length > 0) {
-      const articleContents = await Promise.allSettled(
-        articles.map(async (a) => {
-          try {
-            const markdown = await this.brightdataService.scrapeAsMarkdown(
-              a.url,
-            );
-            return { url: a.url, title: a.title, markdown: markdown ?? '' };
-          } catch {
-            return null;
-          }
-        }),
-      );
-
-      validArticles = articleContents
-        .filter(
-          (
-            r,
-          ): r is PromiseFulfilledResult<{
-            url: string;
-            title: string;
-            markdown: string;
-          }> => r.status === 'fulfilled' && r.value !== null,
-        )
-        .map((r) => r.value);
-
-      if (validArticles.length > 0) {
-        try {
-          bulletPoints =
-            await this.aimlapiService.summarizeArticles(validArticles);
-        } catch {
-          // Return raw article titles if summarization fails
-          bulletPoints = validArticles.map((a, i) => `[${i + 1}] ${a.title}`);
-        }
+    if (validArticles.length > 0) {
+      try {
+        bulletPoints =
+          await this.aimlapiService.summarizeArticles(validArticles);
+      } catch {
+        // Return raw article titles if summarization fails
+        bulletPoints = validArticles.map((a, i) => `[${i + 1}] ${a.title}`);
       }
     }
 

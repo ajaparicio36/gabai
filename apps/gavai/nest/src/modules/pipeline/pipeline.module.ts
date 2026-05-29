@@ -9,6 +9,7 @@ import { BrightDataService } from './services/brightdata.service';
 import { GoogleMapsService } from './services/google-maps.service';
 import { ZonalLookupService } from './services/zonal-lookup.service';
 import { AimlapiExtractionService } from './services/aimlapi-extraction.service';
+import { ArticleCacheService } from './services/article-cache.service';
 import { ScrapingProcessor } from './scraping.processor';
 import { NormalizationProcessor } from './normalization.processor';
 import { EnrichmentProcessor } from './enrichment.processor';
@@ -33,6 +34,7 @@ import { CrawlingProcessor } from './crawling.processor';
     GoogleMapsService,
     ZonalLookupService,
     AimlapiExtractionService,
+    ArticleCacheService,
     ScrapingProcessor,
     NormalizationProcessor,
     EnrichmentProcessor,
@@ -45,6 +47,7 @@ import { CrawlingProcessor } from './crawling.processor';
     GoogleMapsService,
     ZonalLookupService,
     AimlapiExtractionService,
+    ArticleCacheService,
   ],
 })
 export class PipelineModule {}

@@ -494,14 +494,24 @@ ${articleTexts}`;
     const content = await this.chatCompletion(prompt, {
       temperature: 0.2,
       maxTokens: 1024,
+      timeoutMs: 60_000,
     });
     if (!content) return [];
+
+    this.logger.debug(
+      `summarizeArticles raw response (${articles.length} articles): ${content.slice(0, 500)}`,
+    );
 
     return content
       .split('\n')
       .map((line) => line.trim())
-      .filter((line) => line.startsWith('-'))
-      .map((line) => line.slice(1).trim())
+      .filter((line) => /^[-*•]/.test(line) || /^\d+[.)\s]/.test(line))
+      .map((line) =>
+        line
+          .replace(/^[-*•]\s*/, '')
+          .replace(/^\d+[.)\s]+/, '')
+          .trim(),
+      )
       .filter((line) => line.length > 0);
   }
 
@@ -627,7 +637,7 @@ ${articleTexts}`;
 
   private async chatCompletion(
     prompt: string,
-    options: { temperature: number; maxTokens: number },
+    options: { temperature: number; maxTokens: number; timeoutMs?: number },
   ): Promise<string | null> {
     const apiKey = this.configService.get<string>('AIML_API_KEY');
     if (!apiKey) {
@@ -636,6 +646,7 @@ ${articleTexts}`;
     }
 
     const model = 'openai/gpt-5-nano-2025-08-07';
+    const timeoutMs = options.timeoutMs ?? 30_000;
 
     try {
       const response = await fetch(this.endpoint, {
@@ -650,7 +661,7 @@ ${articleTexts}`;
           max_tokens: options.maxTokens,
           messages: [{ role: 'user', content: prompt }],
         }),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(timeoutMs),
       });
 
       if (!response.ok) {
