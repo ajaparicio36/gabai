@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/gavai/nest/package.json apps/gavai/nest/
 COPY libs/platform/package.json libs/platform/
+COPY libs/pipeline/package.json libs/pipeline/
 COPY libs/platform/prisma/schema.prisma libs/platform/prisma/
 RUN node -e "const p=require('./package.json'); delete p.scripts.prepare; require('fs').writeFileSync('./package.json', JSON.stringify(p,null,2))" \
   && pnpm install --frozen-lockfile --prod \
