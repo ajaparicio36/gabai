@@ -95,23 +95,6 @@ export interface AreaIntelligenceResponse {
   stale: boolean;
 }
 
-export interface AreaChatRequest {
-  lat: number;
-  lng: number;
-  message: string;
-  history?: ChatMessage[];
-}
-
-export interface AreaChatResponse {
-  reply: string;
-  sources: { title: string; url: string; domain: string }[];
-}
-
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
 export interface ReportResponse {
   id: string;
   valuationId: string;

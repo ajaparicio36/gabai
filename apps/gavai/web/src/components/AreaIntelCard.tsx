@@ -1,8 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
 
 interface Source {
   title: string;
@@ -16,7 +14,6 @@ interface AreaIntelCardProps {
   sources: Source[];
   lastUpdated: string;
   stale: boolean;
-  onChatOpen?: () => void;
 }
 
 export function AreaIntelCard({
@@ -25,7 +22,6 @@ export function AreaIntelCard({
   sources,
   lastUpdated,
   stale,
-  onChatOpen,
 }: AreaIntelCardProps): React.ReactNode {
   return (
     <Card>
@@ -76,18 +72,6 @@ export function AreaIntelCard({
             ))}
           </div>
         </div>
-
-        {onChatOpen && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={onChatOpen}
-          >
-            <Sparkles className="mr-1 h-3 w-3" />
-            Summarize with AI
-          </Button>
-        )}
       </CardContent>
     </Card>
   );
