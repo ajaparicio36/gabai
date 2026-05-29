@@ -4,13 +4,13 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/gavai/nest/package.json apps/gavai/nest/
 COPY libs/platform/package.json libs/platform/
-RUN pnpm install --frozen-lockfile --prod
+RUN HUSKY=0 pnpm install --frozen-lockfile --prod
 
 FROM node:22-alpine AS build
 RUN corepack enable
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile
+RUN HUSKY=0 pnpm install --frozen-lockfile
 RUN pnpm nx build @gavai/nest
 
 FROM node:22-alpine AS prod
