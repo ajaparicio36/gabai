@@ -59,4 +59,10 @@ __pycache__/
 out
 .env
 apps/gavai/web/next-env.d.ts
-apps/gavai/web/next-env.d.ts
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example

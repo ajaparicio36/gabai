@@ -1,0 +1,8 @@
+gcp_project_id     = "gavai-prod"
+region             = "asia-southeast1"
+zone               = "asia-southeast1-a"
+domain             = ""
+ssh_user           = "gavai"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+git_repo_url       = "https://github.com/ajaparicio36/gabai.git"
+git_branch         = "main"
