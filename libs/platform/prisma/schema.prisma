@@ -48,42 +48,49 @@ model ApiKey {
 }
 
 model Property {
-  id                 String     @id @default(cuid())
-  sourceUrl          String?
-  scrapedAt          DateTime
-  rawTitle           String?
-  addressRaw         String?
-  googlePlaceId      String?
-  city               String?
-  barangay           String?
-  lat                Float?
-  lng                Float?
-  propertyType       String
-  listingType        String     @default("standard")
-  lotAreaSqm         Float?
-  floorAreaSqm       Float?
-  bedrooms           Int?
-  bathrooms          Int?
-  buildingAgeYears   Int?
-  developer          String?
-  askingPricePhp     Float
-  pricePerSqmPhp     Float?
-  listingDate        DateTime?
-  zonalValuePhp      Float?
-  landClassification String?
-  proximityScores    Json?
-  phivolcsRisk       Float?
-  floodRisk          Float?
-  crepTier           String?
-  crepPhp            Float?
-  userSubmitted      Boolean    @default(false)
-  approved           Boolean    @default(false)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-  valuations         Valuation[]
+  id                           String     @id @default(cuid())
+  sourceRecordId               String?    @unique
+  sourceRecord                 PendingTrainingRecord? @relation(fields: [sourceRecordId], references: [id])
+  sourceUrl                    String?
+  scrapedAt                    DateTime
+  rawTitle                     String?
+  addressRaw                   String?
+  googlePlaceId                String?
+  city                         String?
+  province                     String?
+  region                       String?
+  barangay                     String?
+  lat                          Float?
+  lng                          Float?
+  propertyType                 String
+  listingType                  String     @default("standard")
+  lotAreaSqm                   Float?
+  floorAreaSqm                 Float?
+  bedrooms                     Int?
+  bathrooms                    Int?
+  buildingAgeYears             Int?
+  developer                    String?
+  askingPricePhp               Float
+  pricePerSqmPhp               Float?
+  listingDate                  DateTime?
+  zonalValuePhp                Float?
+  landClassification           String?
+  proximityScores              Json?
+  phivolcsRisk                 Float?
+  floodRisk                    Float?
+  crepTier                     String?
+  crepPhp                      Float?
+  normalizationConfidenceScore Float?
+  normalizationIssues          Json?
+  userSubmitted                Boolean    @default(false)
+  approved                     Boolean    @default(false)
+  createdAt                    DateTime   @default(now())
+  updatedAt                    DateTime   @updatedAt
+  valuations                   Valuation[]
 
   @@index([lat, lng])
   @@index([barangay, city])
+  @@index([province])
   @@index([propertyType])
   @@index([googlePlaceId])
   @@index([listingType])
@@ -159,25 +166,45 @@ model ScrapingTarget {
 }
 
 model PendingTrainingRecord {
-  id             String    @id @default(cuid())
-  sourceUrl      String?
-  status         String
-  title          String?
-  addressRaw     String?
-  city           String?
-  barangay       String?
-  propertyType   String?
-  lotAreaSqm     Float?
-  floorAreaSqm   Float?
-  bedrooms       Int?
-  bathrooms      Int?
-  askingPricePhp Float?
-  pricePerSqmPhp Float?
-  listingDate    DateTime?
-  developer      String?
-  flagged        Boolean   @default(false)
-  flagReason     String?
-  createdAt      DateTime  @default(now())
+  id                  String    @id @default(cuid())
+  sourceUrl           String?
+  sourceName          String?
+  status              String
+  title               String?
+  description         String?
+  addressRaw          String?
+  locationRaw         String?
+  city                String?
+  province            String?
+  region              String?
+  barangay            String?
+  propertyType        String?
+  lotAreaSqm          Float?
+  floorAreaSqm        Float?
+  bedrooms            Int?
+  bathrooms           Int?
+  askingPricePhp      Float?
+  pricePerSqmPhp      Float?
+  listingDate         DateTime?
+  developer           String?
+  rawTextReference    String?
+  aiExtraction        Json?
+  fieldConfidence     Json?
+  confidenceScore     Float?
+  locationStatus      String?
+  normalizationStatus String    @default("pending")
+  normalizationIssues Json?
+  normalizedAt        DateTime?
+  trainingEligible    Boolean   @default(false)
+  flagged             Boolean   @default(false)
+  flagReason          String?
+  createdAt           DateTime  @default(now())
+  property            Property?
+
+  @@index([status])
+  @@index([normalizationStatus])
+  @@index([trainingEligible])
+  @@index([city, province])
 }
 
 model GovernmentReference {
@@ -220,6 +247,7 @@ model ModelVersion {
   mape            Float?
   trainingRecords Int?
   jobId           String?
+  errorLog        String?
   deployedAt      DateTime?
   createdAt       DateTime  @default(now())
 }

@@ -28,8 +28,15 @@ export class EnrichmentProcessor {
     const record = await this.pipelineRepository.findRecordById(
       job.data.recordId,
     );
-    if (!record || record.status !== 'approved') {
-      return { error: 'Record not found or not approved' };
+    if (
+      !record ||
+      record.status !== 'approved' ||
+      record.normalizationStatus !== 'normalized' ||
+      !record.trainingEligible
+    ) {
+      return {
+        error: 'Record not normalized, training-eligible, and approved',
+      };
     }
 
     try {
@@ -92,12 +99,15 @@ export class EnrichmentProcessor {
       };
 
       const property = await this.pipelineRepository.createProperty({
+        sourceRecordId: record.id,
         sourceUrl: record.sourceUrl ?? undefined,
         scrapedAt: new Date(),
         rawTitle: record.title ?? undefined,
         addressRaw: record.addressRaw ?? undefined,
         googlePlaceId: geoResult.googlePlaceId,
         city: record.city ?? undefined,
+        province: record.province ?? undefined,
+        region: record.region ?? undefined,
         barangay: record.barangay ?? undefined,
         lat: geoResult.lat,
         lng: geoResult.lng,
@@ -121,6 +131,9 @@ export class EnrichmentProcessor {
         floodRisk: govRef?.floodRisk ?? undefined,
         crepTier: crepResult.tier,
         crepPhp: crepResult.crepPhp,
+        normalizationConfidenceScore: record.confidenceScore ?? undefined,
+        normalizationIssues:
+          (record.normalizationIssues as unknown[]) ?? undefined,
         approved: true,
       });
 

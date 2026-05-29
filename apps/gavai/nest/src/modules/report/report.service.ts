@@ -10,6 +10,8 @@ export interface ReportResult {
   pdfUrl: string | null;
   verificationHash: string;
   createdAt: Date;
+  normalizedListings: unknown[];
+  warnings: string[];
 }
 
 @Injectable()
@@ -30,16 +32,36 @@ export class ReportService {
       });
     }
 
+    const normalizedListings =
+      valuation.inputLat != null && valuation.inputLng != null
+        ? await this.reportRepository.findNormalizedComparablesForValuation({
+            lat: valuation.inputLat,
+            lng: valuation.inputLng,
+            propertyType: valuation.propertyType,
+            radiusM: 3000,
+          })
+        : [];
+
+    const warnings =
+      normalizedListings.length < 3
+        ? ['Not enough normalized comparable listings in this area']
+        : [];
+
     const existing = await this.reportRepository.findByValuationId(valuationId);
     if (existing) {
-      return existing;
+      return { ...existing, normalizedListings, warnings };
     }
 
     const verificationHash = this.generateHash(valuationId);
 
     const pdfUrl = null;
 
-    return this.reportRepository.create(valuationId, pdfUrl, verificationHash);
+    const report = await this.reportRepository.create(
+      valuationId,
+      pdfUrl,
+      verificationHash,
+    );
+    return { ...report, normalizedListings, warnings };
   }
 
   async getReport(id: string): Promise<ReportResult> {
@@ -52,7 +74,25 @@ export class ReportService {
       });
     }
 
-    return report;
+    const valuation = await this.valuationRepository.findValuationById(
+      report.valuationId,
+    );
+    const normalizedListings =
+      valuation && valuation.inputLat != null && valuation.inputLng != null
+        ? await this.reportRepository.findNormalizedComparablesForValuation({
+            lat: valuation.inputLat,
+            lng: valuation.inputLng,
+            propertyType: valuation.propertyType,
+            radiusM: 3000,
+          })
+        : [];
+
+    const warnings =
+      normalizedListings.length < 3
+        ? ['Not enough normalized comparable listings in this area']
+        : [];
+
+    return { ...report, normalizedListings, warnings };
   }
 
   private generateHash(valuationId: string): string {

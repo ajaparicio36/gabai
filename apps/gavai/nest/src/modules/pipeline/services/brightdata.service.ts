@@ -237,75 +237,41 @@ export class BrightDataService {
     const bathroomsMatch = html.match(/(\d+)\s*(?:bath(?:room)?s?|ba|wc)/i);
     const bathrooms = bathroomsMatch ? Number(bathroomsMatch[1]) : null;
 
-    const phCities = [
-      'manila',
-      'quezon city',
-      'makati',
-      'taguig',
-      'pasig',
-      'mandaluyong',
-      'cebu',
-      'mandaue',
-      'lapu-lapu',
-      'davao',
-      'baguio',
-      'angeles',
-      'bacolod',
-      'iligan',
-      'iloilo',
-      'butuan',
-      'cagayan de oro',
-      'tacloban',
-      'zamboanga',
-      'general santos',
-      'tagaytay',
-      'lucena',
-      'san fernando',
-      'dagupan',
-      'batangas',
-      'naga',
-      'legazpi',
-      'roxas',
-      'surigao',
-      'ozamiz',
-      'dipolog',
-      'pagadian',
-      'cabadbaran',
-      'ligao',
-      'tabaco',
-      'masbate',
-      'calbayog',
-      'ormoc',
-      'naval',
-    ];
-    let city: string | null = null;
-    const htmlLower = html.toLowerCase();
-    for (const c of phCities) {
-      if (htmlLower.includes(c)) {
-        city = c;
-        break;
-      }
-    }
-
     const barangayMatch = html.match(
       /(?:barangay|brgy\.?|brgy)\s+([A-Za-z\s]+?)(?:,|\s|$)/i,
     );
     const barangay = barangayMatch ? barangayMatch[1].trim() : null;
 
+    const bodyText = strip(html).slice(0, 12000);
+    const locationCandidate = extractLocationCandidate(title, bodyText);
+
     return {
       title,
+      description: bodyText.slice(0, 2000),
       asking_price_php: askingPricePhp,
       lot_area_sqm: lotAreaSqm,
       floor_area_sqm: floorAreaSqm,
       bedrooms,
       bathrooms,
       property_type: 'unknown',
-      address_raw: `${barangay ? barangay + ', ' : ''}${city ?? ''}`.trim(),
+      address_raw: locationCandidate,
       barangay,
-      city,
+      city: null,
       developer: null,
       listing_date: new Date().toISOString().split('T')[0],
       source_url: sourceUrl,
+      raw_text_reference: bodyText,
     };
   }
+}
+
+function extractLocationCandidate(
+  titleValue: string,
+  bodyValue: string,
+): string | null {
+  const prioritized = `${titleValue}\n${bodyValue.slice(0, 3000)}`;
+  const match = prioritized.match(
+    /\b(?:Iloilo City|Iloilo|Cebu City|Mandaue|Lapu[-\s]Lapu|Manila|Quezon City|Makati|Taguig)\b/i,
+  );
+  return match ? match[0] : null;
 }

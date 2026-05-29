@@ -3,13 +3,15 @@ import {
   InternalServerErrorException,
   BadRequestException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_CODES, SpatialService } from '@gavai/platform';
-import { ValuationRepository } from './valuation.repository';
+import { ValuationRepository } from './valuation.repository.js';
 import {
   BirComplianceService,
   BirComplianceResult,
-} from './bir-compliance.service';
+} from './bir-compliance.service.js';
 
 interface ValuationInput {
   lat: number;
@@ -47,6 +49,7 @@ export class ValuationService {
     private readonly spatialService: SpatialService,
     private readonly configService: ConfigService,
     private readonly birComplianceService: BirComplianceService,
+    @InjectQueue('training') private readonly trainingQueue: Queue,
   ) {
     this.sidecarUrl = this.configService.getOrThrow<string>('ML_SIDECAR_URL');
   }
@@ -204,52 +207,24 @@ export class ValuationService {
   }
 
   async triggerRetrain(): Promise<{
-    version: string;
-    mape: number;
-    trainingRecords: number;
+    queued: true;
+    jobId: string | number | undefined;
   }> {
-    try {
-      const records = await this.valuationRepository.getTrainingRecords();
-
-      const response = await fetch(`${this.sidecarUrl}/api/v1/admin/retrain`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ records }),
-        signal: AbortSignal.timeout(300000),
-      });
-
-      if (!response.ok) {
-        const err = (await response.json()) as {
-          detail?: { message?: string };
-        };
-        throw new Error(err?.detail?.message ?? 'Retrain failed');
-      }
-
-      const result = (await response.json()) as {
-        version: string;
-        mape: number;
-        trainingRecords: number;
-      };
-
-      await this.valuationRepository.createModelVersion({
-        version: result.version,
-        modelPath: `models/avm-${result.version}.pkl`,
-        status: 'ready',
-        mape: result.mape,
-        trainingRecords: result.trainingRecords,
-      });
-
-      return {
-        version: result.version,
-        mape: result.mape,
-        trainingRecords: result.trainingRecords,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException({
-        code: ERROR_CODES.VALUATION.ML_SIDECAR_ERROR,
-        message: `Model retrain failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    const records = await this.valuationRepository.getTrainingRecords();
+    if (records.length < 20) {
+      throw new BadRequestException({
+        code: ERROR_CODES.VALUATION.INSUFFICIENT_DATA,
+        message: `Need at least 20 normalized training records. Found ${records.length}.`,
       });
     }
+
+    const job = await this.trainingQueue.add(
+      'train-avm',
+      {},
+      { attempts: 1, removeOnComplete: 50, removeOnFail: 100 },
+    );
+
+    return { queued: true, jobId: job.id };
   }
 
   async getModelVersions() {

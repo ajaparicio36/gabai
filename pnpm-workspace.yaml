@@ -1,7 +1,8 @@
 packages:
-  - 'packages/*'
-  - 'apps/gavai/*'
-  - 'libs/*'
+  - packages/*
+  - apps/gavai/*
+  - libs/*
+
 allowBuilds:
   '@nestjs/core': true
   '@parcel/watcher': true
@@ -16,3 +17,17 @@ allowBuilds:
   prisma: true
   bcrypt: true
   msgpackr-extract: true
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@parcel/watcher'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - esbuild
+  - less
+  - msgpackr-extract
+  - nx
+  - prisma
+  - sharp
+  - unrs-resolver
