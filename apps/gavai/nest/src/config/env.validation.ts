@@ -9,8 +9,7 @@ export interface EnvConfig {
   JWT_REFRESH_SECRET?: string;
   GOOGLE_MAPS_KEY: string;
   BRIGHTDATA_API_KEY: string;
-  GEMINI_API_KEY: string;
-  AIML_API_KEY?: string;
+  AIML_API_KEY: string;
   XENDIT_SECRET_KEY: string;
   XENDIT_WEBHOOK_TOKEN?: string;
   NEXT_PUBLIC_GOOGLE_MAPS_KEY: string;

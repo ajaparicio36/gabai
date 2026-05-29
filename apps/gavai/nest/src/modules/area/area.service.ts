@@ -2,9 +2,13 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ERROR_CODES } from '@gavai/platform';
 import { roundToGrid } from '@gavai/pipeline';
 import { AreaRepository } from './area.repository';
-import { GeminiService } from './gemini.service';
 import { BrightDataService } from '../pipeline/services/brightdata.service';
 import { GoogleMapsService } from '../pipeline/services/google-maps.service';
+import {
+  AimlapiExtractionService,
+  type ArticleContent,
+  type ChatMessage,
+} from '../pipeline/services/aimlapi-extraction.service';
 
 export interface AreaIntelligenceResult {
   areaName: string;
@@ -21,7 +25,7 @@ export class AreaService {
 
   constructor(
     private readonly areaRepository: AreaRepository,
-    private readonly geminiService: GeminiService,
+    private readonly aimlapiService: AimlapiExtractionService,
     private readonly brightdataService: BrightDataService,
     private readonly googleMapsService: GoogleMapsService,
   ) {}
@@ -88,6 +92,58 @@ export class AreaService {
     }
   }
 
+  async askAboutArea(
+    lat: number,
+    lng: number,
+    message: string,
+    history?: ChatMessage[],
+  ): Promise<{
+    reply: string;
+    sources: { title: string; url: string; domain: string }[];
+  }> {
+    const latKey = roundToGrid(lat);
+    const lngKey = roundToGrid(lng);
+
+    const cached = await this.areaRepository.findCached(
+      latKey,
+      lngKey,
+      this.DEFAULT_RADIUS_M,
+    );
+
+    const articleContents = cached?.articleContents as
+      | ArticleContent[]
+      | undefined;
+    const sourceArticles =
+      (cached?.sourceArticles as { title: string; url: string }[]) ?? [];
+
+    if (!articleContents || articleContents.length === 0) {
+      return {
+        reply:
+          'No article content available for this area yet. Please refresh the area intelligence first.',
+        sources: sourceArticles.map((s) => ({
+          title: s.title,
+          url: s.url,
+          domain: this.extractDomain(s.url),
+        })),
+      };
+    }
+
+    const reply = await this.aimlapiService.chatAboutArticles(
+      articleContents,
+      message,
+      history,
+    );
+
+    return {
+      reply,
+      sources: sourceArticles.map((s) => ({
+        title: s.title,
+        url: s.url,
+        domain: this.extractDomain(s.url),
+      })),
+    };
+  }
+
   private async fetchFresh(
     lat: number,
     lng: number,
@@ -134,6 +190,8 @@ export class AreaService {
     }
 
     let bulletPoints: string[] = [];
+    let validArticles: { url: string; title: string; markdown: string }[] = [];
+
     if (articles.length > 0) {
       const articleContents = await Promise.allSettled(
         articles.map(async (a) => {
@@ -148,7 +206,7 @@ export class AreaService {
         }),
       );
 
-      const validArticles = articleContents
+      validArticles = articleContents
         .filter(
           (
             r,
@@ -163,7 +221,7 @@ export class AreaService {
       if (validArticles.length > 0) {
         try {
           bulletPoints =
-            await this.geminiService.summarizeArticles(validArticles);
+            await this.aimlapiService.summarizeArticles(validArticles);
         } catch {
           // Return raw article titles if summarization fails
           bulletPoints = validArticles.map((a, i) => `[${i + 1}] ${a.title}`);
@@ -176,6 +234,12 @@ export class AreaService {
       url: a.url,
     }));
 
+    const articleContentsCache = validArticles.map((a) => ({
+      url: a.url,
+      title: a.title,
+      markdown: a.markdown,
+    }));
+
     const expiresAt = new Date(Date.now() + this.TTL_HOURS * 60 * 60 * 1000);
 
     await this.areaRepository.upsertCache(
@@ -184,6 +248,7 @@ export class AreaService {
       radiusM,
       bulletPoints,
       sourceArticles,
+      articleContentsCache,
       expiresAt,
     );
 

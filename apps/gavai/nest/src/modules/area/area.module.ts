@@ -5,7 +5,6 @@ import { ValuationModule } from '../valuation/valuation.module';
 import { AreaController } from './area.controller';
 import { AreaService } from './area.service';
 import { AreaRepository } from './area.repository';
-import { GeminiService } from './gemini.service';
 import { TrafficScoreService } from './traffic-score.service';
 import { YieldScoreService } from './yield-score.service';
 import { FloodRiskService } from './flood-risk.service';
@@ -17,7 +16,6 @@ import { MarketPremiumService } from './market-premium.service';
   providers: [
     AreaService,
     AreaRepository,
-    GeminiService,
     TrafficScoreService,
     YieldScoreService,
     FloodRiskService,

@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { GoogleMapsService } from '../pipeline/services/google-maps.service';
 import { BrightDataService } from '../pipeline/services/brightdata.service';
-
-interface ArticleContent {
-  url: string;
-  title: string;
-  markdown: string;
-}
+import {
+  AimlapiExtractionService,
+  type ArticleContent,
+} from '../pipeline/services/aimlapi-extraction.service';
 
 interface ArticleSentiment {
   sentiment: 'positive' | 'neutral' | 'negative';
@@ -24,15 +21,11 @@ export interface YieldResult {
 
 @Injectable()
 export class YieldScoreService {
-  private readonly apiKey: string;
-
   constructor(
     private readonly googleMapsService: GoogleMapsService,
     private readonly brightdataService: BrightDataService,
-    private readonly configService: ConfigService,
-  ) {
-    this.apiKey = this.configService.getOrThrow<string>('GEMINI_API_KEY');
-  }
+    private readonly aimlapiService: AimlapiExtractionService,
+  ) {}
 
   async getScore(lat: number, lng: number): Promise<YieldResult> {
     const geoCoding = await this.googleMapsService.reverseGeocode(lat, lng);
@@ -132,66 +125,8 @@ export class YieldScoreService {
   private async classifyArticles(
     articles: ArticleContent[],
   ): Promise<ArticleSentiment[]> {
-    const articleTexts = articles
-      .map(
-        (a, i) =>
-          `Article ${i + 1}: "${a.title}"\nSource: ${a.url}\nContent:\n${a.markdown.slice(0, 3000)}`,
-      )
-      .join('\n\n---\n\n');
-
-    const prompt = `You are a real estate market analyst. Based on the following news articles about infrastructure and development, classify each article.
-
-RULES:
-- For each article, output a JSON object with:
-  - "sentiment": one of "positive", "neutral", or "negative" (for property value impact)
-  - "category": one of "infrastructure", "commercial", "residential", or "risk"
-  - "horizon_years": estimated years until the development materializes (number)
-- Output ONLY a valid JSON array, nothing else
-- One object per article in the same order
-
-ARTICLES:
-${articleTexts}`;
-
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [{ text: prompt }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 2048,
-            },
-          }),
-          signal: AbortSignal.timeout(15000),
-        },
-      );
-
-      if (!response.ok) {
-        return [];
-      }
-
-      const data = (await response.json()) as {
-        candidates?: { content?: { parts?: { text?: string }[] } }[];
-      };
-
-      const text =
-        data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
-
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) return [];
-
-      const parsed: ArticleSentiment[] = JSON.parse(jsonMatch[0]);
-      return parsed;
-    } catch {
-      return [];
-    }
+    const result = await this.aimlapiService.classifyArticles(articles);
+    return result ?? [];
   }
 
   private extractDomain(url: string): string {

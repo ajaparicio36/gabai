@@ -8,6 +8,7 @@ interface CachedAreaIntel {
   radiusM: number;
   bulletPoints: string[];
   sourceArticles: unknown;
+  articleContents: unknown;
   fetchedAt: Date;
   expiresAt: Date;
 }
@@ -55,6 +56,7 @@ export class AreaRepository {
     radiusM: number,
     bulletPoints: string[],
     sourceArticles: Prisma.InputJsonValue,
+    articleContents: Prisma.InputJsonValue,
     expiresAt: Date,
   ): Promise<void> {
     await this.prisma.areaIntelligence.upsert({
@@ -68,6 +70,7 @@ export class AreaRepository {
       update: {
         bulletPoints,
         sourceArticles,
+        articleContents,
         fetchedAt: new Date(),
         expiresAt,
       },
@@ -77,6 +80,7 @@ export class AreaRepository {
         radiusM,
         bulletPoints,
         sourceArticles,
+        articleContents,
         fetchedAt: new Date(),
         expiresAt,
       },

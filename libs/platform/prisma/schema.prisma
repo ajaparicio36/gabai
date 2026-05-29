@@ -133,10 +133,11 @@ model AreaIntelligence {
   latKey        Float
   lngKey        Float
   radiusM       Int      @default(1500)
-  bulletPoints  String[]
-  sourceArticles Json
-  fetchedAt     DateTime @default(now())
-  expiresAt     DateTime
+  bulletPoints    String[]
+  sourceArticles  Json
+  articleContents Json?
+  fetchedAt       DateTime @default(now())
+  expiresAt       DateTime
 
   @@unique([latKey, lngKey, radiusM])
 }
