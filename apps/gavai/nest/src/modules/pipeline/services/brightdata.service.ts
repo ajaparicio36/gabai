@@ -45,7 +45,7 @@ export class BrightDataService {
   async discover(params: DiscoverParams): Promise<{ urls: string[] }> {
     const postBody = {
       query: params.query,
-      num_results: Math.min(params.limit ?? 10, 20),
+      num_results: Math.min(params.limit ?? 10, 50),
     };
 
     const postRes = await fetch(`${this.baseUrl}/discover`, {
@@ -269,9 +269,44 @@ function extractLocationCandidate(
   titleValue: string,
   bodyValue: string,
 ): string | null {
-  const prioritized = `${titleValue}\n${bodyValue.slice(0, 3000)}`;
-  const match = prioritized.match(
-    /\b(?:Iloilo City|Iloilo|Cebu City|Mandaue|Lapu[-\s]Lapu|Manila|Quezon City|Makati|Taguig)\b/i,
-  );
-  return match ? match[0] : null;
+  const METRO_MANILA_LOCATIONS: { canonical: string; pattern: RegExp }[] = [
+    {
+      canonical: 'Taguig',
+      pattern: /\b(?:bonifacio\s+global\s+city|BGC|fort\s+bonifacio|taguig)\b/i,
+    },
+    { canonical: 'Makati', pattern: /\bmakati\b/i },
+    { canonical: 'Quezon City', pattern: /\bquezon\s+city\b/i },
+    { canonical: 'Quezon City', pattern: /\bq\.?c\.?\b/i },
+    { canonical: 'Pasig', pattern: /\bpasig\b/i },
+    { canonical: 'Mandaluyong', pattern: /\bmandaluyong\b/i },
+    { canonical: 'Pasay', pattern: /\bpasay\b/i },
+    { canonical: 'Parañaque', pattern: /\bpara[nñ]aque\b/i },
+    { canonical: 'Muntinlupa', pattern: /\bmuntinlupa\b/i },
+    { canonical: 'Las Piñas', pattern: /\blas\s+pi[nñ]as\b/i },
+    { canonical: 'Marikina', pattern: /\bmarikina\b/i },
+    { canonical: 'Caloocan', pattern: /\b(?:caloocan|kalookan)\b/i },
+    { canonical: 'Malabon', pattern: /\bmalabon\b/i },
+    { canonical: 'Navotas', pattern: /\bnavotas\b/i },
+    { canonical: 'Valenzuela', pattern: /\bvalenzuela\b/i },
+    { canonical: 'San Juan', pattern: /\bsan\s+juan\b/i },
+    { canonical: 'Pateros', pattern: /\bpateros\b/i },
+    { canonical: 'Manila', pattern: /\b(?:city\s+of\s+)?manila\b/i },
+    // Cebu metro
+    { canonical: 'Cebu City', pattern: /\bcebu\s+city\b/i },
+    { canonical: 'Cebu City', pattern: /\bcebu\b/i },
+    { canonical: 'Mandaue', pattern: /\bmandaue\b/i },
+    { canonical: 'Lapu-Lapu', pattern: /\b(?:lapu[-\s]lapu|mactan)\b/i },
+    { canonical: 'Talisay', pattern: /\btalisay\b/i },
+    { canonical: 'Consolacion', pattern: /\bconsolacion\b/i },
+    // Iloilo
+    { canonical: 'Iloilo City', pattern: /\biloilo\b/i },
+  ];
+
+  const searchText = `${titleValue}\n${bodyValue.slice(0, 3000)}`;
+  for (const { canonical, pattern } of METRO_MANILA_LOCATIONS) {
+    if (pattern.test(searchText)) {
+      return canonical;
+    }
+  }
+  return null;
 }

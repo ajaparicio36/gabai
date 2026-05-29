@@ -85,17 +85,20 @@ export function normalizeExtractedListing(
     location.status === 'missing' ||
     price == null ||
     (lotArea == null && floorArea == null);
-  const confidenceScore = computeConfidenceScore([
+  const confidenceScore = computeConfidenceScore(
     input.extracted.location.confidence,
     input.extracted.propertyType.confidence,
     input.extracted.price.confidence,
     input.extracted.lotArea.confidence,
     input.extracted.floorArea.confidence,
-  ]);
+  );
 
+  // Threshold at 0.55 — keeps salvageable records while still filtering junk.
+  // The independent location.status === 'low' check was removed because the
+  // weighted formula already penalizes low-confidence location appropriately.
   const normalizationStatus: NormalizationStatus = hardFailure
     ? 'failed'
-    : confidenceScore < 0.7 || location.status === 'low'
+    : confidenceScore < 0.55
       ? 'low_confidence'
       : 'normalized';
 
@@ -133,14 +136,36 @@ function cleanPositiveNumber(value: number | null): number | null {
   return value;
 }
 
-function computeConfidenceScore(values: FieldConfidence[]): number {
+function computeConfidenceScore(
+  locationConf: FieldConfidence,
+  propertyTypeConf: FieldConfidence,
+  priceConf: FieldConfidence,
+  lotAreaConf: FieldConfidence,
+  floorAreaConf: FieldConfidence,
+): number {
   const weights: Record<FieldConfidence, number> = {
     high: 1,
     medium: 0.75,
     low: 0.35,
     missing: 0,
   };
+
+  // Weighted formula: price (30%) and location (25%) matter most for AVM;
+  // area fields (17.5% each) are next; property type (10%) least critical.
+  const fieldWeights = {
+    price: 0.3,
+    location: 0.25,
+    lotArea: 0.175,
+    floorArea: 0.175,
+    propertyType: 0.1,
+  };
+
   const score =
-    values.reduce((sum, value) => sum + weights[value], 0) / values.length;
+    weights[priceConf] * fieldWeights.price +
+    weights[locationConf] * fieldWeights.location +
+    weights[lotAreaConf] * fieldWeights.lotArea +
+    weights[floorAreaConf] * fieldWeights.floorArea +
+    weights[propertyTypeConf] * fieldWeights.propertyType;
+
   return Math.round(score * 100) / 100;
 }

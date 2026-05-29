@@ -79,6 +79,236 @@ const crawlPageResultSchema = z
   })
   .strict();
 
+// ── Tool/function schemas (OpenAI-compatible JSON Schema) ──────────────────
+
+const EXTRACT_LISTING_TOOL = {
+  type: 'function' as const,
+  function: {
+    name: 'extract_listing',
+    description:
+      'Extract structured real estate listing data from raw Philippine property listing text.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      required: [
+        'title',
+        'description',
+        'location',
+        'propertyType',
+        'price',
+        'lotArea',
+        'floorArea',
+        'issues',
+      ],
+      additionalProperties: false,
+      properties: {
+        title: { type: ['string', 'null'], description: 'Listing title' },
+        description: {
+          type: ['string', 'null'],
+          description: 'Property description',
+        },
+        location: {
+          type: 'object',
+          required: ['raw', 'city', 'province', 'confidence', 'evidence'],
+          additionalProperties: false,
+          properties: {
+            raw: {
+              type: ['string', 'null'],
+              description: 'Full raw address as written',
+            },
+            city: {
+              type: ['string', 'null'],
+              description:
+                'City name (e.g. Makati, Quezon City, Taguig). null if not found.',
+            },
+            province: {
+              type: ['string', 'null'],
+              description:
+                'Province name (e.g. Metro Manila, Cebu). null if not found.',
+            },
+            confidence: {
+              type: 'string',
+              enum: ['high', 'medium', 'low', 'missing'],
+              description: 'Confidence in location extraction',
+            },
+            evidence: {
+              type: ['string', 'null'],
+              description: 'Short text snippet where location was found',
+            },
+          },
+        },
+        propertyType: {
+          type: 'object',
+          required: ['value', 'confidence'],
+          additionalProperties: false,
+          properties: {
+            value: {
+              type: ['string', 'null'],
+              description:
+                'One of: house_and_lot, residential_lot, condo, townhouse, commercial, apartment, warehouse, office. null if unclear.',
+            },
+            confidence: {
+              type: 'string',
+              enum: ['high', 'medium', 'low', 'missing'],
+            },
+          },
+        },
+        price: {
+          type: 'object',
+          required: ['value', 'currency', 'confidence'],
+          additionalProperties: false,
+          properties: {
+            value: {
+              type: ['number', 'null'],
+              description:
+                'Asking price in PHP as a plain number (no currency symbol). e.g. 5000000 for ₱5M.',
+            },
+            currency: { type: 'string', enum: ['PHP'] },
+            confidence: {
+              type: 'string',
+              enum: ['high', 'medium', 'low', 'missing'],
+            },
+          },
+        },
+        lotArea: {
+          type: 'object',
+          required: ['value', 'unit', 'confidence'],
+          additionalProperties: false,
+          properties: {
+            value: {
+              type: ['number', 'null'],
+              description: 'Lot area in sqm. null if not stated.',
+            },
+            unit: { type: 'string', enum: ['sqm'] },
+            confidence: {
+              type: 'string',
+              enum: ['high', 'medium', 'low', 'missing'],
+            },
+          },
+        },
+        floorArea: {
+          type: 'object',
+          required: ['value', 'unit', 'confidence'],
+          additionalProperties: false,
+          properties: {
+            value: {
+              type: ['number', 'null'],
+              description: 'Floor/living area in sqm. null if not stated.',
+            },
+            unit: { type: 'string', enum: ['sqm'] },
+            confidence: {
+              type: 'string',
+              enum: ['high', 'medium', 'low', 'missing'],
+            },
+          },
+        },
+        issues: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of extraction issues or ambiguities found',
+        },
+      },
+    },
+  },
+};
+
+const EXTRACT_LISTING_URLS_TOOL = {
+  type: 'function' as const,
+  function: {
+    name: 'extract_listing_urls',
+    description:
+      'Extract all individual property listing URLs from a real estate directory/search-results page.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      required: ['listings', 'hasNextPage', 'nextPageUrl', 'confidence'],
+      additionalProperties: false,
+      properties: {
+        listings: {
+          type: 'array',
+          description:
+            'All individual property listing links found on the page',
+          items: {
+            type: 'object',
+            required: [
+              'url',
+              'title',
+              'hasPrice',
+              'pricePreview',
+              'hasArea',
+              'areaPreview',
+            ],
+            additionalProperties: false,
+            properties: {
+              url: {
+                type: 'string',
+                description: 'Full or relative URL of the listing',
+              },
+              title: {
+                type: ['string', 'null'],
+                description: 'Listing title if visible',
+              },
+              hasPrice: {
+                type: 'boolean',
+                description: 'True if a price is visible in the card/preview',
+              },
+              pricePreview: {
+                type: ['string', 'null'],
+                description: 'Raw price text if visible',
+              },
+              hasArea: {
+                type: 'boolean',
+                description:
+                  'True if area (sqm) is visible in the card/preview',
+              },
+              areaPreview: {
+                type: ['string', 'null'],
+                description: 'Raw area text if visible',
+              },
+            },
+          },
+        },
+        hasNextPage: {
+          type: 'boolean',
+          description: 'True if there is a next page of results',
+        },
+        nextPageUrl: {
+          type: ['string', 'null'],
+          description: 'URL of the next page, if any',
+        },
+        confidence: {
+          type: 'string',
+          enum: ['high', 'medium', 'low'],
+          description: 'Confidence in the extraction result',
+        },
+      },
+    },
+  },
+};
+
+// ── System prompts ─────────────────────────────────────────────────────────
+
+const EXTRACTION_SYSTEM_PROMPT = [
+  'You extract Philippine real estate listing fields from listing text.',
+  'Use ONLY facts explicitly present in the source text.',
+  'Never guess or infer missing fields — set them to null.',
+  'Never default any location to Manila or Metro Manila without evidence.',
+  'If location is ambiguous or absent, set city and province to null and confidence to "missing" or "low".',
+  'Preserve exact city and province names from the source (e.g. Taguig, BGC, Quezon City, Makati).',
+  'For price: convert shorthand — "5M" → 5000000, "₱1.2M" → 1200000. Include PHP value only.',
+  'For propertyType: normalize to one of: house_and_lot, residential_lot, condo, townhouse, commercial, apartment, warehouse, office.',
+  'Include short evidence snippets for location and price.',
+  'You MUST call the extract_listing function — do not reply with text.',
+].join(' ');
+
+const CRAWL_SYSTEM_PROMPT = [
+  'You extract real estate listing URLs from listing directory page HTML.',
+  'Extract EVERY individual property listing link on the page.',
+  'Ignore navigation, footer, social media, and non-listing links.',
+  'Determine if there is a next page link.',
+  'You MUST call the extract_listing_urls function — do not reply with text.',
+].join(' ');
+
 @Injectable()
 export class AimlapiExtractionService {
   private readonly logger = new Logger(AimlapiExtractionService.name);
@@ -98,54 +328,66 @@ export class AimlapiExtractionService {
     }
 
     const model = 'gpt-4o-mini';
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        max_tokens: 1200,
-        messages: [
-          {
-            role: 'system',
-            content: [
-              'You extract Philippine real estate listing fields.',
-              'Return JSON only.',
-              'Use only facts explicitly present in the source text.',
-              'Never guess missing fields.',
-              'Never default any location to Manila.',
-              'If location is ambiguous or absent, set city and province to null and confidence to missing or low.',
-              'Preserve explicit city and province names from the source.',
-              'Include short evidence snippets for location and price when possible.',
-            ].join(' '),
-          },
-          {
-            role: 'user',
-            content: `Extract this listing into the required schema:\n\n${rawText.slice(0, 12000)}`,
-          },
-        ],
-      }),
-      signal: AbortSignal.timeout(30000),
-    });
 
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      this.logger.warn(
-        `AI/ML extraction failed ${response.status}: ${body.slice(0, 500)}`,
+    try {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0,
+          max_tokens: 2000,
+          tools: [EXTRACT_LISTING_TOOL],
+          tool_choice: {
+            type: 'function',
+            function: { name: 'extract_listing' },
+          },
+          messages: [
+            { role: 'system', content: EXTRACTION_SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: `Extract this Philippine property listing:\n\n${rawText.slice(0, 12000)}`,
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        this.logger.warn(
+          `AI/ML extraction failed ${response.status}: ${body.slice(0, 500)}`,
+        );
+        return null;
+      }
+
+      const json = (await response.json()) as {
+        choices?: {
+          message?: {
+            tool_calls?: {
+              function?: { name: string; arguments: string };
+            }[];
+          };
+        }[];
+      };
+
+      const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall?.function?.arguments) {
+        this.logger.warn('AI/ML extraction returned no tool call');
+        return null;
+      }
+
+      return this.parseToolCallArgs(
+        toolCall.function.arguments,
+        extractedListingSchema,
       );
+    } catch (error: unknown) {
+      this.logger.warn(`AI/ML extraction error: ${(error as Error).message}`);
       return null;
     }
-
-    const json = (await response.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const content = json.choices?.[0]?.message?.content;
-    if (!content) return null;
-
-    return this.parseExtractedJson(content);
   }
 
   async extractListingUrls(
@@ -158,57 +400,73 @@ export class AimlapiExtractionService {
       return null;
     }
 
-    const model = 'openai/gpt-5-nano-2025-08-07';
+    const model = 'gpt-4o-mini';
     const truncated = htmlContent.slice(0, 16000);
 
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        max_tokens: 4000,
-        messages: [
-          {
-            role: 'system',
-            content: [
-              'You are a web scraper assistant that extracts real estate listing URLs from listing directory page HTML.',
-              `You are analyzing content from ${sourceDomain}.`,
-              'Return JSON only. No commentary.',
-              'Extract every individual property listing link you can find on this page.',
-              'Each listing should have a URL, optional title, and whether price/area info is visible in the preview.',
-              'Ignore navigation links, footer links, social media links, and non-listing links.',
-              'Include all listings visible on the page, not just a sample.',
-              'Determine if there is a next page link. If so, include its URL.',
-            ].join(' '),
+    try {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0,
+          max_tokens: 4000,
+          tools: [EXTRACT_LISTING_URLS_TOOL],
+          tool_choice: {
+            type: 'function',
+            function: { name: 'extract_listing_urls' },
           },
-          {
-            role: 'user',
-            content: `Extract all listing URLs from this listing directory page HTML:\n\n${truncated}`,
-          },
-        ],
-      }),
-      signal: AbortSignal.timeout(45000),
-    });
+          messages: [
+            {
+              role: 'system',
+              content: `${CRAWL_SYSTEM_PROMPT} You are analyzing content from ${sourceDomain}.`,
+            },
+            {
+              role: 'user',
+              content: `Extract all listing URLs from this directory page:\n\n${truncated}`,
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
 
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        this.logger.warn(
+          `AI/ML crawl extraction failed ${response.status}: ${body.slice(0, 500)}`,
+        );
+        return null;
+      }
+
+      const json = (await response.json()) as {
+        choices?: {
+          message?: {
+            tool_calls?: {
+              function?: { name: string; arguments: string };
+            }[];
+          };
+        }[];
+      };
+
+      const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall?.function?.arguments) {
+        this.logger.warn('AI/ML crawl extraction returned no tool call');
+        return null;
+      }
+
+      return this.parseToolCallArgs(
+        toolCall.function.arguments,
+        crawlPageResultSchema,
+      );
+    } catch (error: unknown) {
       this.logger.warn(
-        `AI/ML crawl extraction failed ${response.status}: ${body.slice(0, 500)}`,
+        `AI/ML crawl extraction error: ${(error as Error).message}`,
       );
       return null;
     }
-
-    const json = (await response.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const content = json.choices?.[0]?.message?.content;
-    if (!content) return null;
-
-    return this.parseCrawlPageJson(content);
   }
 
   async summarizeArticles(articles: ArticleContent[]): Promise<string[]> {
@@ -328,10 +586,7 @@ ${articleTexts}`;
   }
 
   parseExtractedJsonForTest(content: string): ExtractedListingPayload | null {
-    return this.parseExtractedJson(content);
-  }
-
-  private parseExtractedJson(content: string): ExtractedListingPayload | null {
+    // Legacy helper for tests — parse the old free-text JSON format
     const cleaned = content
       .replace(/^```json\s*/i, '')
       .replace(/```$/i, '')
@@ -351,22 +606,21 @@ ${articleTexts}`;
     }
   }
 
-  private parseCrawlPageJson(content: string): CrawlPageResult | null {
-    const cleaned = content
-      .replace(/^```json\s*/i, '')
-      .replace(/```$/i, '')
-      .trim();
+  private parseToolCallArgs<T>(
+    argsJson: string,
+    schema: z.ZodSchema<T>,
+  ): T | null {
     try {
-      const parsed = crawlPageResultSchema.safeParse(JSON.parse(cleaned));
+      const parsed = schema.safeParse(JSON.parse(argsJson));
       if (!parsed.success) {
         this.logger.warn(
-          `AI/ML crawl extraction failed schema validation: ${parsed.error.message}`,
+          `Tool call args failed schema validation: ${parsed.error.message}`,
         );
         return null;
       }
       return parsed.data;
     } catch {
-      this.logger.warn('AI/ML crawl extraction returned invalid JSON');
+      this.logger.warn('Tool call args contained invalid JSON');
       return null;
     }
   }

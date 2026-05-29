@@ -20,12 +20,38 @@ export class PipelineService {
     location: string,
     propertyType?: string,
   ): Promise<{ discovered: number; duplicatesSkipped: number }> {
-    const query =
-      `property for sale ${propertyType ?? ''} ${location} Philippines`.trim();
-    const res = await this.brightdata.discover({ query, limit: 30 });
+    // Site-targeted queries ensure we get actual listing URLs from known portals,
+    // not blog posts, news articles, or aggregator pages.
+    const PORTAL_SITES = [
+      'lamudi.com.ph',
+      'hoppler.com.ph',
+      'dotproperty.com.ph',
+      'presello.com',
+      'onepropertee.com',
+    ];
+
+    const typePhrase = propertyType
+      ? `${propertyType.replace(/_/g, ' ')} `
+      : '';
+    const queries = PORTAL_SITES.map(
+      (site) => `site:${site} ${typePhrase}for sale ${location} Philippines`,
+    );
+
+    const allUrls: string[] = [];
+    for (const query of queries) {
+      try {
+        const res = await this.brightdata.discover({ query, limit: 20 });
+        allUrls.push(...res.urls);
+      } catch {
+        // Log and continue — partial results are better than none
+      }
+    }
+
+    // Deduplicate across all portal queries before DB check
+    const uniqueUrls = [...new Set(allUrls)];
 
     const newTargets = [];
-    for (const url of res.urls) {
+    for (const url of uniqueUrls) {
       const urlHash = this.pipelineRepository.computeUrlHash(url);
       const exists = await this.pipelineRepository.findTargetByUrlHash(urlHash);
       if (!exists) {
@@ -42,7 +68,7 @@ export class PipelineService {
     await this.pipelineRepository.createScrapingTargets(newTargets);
     return {
       discovered: newTargets.length,
-      duplicatesSkipped: res.urls.length - newTargets.length,
+      duplicatesSkipped: uniqueUrls.length - newTargets.length,
     };
   }
 

@@ -109,28 +109,36 @@ function fallbackExtraction(
       raw: record.addressRaw ?? record.city,
       city: record.city,
       province: null,
-      confidence: record.city ? 'medium' : 'missing',
+      // Regex-derived city is unreliable — use 'low' not 'medium'
+      confidence: record.city ? 'low' : 'missing',
       evidence: record.addressRaw ?? null,
     },
     propertyType: {
       value: record.propertyType,
-      confidence: record.propertyType ? 'medium' : 'missing',
+      // Regex-derived property type is unreliable — use 'low' not 'medium'
+      confidence:
+        record.propertyType && record.propertyType !== 'unknown'
+          ? 'low'
+          : 'missing',
     },
     price: {
       value: record.askingPricePhp,
       currency: 'PHP',
-      confidence: record.askingPricePhp ? 'medium' : 'missing',
+      // Regex-derived price is unreliable — use 'low' not 'medium'
+      confidence: record.askingPricePhp ? 'low' : 'missing',
     },
     lotArea: {
       value: record.lotAreaSqm,
       unit: 'sqm',
-      confidence: record.lotAreaSqm ? 'medium' : 'missing',
+      confidence: record.lotAreaSqm ? 'low' : 'missing',
     },
     floorArea: {
       value: record.floorAreaSqm,
       unit: 'sqm',
-      confidence: record.floorAreaSqm ? 'medium' : 'missing',
+      confidence: record.floorAreaSqm ? 'low' : 'missing',
     },
-    issues: rawTextReference ? [] : ['No raw source text available'],
+    issues: rawTextReference
+      ? ['AI extraction unavailable — used fallback only']
+      : ['No raw source text available'],
   };
 }
