@@ -15,7 +15,10 @@ export function ViewToggle({
   onChange,
 }: ViewToggleProps): React.ReactNode {
   return (
-    <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2">
+    <div
+      data-ob="view-toggle"
+      className="absolute left-1/2 top-4 z-10 -translate-x-1/2"
+    >
       <ToggleGroup
         type="single"
         value={value}
@@ -24,15 +27,27 @@ export function ViewToggle({
         }}
         className="rounded-lg border bg-background shadow-md"
       >
-        <ToggleGroupItem value="heatmap" aria-label="Heatmap view">
+        <ToggleGroupItem
+          value="heatmap"
+          aria-label="Heatmap view"
+          data-ob="heatmap"
+        >
           <Layers className="mr-1 h-4 w-4" />
           Heatmap
         </ToggleGroupItem>
-        <ToggleGroupItem value="listings" aria-label="Listings view">
+        <ToggleGroupItem
+          value="listings"
+          aria-label="Listings view"
+          data-ob="listings"
+        >
           <MapPin className="mr-1 h-4 w-4" />
           Listings
         </ToggleGroupItem>
-        <ToggleGroupItem value="valuation" aria-label="Valuation view">
+        <ToggleGroupItem
+          value="valuation"
+          aria-label="Valuation view"
+          data-ob="valuation"
+        >
           <Crosshair className="mr-1 h-4 w-4" />
           Valuation
         </ToggleGroupItem>

@@ -91,7 +91,7 @@ export default function AdminNormalizePage(): React.ReactNode {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card data-ob="normalize-table">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Normalize</CardTitle>
           <Button variant="outline" size="sm" onClick={loadRecords}>

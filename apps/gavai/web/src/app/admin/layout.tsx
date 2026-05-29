@@ -3,6 +3,9 @@
 import { useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { ADMIN_ONBOARDING_STEPS } from '@/components/onboarding/onboarding-steps';
 import {
   SidebarProvider,
   Sidebar,
@@ -74,45 +77,54 @@ export default function AdminLayout({
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center gap-2 pt-2">
-              <BarChart3 className="h-4 w-4" />
-              <span>GAVAI Admin</span>
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url}>
-                      <Link href={item.url}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b px-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="h-6" />
-          <Link
-            href="/map"
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Map
-          </Link>
-        </header>
-        <main className="flex-1 p-6">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <OnboardingProvider
+      steps={ADMIN_ONBOARDING_STEPS}
+      storageKey="gavai_onboarding_admin_complete"
+    >
+      <SidebarProvider>
+        <Sidebar collapsible="icon">
+          <SidebarContent data-ob="admin-sidebar">
+            <SidebarGroup>
+              <SidebarGroupLabel className="flex items-center gap-2 pt-2">
+                <BarChart3 className="h-4 w-4" />
+                <span>GAVAI Admin</span>
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.url}
+                      >
+                        <Link href={item.url}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <header className="flex h-14 items-center gap-4 border-b px-4">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-6" />
+            <Link
+              href="/map"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Map
+            </Link>
+          </header>
+          <main className="flex-1 p-6">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+      <OnboardingTour />
+    </OnboardingProvider>
   );
 }

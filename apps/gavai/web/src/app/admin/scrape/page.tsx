@@ -149,7 +149,7 @@ export default function AdminScrapePage(): React.ReactNode {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card data-ob="scrape-records-table">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             <CardTitle>Scraped Records</CardTitle>
@@ -166,7 +166,11 @@ export default function AdminScrapePage(): React.ReactNode {
             )}
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleRunScrape} disabled={running}>
+            <Button
+              onClick={handleRunScrape}
+              disabled={running}
+              data-ob="scrape-run"
+            >
               {running ? 'Running...' : 'Run Scrape'}
             </Button>
             <Button variant="outline" onClick={loadRecords} size="sm">

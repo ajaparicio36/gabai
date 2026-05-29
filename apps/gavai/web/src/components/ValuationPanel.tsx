@@ -68,7 +68,11 @@ export function ValuationPanel({
 }: ValuationPanelProps): React.ReactNode {
   return (
     <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+      <SheetContent
+        side="right"
+        className="w-full overflow-y-auto sm:max-w-md"
+        data-ob="valuation-panel"
+      >
         {isValuationPending ? (
           <div className="space-y-6 pt-8">
             <Skeleton className="h-7 w-48" />
@@ -106,7 +110,7 @@ export function ValuationPanel({
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" data-ob="confidence-badges">
               <ConfidenceBadge
                 score={valuation.confidenceScore}
                 comparablesCount={valuation.comparablesUsed}

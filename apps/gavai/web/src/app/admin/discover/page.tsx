@@ -102,7 +102,7 @@ export default function AdminDiscoverPage(): React.ReactNode {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card data-ob="discover-form">
         <CardHeader>
           <CardTitle>Discover Properties</CardTitle>
         </CardHeader>
@@ -142,7 +142,7 @@ export default function AdminDiscoverPage(): React.ReactNode {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card data-ob="discover-urls-table">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Discovered URLs</CardTitle>
           <Button onClick={loadTargets} variant="outline" size="sm">

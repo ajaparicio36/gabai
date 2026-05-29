@@ -118,7 +118,7 @@ export default function AdminModelPage(): React.ReactNode {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card data-ob="model-pool">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Training Pool</CardTitle>
           <div className="flex items-center gap-3">
@@ -175,7 +175,7 @@ export default function AdminModelPage(): React.ReactNode {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2" data-ob="model-version-cards">
         <Card>
           <CardHeader>
             <CardTitle>Active Model</CardTitle>
