@@ -2,6 +2,7 @@
 /dist
 /coverage
 /.nx/cache
+apps/gavai/reports
 **/.venv
 
 # Python sidecar (uses ruff, not prettier)

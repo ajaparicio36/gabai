@@ -11,6 +11,11 @@ async function main(): Promise<void> {
   const email = process.env.ADMIN_EMAIL || 'admin@gavai.dev';
   const password = process.env.ADMIN_PASSWORD || 'admin123';
 
+  if (process.env.RESET_ADMIN === 'true') {
+    console.log(`Resetting admin user password for: ${email}`);
+    await prisma.user.deleteMany({ where: { email } });
+  }
+
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     console.log(`Admin user already exists: ${email}`);

@@ -101,15 +101,18 @@ export interface ReportResponse {
   pdfUrl: string | null;
   verificationHash: string;
   createdAt: string;
+  normalizedListings: unknown[];
+  warnings: string[];
 }
 
 export interface ModelVersion {
   id: string;
   version: string;
   modelPath: string;
-  status: string;
+  status: 'training' | 'ready' | 'deployed' | 'archived' | 'failed';
   mape: number | null;
   trainingRecords: number | null;
+  errorLog: string | null;
   deployedAt: string | null;
   createdAt: string;
 }
@@ -139,6 +142,30 @@ export interface RetrainResponse {
   version: string;
   mape: number;
   trainingRecords: number;
+}
+
+export interface TrainQueuedResponse {
+  queued: true;
+  jobId: string | number | undefined;
+}
+
+export interface NormalizedRecord {
+  id: string;
+  title: string | null;
+  city: string | null;
+  province: string | null;
+  region: string | null;
+  propertyType: string | null;
+  askingPricePhp: number | null;
+  lotAreaSqm: number | null;
+  floorAreaSqm: number | null;
+  confidenceScore: number | null;
+  locationStatus: string | null;
+  normalizationStatus: string;
+  normalizationIssues: string[] | null;
+  trainingEligible: boolean;
+  flagged: boolean;
+  flagReason: string | null;
 }
 
 export interface PromoteResponse {

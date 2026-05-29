@@ -6,6 +6,7 @@ import { PlatformModule } from '@gavai/platform';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '../modules/auth/auth.module';
+import { QueueModule } from '../modules/queue/queue.module';
 import { PipelineModule } from '../modules/pipeline/pipeline.module';
 import { ValuationModule } from '../modules/valuation/valuation.module';
 import { AdminModule } from '../modules/admin/admin.module';
@@ -28,6 +29,7 @@ import { validateEnv } from '../config/env.validation';
     ]),
     PlatformModule,
     AuthModule,
+    QueueModule,
     PipelineModule,
     ValuationModule,
     AdminModule,

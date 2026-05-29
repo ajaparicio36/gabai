@@ -59,4 +59,19 @@ export class PipelineController {
   async getRecord(@Param('id') id: string) {
     return this.pipelineService.getRecordById(id);
   }
+
+  @Post('normalize/run')
+  async runNormalize(@Body() dto: ScrapeApproveDto) {
+    return this.pipelineService.queueNormalizationForRecords(dto.ids);
+  }
+
+  @Get('normalize/records')
+  async getNormalizeRecords() {
+    return this.pipelineService.getNormalizationRecords();
+  }
+
+  @Post('normalize/approve')
+  async approveNormalize(@Body() dto: ScrapeApproveDto) {
+    return this.pipelineService.approveNormalizedRecords(dto.ids);
+  }
 }

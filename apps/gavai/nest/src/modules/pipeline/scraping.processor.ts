@@ -1,5 +1,5 @@
-import { Processor, Process, OnQueueFailed } from '@nestjs/bull';
-import type { Job } from 'bull';
+import { Processor, Process, OnQueueFailed, InjectQueue } from '@nestjs/bull';
+import type { Job, Queue } from 'bull';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   LISTING_SCHEMA,
@@ -17,6 +17,7 @@ export class ScrapingProcessor {
   constructor(
     private readonly pipelineRepository: PipelineRepository,
     private readonly brightdata: BrightDataService,
+    @InjectQueue('normalization') private readonly normalizationQueue: Queue,
   ) {}
 
   @Process('scrape-url')
@@ -83,12 +84,14 @@ export class ScrapingProcessor {
         if (!isNaN(parsed.getTime())) listingDate = parsed;
       }
 
-      await this.pipelineRepository.createPendingRecord({
-        status: 'pending_review',
+      const created = await this.pipelineRepository.createPendingRecord({
+        status: 'normalization_pending',
         sourceUrl: job.data.url,
+        sourceName: new URL(job.data.url).hostname.replace(/^www\./, ''),
         title: record.title,
+        description: String(rawRecord.description ?? ''),
         addressRaw: record.addressRaw,
-        city: record.city,
+        city: undefined,
         barangay: record.barangay ?? undefined,
         propertyType: record.propertyType,
         lotAreaSqm: record.lotAreaSqm ?? undefined,
@@ -99,8 +102,15 @@ export class ScrapingProcessor {
         pricePerSqmPhp,
         listingDate,
         developer: record.developer ?? undefined,
+        rawTextReference: String(rawRecord.raw_text_reference ?? ''),
+        normalizationStatus: 'pending',
+        trainingEligible: false,
         flagged: flags.length > 0,
         flagReason: flags.join('; ') || undefined,
+      });
+
+      await this.normalizationQueue.add('normalize-record', {
+        recordId: created.id,
       });
 
       inserted++;

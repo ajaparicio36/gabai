@@ -64,9 +64,14 @@ export class PipelineRepository {
   async createPendingRecord(data: {
     status: string;
     sourceUrl?: string;
+    sourceName?: string;
     title?: string;
+    description?: string;
     addressRaw?: string;
+    locationRaw?: string;
     city?: string;
+    province?: string;
+    region?: string;
     barangay?: string;
     propertyType?: string;
     lotAreaSqm?: number;
@@ -77,10 +82,74 @@ export class PipelineRepository {
     pricePerSqmPhp?: number;
     listingDate?: Date;
     developer?: string;
+    rawTextReference?: string;
+    aiExtraction?: unknown;
+    fieldConfidence?: unknown;
+    confidenceScore?: number;
+    locationStatus?: string;
+    normalizationStatus?: string;
+    normalizationIssues?: unknown;
+    normalizedAt?: Date;
+    trainingEligible?: boolean;
     flagged?: boolean;
     flagReason?: string;
   }) {
-    return this.prisma.pendingTrainingRecord.create({ data });
+    return this.prisma.pendingTrainingRecord.create({ data: data as any });
+  }
+
+  async updateRecordNormalization(
+    id: string,
+    data: {
+      title?: string | null;
+      description?: string | null;
+      locationRaw?: string | null;
+      city?: string | null;
+      province?: string | null;
+      region?: string | null;
+      propertyType?: string | null;
+      askingPricePhp?: number | null;
+      lotAreaSqm?: number | null;
+      floorAreaSqm?: number | null;
+      rawTextReference?: string | null;
+      aiExtraction?: unknown;
+      fieldConfidence?: unknown;
+      confidenceScore?: number;
+      locationStatus?: string;
+      normalizationStatus: string;
+      normalizationIssues?: unknown;
+      normalizedAt: Date;
+      trainingEligible: boolean;
+      status: string;
+      flagged?: boolean;
+      flagReason?: string | null;
+    },
+  ) {
+    return this.prisma.pendingTrainingRecord.update({
+      where: { id },
+      data: data as any,
+    });
+  }
+
+  async findNormalizationReviewRecords() {
+    return this.prisma.pendingTrainingRecord.findMany({
+      where: {
+        normalizationStatus: { in: ['normalized', 'low_confidence', 'failed'] },
+        status: { in: ['normalization_review', 'normalization_failed'] },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+  }
+
+  async approveNormalizedRecords(ids: string[]) {
+    return this.prisma.pendingTrainingRecord.updateMany({
+      where: {
+        id: { in: ids },
+        normalizationStatus: 'normalized',
+        trainingEligible: true,
+      },
+      data: { status: 'approved' },
+    });
   }
 
   async findPendingReviewRecords() {
@@ -138,12 +207,15 @@ export class PipelineRepository {
   }
 
   async createProperty(data: {
+    sourceRecordId?: string;
     sourceUrl?: string;
     scrapedAt: Date;
     rawTitle?: string;
     addressRaw?: string;
     googlePlaceId?: string;
     city?: string;
+    province?: string;
+    region?: string;
     barangay?: string;
     lat?: number;
     lng?: number;
@@ -165,9 +237,11 @@ export class PipelineRepository {
     floodRisk?: number;
     crepTier?: string;
     crepPhp?: number;
+    normalizationConfidenceScore?: number;
+    normalizationIssues?: unknown;
     approved: boolean;
   }) {
-    return this.prisma.property.create({ data });
+    return this.prisma.property.create({ data: data as any });
   }
 
   async findApprovedPropertiesByType(propertyType: string) {

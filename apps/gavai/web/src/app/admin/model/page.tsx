@@ -31,6 +31,7 @@ function statusVariant(
     case 'training':
       return 'outline';
     case 'archived':
+    case 'failed':
       return 'destructive';
     default:
       return 'outline';
@@ -94,10 +95,8 @@ export default function AdminModelPage(): React.ReactNode {
 
   const handleRetrain = useCallback(async () => {
     try {
-      const result = await retrain.mutateAsync();
-      toast.success(
-        `Model v${result.version} trained. MAPE: ${(result.mape * 100).toFixed(1)}% (${result.trainingRecords} records)`,
-      );
+      await retrain.mutateAsync();
+      toast.success('AVM retraining job queued in background successfully');
     } catch {
       toast.error('Retraining failed');
     }
@@ -115,6 +114,8 @@ export default function AdminModelPage(): React.ReactNode {
     [promote],
   );
 
+  const minimumRecordsMet = records ? records.length >= 20 : false;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -127,7 +128,10 @@ export default function AdminModelPage(): React.ReactNode {
                 Training... {retrainElapsedFormatted}
               </Badge>
             )}
-            <Button onClick={handleRetrain} disabled={isRetraining}>
+            <Button
+              onClick={handleRetrain}
+              disabled={isRetraining || !minimumRecordsMet}
+            >
               {isRetraining
                 ? `Training... ${retrainElapsedFormatted}`
                 : 'Retrain Model'}
@@ -145,7 +149,7 @@ export default function AdminModelPage(): React.ReactNode {
                 <div>
                   <p className="text-3xl font-bold">{records?.length ?? 0}</p>
                   <p className="text-xs text-muted-foreground">
-                    Approved training records
+                    Normalized training records
                   </p>
                 </div>
                 <Separator orientation="vertical" className="h-auto" />
@@ -312,7 +316,12 @@ export default function AdminModelPage(): React.ReactNode {
               {versions?.map((v: ModelVersion) => (
                 <TableRow key={v.id}>
                   <TableCell className="font-mono text-sm">
-                    {v.version}
+                    <div>{v.version}</div>
+                    {v.status === 'failed' && v.errorLog && (
+                      <p className="mt-1 max-w-md text-xs text-destructive whitespace-pre-wrap">
+                        {v.errorLog}
+                      </p>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(v.status)}>{v.status}</Badge>
@@ -332,7 +341,7 @@ export default function AdminModelPage(): React.ReactNode {
                       : '-'}
                   </TableCell>
                   <TableCell className="text-right">
-                    {v.status !== 'deployed' && (
+                    {v.status !== 'deployed' && v.status !== 'failed' && (
                       <Button
                         variant="ghost"
                         size="sm"

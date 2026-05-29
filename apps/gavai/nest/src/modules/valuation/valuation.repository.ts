@@ -77,12 +77,14 @@ export class ValuationRepository {
   async updateModelVersion(
     id: string,
     data: {
+      version?: string;
       status?: string;
       mape?: number;
       trainingRecords?: number;
       modelPath?: string;
       deployedAt?: Date;
       jobId?: string;
+      errorLog?: string;
     },
   ) {
     return this.prisma.modelVersion.update({ where: { id }, data });
@@ -93,6 +95,10 @@ export class ValuationRepository {
       where: {
         approved: true,
         listingType: 'standard',
+        sourceRecord: {
+          normalizationStatus: 'normalized',
+          trainingEligible: true,
+        },
         OR: [{ lotAreaSqm: { not: null } }, { floorAreaSqm: { not: null } }],
       },
       select: {
@@ -107,12 +113,15 @@ export class ValuationRepository {
         pricePerSqmPhp: true,
         barangay: true,
         city: true,
+        province: true,
+        region: true,
         developer: true,
         phivolcsRisk: true,
         floodRisk: true,
         zonalValuePhp: true,
         crepPhp: true,
         proximityScores: true,
+        normalizationConfidenceScore: true,
         createdAt: true,
       },
     });

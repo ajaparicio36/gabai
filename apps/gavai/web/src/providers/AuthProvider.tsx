@@ -55,6 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     const response = await api.post('/auth/login', { email, password });
     const { accessToken, refreshToken, user: userData } = response.data.data;
     storeTokens({ accessToken, refreshToken });
+    if (typeof window !== 'undefined') {
+      const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
+      document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; expires=${expires}; SameSite=Lax`;
+    }
     setUser(userData);
   }, []);
 
@@ -69,6 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       // proceed even if logout endpoint fails
     }
     clearTokens();
+    if (typeof window !== 'undefined') {
+      document.cookie = `user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+    }
     setUser(null);
   }, []);
 

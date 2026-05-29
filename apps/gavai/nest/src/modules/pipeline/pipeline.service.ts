@@ -11,6 +11,7 @@ export class PipelineService {
     private readonly pipelineRepository: PipelineRepository,
     private readonly brightdata: BrightDataService,
     @InjectQueue('scraping') private readonly scrapingQueue: Queue,
+    @InjectQueue('normalization') private readonly normalizationQueue: Queue,
     @InjectQueue('enrichment') private readonly enrichmentQueue: Queue,
   ) {}
 
@@ -64,6 +65,32 @@ export class PipelineService {
     return { queued: targets.length };
   }
 
+  async queueNormalizationForRecords(
+    ids: string[],
+  ): Promise<{ queued: number }> {
+    for (const id of ids) {
+      await this.normalizationQueue.add('normalize-record', { recordId: id });
+    }
+    return { queued: ids.length };
+  }
+
+  async getNormalizationRecords() {
+    return this.pipelineRepository.findNormalizationReviewRecords();
+  }
+
+  async approveNormalizedRecords(ids: string[]): Promise<{ approved: number }> {
+    const result = await this.pipelineRepository.approveNormalizedRecords(ids);
+    for (const id of ids) {
+      const record = await this.pipelineRepository.findRecordById(id);
+      if (record?.status === 'approved') {
+        await this.enrichmentQueue.add('enrich-record', {
+          recordId: record.id,
+        });
+      }
+    }
+    return { approved: result.count };
+  }
+
   async approveScrapeRecords(ids: string[]): Promise<{ approved: number }> {
     const result = await this.pipelineRepository.approveRecords(ids);
 
@@ -98,21 +125,30 @@ export class PipelineService {
 
   async getQueueStatus(): Promise<{
     scraping: { active: number; waiting: number };
+    normalization: { active: number; waiting: number };
     enrichment: { active: number; waiting: number };
   }> {
     const [
       scrapingActive,
       scrapingWaiting,
+      normalizationActive,
+      normalizationWaiting,
       enrichmentActive,
       enrichmentWaiting,
     ] = await Promise.all([
       this.scrapingQueue.getActiveCount(),
       this.scrapingQueue.getWaitingCount(),
+      this.normalizationQueue.getActiveCount(),
+      this.normalizationQueue.getWaitingCount(),
       this.enrichmentQueue.getActiveCount(),
       this.enrichmentQueue.getWaitingCount(),
     ]);
     return {
       scraping: { active: scrapingActive, waiting: scrapingWaiting },
+      normalization: {
+        active: normalizationActive,
+        waiting: normalizationWaiting,
+      },
       enrichment: { active: enrichmentActive, waiting: enrichmentWaiting },
     };
   }
