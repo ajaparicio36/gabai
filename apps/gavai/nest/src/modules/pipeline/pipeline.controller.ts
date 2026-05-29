@@ -90,6 +90,11 @@ export class PipelineController {
     return this.pipelineService.approveNormalizedRecords(dto.ids);
   }
 
+  @Post('normalize/reject')
+  async rejectNormalize(@Body() dto: ScrapeRejectDto) {
+    return this.pipelineService.rejectNormalizationRecords(dto.ids);
+  }
+
   @Post('crawl/seeds')
   async createCrawlSeed(@Body() dto: CreateCrawlSeedDto) {
     return this.pipelineService.createCrawlSeed(dto);

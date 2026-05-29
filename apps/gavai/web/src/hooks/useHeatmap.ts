@@ -7,6 +7,8 @@ import type { HeatmapTileResponse } from '@/types/api';
 interface HeatmapParams {
   bbox: string;
   propertyType?: string;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 interface UseHeatmapResult {

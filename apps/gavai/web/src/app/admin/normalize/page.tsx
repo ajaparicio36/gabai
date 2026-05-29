@@ -21,6 +21,7 @@ export default function AdminNormalizePage(): React.ReactNode {
   const [records, setRecords] = useState<NormalizedRecord[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   const loadRecords = useCallback(async (): Promise<void> => {
     const response = await api.get<{ data: NormalizedRecord[] }>(
@@ -37,7 +38,7 @@ export default function AdminNormalizePage(): React.ReactNode {
     setApproving(true);
     try {
       await api.post('/admin/normalize/approve', { ids: Array.from(selected) });
-      toast.success(`Approved ${selected.size} normalized records`);
+      toast.success(`Approved ${selected.size} records`);
       setSelected(new Set());
       await loadRecords();
     } catch {
@@ -45,6 +46,28 @@ export default function AdminNormalizePage(): React.ReactNode {
     } finally {
       setApproving(false);
     }
+  };
+
+  const reject = async (ids: string[]): Promise<void> => {
+    setRejecting(true);
+    try {
+      await api.post('/admin/normalize/reject', { ids });
+      toast.success(`Rejected ${ids.length} records`);
+      setSelected(new Set());
+      await loadRecords();
+    } catch {
+      toast.error('Rejection failed');
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const rejectAllFailed = async (): Promise<void> => {
+    const failedIds = records
+      .filter((r) => r.normalizationStatus === 'failed')
+      .map((r) => r.id);
+    if (failedIds.length === 0) return;
+    await reject(failedIds);
   };
 
   const readyCount = records.filter(
@@ -56,6 +79,15 @@ export default function AdminNormalizePage(): React.ReactNode {
   const lowConfidenceCount = records.filter(
     (r) => r.normalizationStatus === 'low_confidence',
   ).length;
+
+  const selectableIds = records
+    .filter(
+      (r) =>
+        (r.normalizationStatus === 'normalized' ||
+          r.normalizationStatus === 'low_confidence') &&
+        r.trainingEligible,
+    )
+    .map((r) => r.id);
 
   return (
     <div className="space-y-6">
@@ -72,16 +104,33 @@ export default function AdminNormalizePage(): React.ReactNode {
             <Badge variant="outline">{lowConfidenceCount} low confidence</Badge>
             <Badge variant="destructive">{failedCount} failed</Badge>
           </div>
-          {selected.size > 0 && (
-            <Button
-              onClick={approve}
-              disabled={approving}
-              size="sm"
-              className="mb-4"
-            >
-              {approving ? 'Approving...' : `Approve (${selected.size})`}
-            </Button>
-          )}
+          <div className="mb-4 flex gap-2">
+            {selected.size > 0 && (
+              <Button onClick={approve} disabled={approving} size="sm">
+                {approving ? 'Approving...' : `Approve (${selected.size})`}
+              </Button>
+            )}
+            {selected.size > 0 && (
+              <Button
+                onClick={() => reject(Array.from(selected))}
+                disabled={rejecting}
+                variant="outline"
+                size="sm"
+              >
+                {rejecting ? 'Rejecting...' : `Reject (${selected.size})`}
+              </Button>
+            )}
+            {failedCount > 0 && (
+              <Button
+                onClick={rejectAllFailed}
+                disabled={rejecting}
+                variant="destructive"
+                size="sm"
+              >
+                Reject All Failed ({failedCount})
+              </Button>
+            )}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -96,9 +145,13 @@ export default function AdminNormalizePage(): React.ReactNode {
             </TableHeader>
             <TableBody>
               {records.map((record) => {
-                const selectable =
-                  record.normalizationStatus === 'normalized' &&
-                  record.trainingEligible;
+                const selectable = selectableIds.includes(record.id);
+                const statusVariant =
+                  record.normalizationStatus === 'normalized'
+                    ? 'secondary'
+                    : record.normalizationStatus === 'failed'
+                      ? 'destructive'
+                      : 'outline';
                 return (
                   <TableRow key={record.id}>
                     <TableCell>
@@ -130,13 +183,7 @@ export default function AdminNormalizePage(): React.ReactNode {
                     </TableCell>
                     <TableCell>{record.confidenceScore ?? '-'}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          record.normalizationStatus === 'normalized'
-                            ? 'secondary'
-                            : 'outline'
-                        }
-                      >
+                      <Badge variant={statusVariant}>
                         {record.normalizationStatus}
                       </Badge>
                     </TableCell>

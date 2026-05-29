@@ -58,6 +58,8 @@ export class HeatmapRepository {
     maxLat: number,
     maxLng: number,
     propertyType?: string,
+    priceMin?: number,
+    priceMax?: number,
   ): Promise<
     {
       grid_x: number;
@@ -70,6 +72,10 @@ export class HeatmapRepository {
     const typeFilter = propertyType
       ? `AND "propertyType" = '${propertyType}'`
       : '';
+    const priceFilter =
+      priceMin != null || priceMax != null
+        ? `AND "pricePerSqmPhp" >= ${priceMin ?? 0} AND "pricePerSqmPhp" <= ${priceMax ?? 1_000_000}`
+        : '';
 
     return this.prisma.$queryRawUnsafe<
       {
@@ -94,6 +100,7 @@ export class HeatmapRepository {
         AND "listingType" = 'standard'
         AND "approved" = true
         ${typeFilter}
+        ${priceFilter}
       GROUP BY grid_x, grid_y
       HAVING COUNT(*) >= 2
       ORDER BY count DESC
@@ -146,6 +153,8 @@ export class HeatmapRepository {
     maxLat: number,
     maxLng: number,
     propertyType?: string,
+    priceMin?: number,
+    priceMax?: number,
   ): Promise<NearbyProperty[]> {
     const where: Prisma.PropertyWhereInput = {
       lat: { gte: minLat, lte: maxLat },
@@ -156,6 +165,13 @@ export class HeatmapRepository {
     };
     if (propertyType) {
       where.propertyType = propertyType;
+    }
+    if (priceMin != null || priceMax != null) {
+      where.pricePerSqmPhp = {
+        ...((where.pricePerSqmPhp as object) ?? {}),
+        gte: priceMin ?? 0,
+        lte: priceMax ?? 1_000_000,
+      };
     }
 
     const rows = await this.prisma.property.findMany({

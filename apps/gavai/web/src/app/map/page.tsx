@@ -29,7 +29,7 @@ function MapContent(): React.ReactNode {
   const [filters, setFilters] = useState<HeatmapFilters>({
     propertyType: 'all',
     priceMin: 0,
-    priceMax: 200000,
+    priceMax: 500000,
   });
   const [selectedLat, setSelectedLat] = useState<number | null>(null);
   const [selectedLng, setSelectedLng] = useState<number | null>(null);
@@ -55,6 +55,8 @@ function MapContent(): React.ReactNode {
     bbox: bboxQuery,
     propertyType:
       filters.propertyType === 'all' ? undefined : filters.propertyType,
+    priceMin: filters.priceMin,
+    priceMax: filters.priceMax,
   };
 
   const { data: heatmapData, isNoData: isHeatmapNoData } =
@@ -86,6 +88,8 @@ function MapContent(): React.ReactNode {
     listingsBounds.maxLat,
     listingsBounds.maxLng,
     filters.propertyType === 'all' ? undefined : filters.propertyType,
+    filters.priceMin,
+    filters.priceMax,
   );
 
   useEffect(() => {

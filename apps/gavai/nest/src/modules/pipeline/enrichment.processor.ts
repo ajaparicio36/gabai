@@ -31,7 +31,8 @@ export class EnrichmentProcessor {
     if (
       !record ||
       record.status !== 'approved' ||
-      record.normalizationStatus !== 'normalized' ||
+      (record.normalizationStatus !== 'normalized' &&
+        record.normalizationStatus !== 'low_confidence') ||
       !record.trainingEligible
     ) {
       return {

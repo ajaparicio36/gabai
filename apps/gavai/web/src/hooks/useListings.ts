@@ -10,12 +10,23 @@ export function useListings(
   maxLat: number,
   maxLng: number,
   propertyType?: string,
+  priceMin?: number,
+  priceMax?: number,
 ): {
   data: NearbyProperty[] | undefined;
   isLoading: boolean;
 } {
   const query = useQuery<NearbyProperty[], Error>({
-    queryKey: ['listings', minLat, minLng, maxLat, maxLng, propertyType],
+    queryKey: [
+      'listings',
+      minLat,
+      minLng,
+      maxLat,
+      maxLng,
+      propertyType,
+      priceMin,
+      priceMax,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         minLat: String(minLat),
@@ -24,6 +35,8 @@ export function useListings(
         maxLng: String(maxLng),
       });
       if (propertyType) params.set('propertyType', propertyType);
+      if (priceMin != null) params.set('priceMin', String(priceMin));
+      if (priceMax != null) params.set('priceMax', String(priceMax));
 
       const response = await api.get<{
         data: NearbyProperty[];

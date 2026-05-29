@@ -217,6 +217,67 @@ export function computeTravelTimeScore(travelSeconds: number): number {
   return Math.max(0, Math.min(1, 1 - travelSeconds / 1800));
 }
 
+const CATEGORY_URL_PATTERNS: Array<{
+  hostPattern: RegExp;
+  pathPattern: RegExp;
+}> = [
+  {
+    hostPattern: /dotproperty\.com\.ph$/,
+    pathPattern: /-for-sale\//,
+  },
+  {
+    hostPattern: /dotproperty\.com\.ph$/,
+    pathPattern: /\/properties-for-sale\//,
+  },
+  {
+    hostPattern: /presello\.com$/,
+    pathPattern: /\/property-location\//,
+  },
+  {
+    hostPattern: /lamudi\.com\.ph$/,
+    pathPattern: /\/buy\//,
+  },
+  {
+    hostPattern: /lamudi\.com\.ph$/,
+    pathPattern: /\/for-sale\//,
+  },
+];
+
+const NON_PROPERTY_HOSTS = [
+  'facebook.com',
+  'fb.com',
+  'instagram.com',
+  'twitter.com',
+  'x.com',
+  'youtube.com',
+  'linkedin.com',
+  'tiktok.com',
+  'wikipedia.org',
+];
+
+export function isCategorySearchUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '');
+
+    for (const blocked of NON_PROPERTY_HOSTS) {
+      if (hostname === blocked || hostname.endsWith(`.${blocked}`)) {
+        return true;
+      }
+    }
+
+    for (const { hostPattern, pathPattern } of CATEGORY_URL_PATTERNS) {
+      if (hostPattern.test(hostname) && pathPattern.test(parsed.pathname)) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 export interface DataCompletenessResult {
   score: number;
   missingFields: string[];

@@ -1,7 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 import { ERROR_CODES } from '@gavai/platform';
+import { isCategorySearchUrl } from '@gavai/pipeline';
 import { PipelineRepository } from './pipeline.repository';
 import { BrightDataService } from './services/brightdata.service';
 
@@ -19,9 +20,13 @@ export class PipelineService {
   async discover(
     location: string,
     propertyType?: string,
-  ): Promise<{ discovered: number; duplicatesSkipped: number }> {
-    // Site-targeted queries ensure we get actual listing URLs from known portals,
-    // not blog posts, news articles, or aggregator pages.
+  ): Promise<{
+    discovered: number;
+    duplicatesSkipped: number;
+    categorySkipped: number;
+  }> {
+    const logger = new Logger(PipelineService.name);
+
     const PORTAL_SITES = [
       'lamudi.com.ph',
       'hoppler.com.ph',
@@ -50,8 +55,15 @@ export class PipelineService {
     // Deduplicate across all portal queries before DB check
     const uniqueUrls = [...new Set(allUrls)];
 
+    let categorySkipped = 0;
     const newTargets = [];
     for (const url of uniqueUrls) {
+      if (isCategorySearchUrl(url)) {
+        categorySkipped++;
+        logger.debug(`Skipping category/search URL: ${url}`);
+        continue;
+      }
+
       const urlHash = this.pipelineRepository.computeUrlHash(url);
       const exists = await this.pipelineRepository.findTargetByUrlHash(urlHash);
       if (!exists) {
@@ -68,7 +80,9 @@ export class PipelineService {
     await this.pipelineRepository.createScrapingTargets(newTargets);
     return {
       discovered: newTargets.length,
-      duplicatesSkipped: uniqueUrls.length - newTargets.length,
+      duplicatesSkipped:
+        uniqueUrls.length - newTargets.length - categorySkipped,
+      categorySkipped,
     };
   }
 
@@ -118,18 +132,16 @@ export class PipelineService {
     return { approved: result.count };
   }
 
+  async rejectNormalizationRecords(
+    ids: string[],
+  ): Promise<{ rejected: number }> {
+    const result =
+      await this.pipelineRepository.rejectNormalizationRecords(ids);
+    return { rejected: result.count };
+  }
+
   async approveScrapeRecords(ids: string[]): Promise<{ approved: number }> {
     const result = await this.pipelineRepository.approveRecords(ids);
-
-    for (const id of ids) {
-      const record = await this.pipelineRepository.findRecordById(id);
-      if (record && record.status === 'approved') {
-        await this.enrichmentQueue.add('enrich-record', {
-          recordId: record.id,
-        });
-      }
-    }
-
     return { approved: result.count };
   }
 

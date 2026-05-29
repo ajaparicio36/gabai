@@ -16,8 +16,15 @@ export class HeatmapController {
   async getTiles(
     @Query('bbox') bbox: string,
     @Query('propertyType') propertyType?: string,
+    @Query('priceMin') priceMin?: string,
+    @Query('priceMax') priceMax?: string,
   ): Promise<GeoJsonTileResponse> {
-    return this.heatmapService.getTiles(bbox, propertyType);
+    return this.heatmapService.getTiles(
+      bbox,
+      propertyType,
+      priceMin != null ? Number(priceMin) : undefined,
+      priceMax != null ? Number(priceMax) : undefined,
+    );
   }
 
   @Get('estimate')
@@ -35,6 +42,8 @@ export class HeatmapController {
     @Query('maxLat') maxLat: string,
     @Query('maxLng') maxLng: string,
     @Query('propertyType') propertyType?: string,
+    @Query('priceMin') priceMin?: string,
+    @Query('priceMax') priceMax?: string,
   ): Promise<NearbyProperty[]> {
     return this.heatmapService.getNearbyProperties(
       Number(minLat),
@@ -42,6 +51,8 @@ export class HeatmapController {
       Number(maxLat),
       Number(maxLng),
       propertyType || undefined,
+      priceMin != null ? Number(priceMin) : undefined,
+      priceMax != null ? Number(priceMax) : undefined,
     );
   }
 }

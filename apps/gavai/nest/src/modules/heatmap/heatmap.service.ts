@@ -14,6 +14,8 @@ export class HeatmapService {
   async getTiles(
     bbox: string,
     propertyType?: string,
+    priceMin?: number,
+    priceMax?: number,
   ): Promise<GeoJsonTileResponse> {
     const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(Number);
 
@@ -34,6 +36,8 @@ export class HeatmapService {
       maxLat,
       maxLng,
       propertyType,
+      priceMin,
+      priceMax,
     );
 
     if (!tiles.length) {
@@ -128,6 +132,8 @@ export class HeatmapService {
     maxLat: number,
     maxLng: number,
     propertyType?: string,
+    priceMin?: number,
+    priceMax?: number,
   ): Promise<NearbyProperty[]> {
     return this.heatmapRepository.getNearbyProperties(
       minLat,
@@ -135,6 +141,8 @@ export class HeatmapService {
       maxLat,
       maxLng,
       propertyType,
+      priceMin,
+      priceMax,
     );
   }
 }

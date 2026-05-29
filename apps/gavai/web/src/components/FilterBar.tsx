@@ -33,7 +33,7 @@ export function FilterBar({
   onFiltersChange,
 }: FilterBarProps): React.ReactNode {
   const [propertyType, setPropertyType] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 200000]);
+  const [priceRange, setPriceRange] = useState([0, 500000]);
 
   useEffect(() => {
     onFiltersChange({
@@ -63,15 +63,15 @@ export function FilterBar({
       <div className="flex items-center gap-2 flex-1">
         <Label className="text-xs whitespace-nowrap">
           PHP {priceRange[0].toLocaleString()} -{' '}
-          {priceRange[1] > 200000 ? '200K+' : priceRange[1].toLocaleString()}
+          {priceRange[1] >= 500000 ? '500K+' : priceRange[1].toLocaleString()}
         </Label>
         <Slider
           className="flex-1"
           value={priceRange}
           onValueChange={setPriceRange}
           min={0}
-          max={200000}
-          step={5000}
+          max={500000}
+          step={10000}
         />
       </div>
     </div>

@@ -145,10 +145,20 @@ export class PipelineRepository {
     return this.prisma.pendingTrainingRecord.updateMany({
       where: {
         id: { in: ids },
-        normalizationStatus: 'normalized',
+        normalizationStatus: { in: ['normalized', 'low_confidence'] },
         trainingEligible: true,
       },
       data: { status: 'approved' },
+    });
+  }
+
+  async rejectNormalizationRecords(ids: string[]) {
+    return this.prisma.pendingTrainingRecord.updateMany({
+      where: {
+        id: { in: ids },
+        normalizationStatus: { in: ['low_confidence', 'failed'] },
+      },
+      data: { status: 'rejected' },
     });
   }
 
