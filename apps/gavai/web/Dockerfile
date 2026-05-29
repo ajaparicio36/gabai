@@ -3,7 +3,8 @@ RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/gavai/web/package.json apps/gavai/web/
-RUN HUSKY=0 pnpm install --frozen-lockfile --prod
+RUN node -e "const p=require('./package.json'); delete p.scripts.prepare; require('fs').writeFileSync('./package.json', JSON.stringify(p,null,2))" \
+  && pnpm install --frozen-lockfile --prod
 
 FROM node:22-alpine AS build
 RUN corepack enable
