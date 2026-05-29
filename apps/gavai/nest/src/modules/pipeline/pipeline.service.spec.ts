@@ -35,6 +35,11 @@ describe('PipelineService normalization queue flow', () => {
       getActiveCount: jest.fn(),
       getWaitingCount: jest.fn(),
     };
+    const crawlingQueue = {
+      add: jest.fn(),
+      getActiveCount: jest.fn(),
+      getWaitingCount: jest.fn(),
+    };
 
     const service = new PipelineService(
       repository as never,
@@ -42,6 +47,7 @@ describe('PipelineService normalization queue flow', () => {
       scrapingQueue as never,
       normalizationQueue as never,
       enrichmentQueue as never,
+      crawlingQueue as never,
     );
 
     await service.queueNormalizationForRecords(['rec_1']);

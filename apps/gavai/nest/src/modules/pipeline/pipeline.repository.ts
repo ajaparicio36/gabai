@@ -289,4 +289,87 @@ export class PipelineRepository {
   computeUrlHash(url: string): string {
     return createHash('sha256').update(url).digest('hex');
   }
+
+  async createCrawlSeed(data: {
+    url: string;
+    site: string;
+    propertyType?: string;
+    maxPages?: number;
+    requestDelayMs?: number;
+    enabled?: boolean;
+  }) {
+    return this.prisma.crawlSeed.create({ data: data as any });
+  }
+
+  async findCrawlSeedById(id: string) {
+    return this.prisma.crawlSeed.findUnique({ where: { id } });
+  }
+
+  async findCrawlSeeds(filter?: { enabled?: boolean; site?: string }) {
+    return this.prisma.crawlSeed.findMany({
+      where: filter,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async updateCrawlSeed(
+    id: string,
+    data: {
+      url?: string;
+      site?: string;
+      propertyType?: string;
+      maxPages?: number;
+      requestDelayMs?: number;
+      enabled?: boolean;
+    },
+  ) {
+    return this.prisma.crawlSeed.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteCrawlSeed(id: string) {
+    return this.prisma.crawlSeed.delete({ where: { id } });
+  }
+
+  async createCrawlJob(data: {
+    seedId: string;
+    status: string;
+    startedAt?: Date;
+  }) {
+    return this.prisma.crawlJob.create({ data: data as any });
+  }
+
+  async updateCrawlJob(
+    id: string,
+    data: {
+      status?: string;
+      pagesCrawled?: number;
+      urlsFound?: number;
+      urlsSkipped?: number;
+      errorLog?: string;
+      completedAt?: Date;
+    },
+  ) {
+    return this.prisma.crawlJob.update({ where: { id }, data });
+  }
+
+  async findCrawlJobs(limit = 20) {
+    return this.prisma.crawlJob.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  }
+
+  async findCrawlJobById(id: string) {
+    return this.prisma.crawlJob.findUnique({ where: { id } });
+  }
+
+  async findLatestCrawlJobBySeed(seedId: string) {
+    return this.prisma.crawlJob.findFirst({
+      where: { seedId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

@@ -141,6 +141,27 @@ model AreaIntelligence {
   @@unique([latKey, lngKey, radiusM])
 }
 
+model AreaRiskScores {
+  id                 String   @id @default(cuid())
+  latKey             Float
+  lngKey             Float
+
+  floodScore        Float?
+  floodLevel        String?
+  trafficScore      Float?
+  trafficSpeedRatio Float?
+  yieldScore        Float?
+  yieldArticleCount Int?
+  marketPremium     Float?
+  faultScore        Float?    @default(0.5)
+
+  metadata  Json
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@unique([latKey, lngKey])
+}
+
 model ScrapingJob {
   id          String    @id @default(cuid())
   source      String
@@ -250,4 +271,34 @@ model ModelVersion {
   errorLog        String?
   deployedAt      DateTime?
   createdAt       DateTime  @default(now())
+}
+
+model CrawlSeed {
+  id             String   @id @default(cuid())
+  url            String
+  site           String
+  propertyType   String   @default("all")
+  maxPages       Int      @default(10)
+  requestDelayMs Int      @default(3000)
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([url, propertyType])
+}
+
+model CrawlJob {
+  id            String    @id @default(cuid())
+  seedId        String
+  status        String    @default("pending")
+  pagesCrawled  Int       @default(0)
+  urlsFound     Int       @default(0)
+  urlsSkipped   Int       @default(0)
+  errorLog      String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([seedId])
+  @@index([status])
 }

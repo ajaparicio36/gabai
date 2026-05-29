@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
-import { MapProvider } from '@/providers/MapProvider';
+import { MapProvider, defaultCenter } from '@/providers/MapProvider';
 import { MapContainer, Marker } from '@/components/MapContainer';
 import { ViewToggle, type MapViewMode } from '@/components/ViewToggle';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
@@ -14,10 +14,11 @@ import { useQuickEstimate } from '@/hooks/useQuickEstimate';
 import { useValuation } from '@/hooks/useValuation';
 import { useAreaIntel } from '@/hooks/useAreaIntel';
 import { useGenerateReport } from '@/hooks/useReport';
+import { useRiskScores } from '@/hooks/useRiskScores';
 import { useListings } from '@/hooks/useListings';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Satellite } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function MapContent(): React.ReactNode {
@@ -33,8 +34,23 @@ function MapContent(): React.ReactNode {
   const [selectedLat, setSelectedLat] = useState<number | null>(null);
   const [selectedLng, setSelectedLng] = useState<number | null>(null);
   const [showValuationPanel, setShowValuationPanel] = useState(false);
+  const [mapTypeId, setMapTypeId] = useState<string>('roadmap');
 
-  const bboxQuery = '123.7,10.1,124.0,10.5';
+  function SatelliteToggle(): React.ReactNode {
+    return (
+      <button
+        onClick={() =>
+          setMapTypeId((m) => (m === 'roadmap' ? 'satellite' : 'roadmap'))
+        }
+        className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border"
+      >
+        <Satellite className="inline h-4 w-4 mr-1" />
+        {mapTypeId === 'roadmap' ? 'Satellite' : 'Road'}
+      </button>
+    );
+  }
+
+  const bboxQuery = '120.9,14.3,121.2,14.75';
   const heatmapParams = {
     bbox: bboxQuery,
     propertyType:
@@ -52,11 +68,17 @@ function MapContent(): React.ReactNode {
   );
   const report = useGenerateReport();
 
+  const { data: riskScores, isLoading: isRiskScoresLoading } = useRiskScores(
+    selectedLat,
+    selectedLng,
+    showValuationPanel && !!valuation.data,
+  );
+
   const listingsBounds = {
-    minLat: 10.1,
-    minLng: 123.7,
-    maxLat: 10.5,
-    maxLng: 124.0,
+    minLat: 14.3,
+    minLng: 120.9,
+    maxLat: 14.75,
+    maxLng: 121.2,
   };
   const { data: listings } = useListings(
     listingsBounds.minLat,
@@ -117,6 +139,7 @@ function MapContent(): React.ReactNode {
         <span className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border-l-2 border-l-secondary">
           GAVAI
         </span>
+        <SatelliteToggle />
       </div>
 
       <ViewToggle value={viewMode} onChange={setViewMode} />
@@ -164,8 +187,10 @@ function MapContent(): React.ReactNode {
 
       <MapContainer
         onClick={handleMapClick}
-        defaultZoom={13}
-        center={{ lat: 10.3157, lng: 123.8854 }}
+        defaultZoom={12}
+        center={defaultCenter}
+        mapTypeId={mapTypeId}
+        tilt={mapTypeId === 'satellite' ? 45 : 0}
       >
         {viewMode === 'heatmap' && heatmapData?.features && (
           <HeatmapLayer features={heatmapData.features} />
@@ -212,6 +237,10 @@ function MapContent(): React.ReactNode {
           onGenerateReport={handleGenerateReport}
           isReportPending={report.isPending}
           onClose={() => setShowValuationPanel(false)}
+          selectedLat={selectedLat}
+          selectedLng={selectedLng}
+          riskScores={riskScores}
+          isRiskScoresLoading={isRiskScoresLoading}
         />
       )}
     </div>

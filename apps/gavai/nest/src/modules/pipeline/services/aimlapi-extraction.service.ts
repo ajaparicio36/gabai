@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 import type { ExtractedListingPayload } from '@gavai/pipeline';
+import type { CrawlPageResult } from '@gavai/pipeline';
 
 const confidenceSchema = z.enum(['high', 'medium', 'low', 'missing']);
 
@@ -46,6 +47,24 @@ const extractedListingSchema = z
       })
       .strict(),
     issues: z.array(z.string()),
+  })
+  .strict();
+
+const crawlPageResultSchema = z
+  .object({
+    listings: z.array(
+      z.object({
+        url: z.string(),
+        title: z.string().nullable(),
+        hasPrice: z.boolean(),
+        pricePreview: z.string().nullable(),
+        hasArea: z.boolean(),
+        areaPreview: z.string().nullable(),
+      }),
+    ),
+    hasNextPage: z.boolean(),
+    nextPageUrl: z.string().nullable(),
+    confidence: z.enum(['high', 'medium', 'low']),
   })
   .strict();
 
@@ -118,6 +137,69 @@ export class AimlapiExtractionService {
     return this.parseExtractedJson(content);
   }
 
+  async extractListingUrls(
+    htmlContent: string,
+    sourceDomain: string,
+  ): Promise<CrawlPageResult | null> {
+    const apiKey = this.configService.get<string>('AIML_API_KEY');
+    if (!apiKey) {
+      this.logger.warn('AIML_API_KEY is missing; cannot extract listing URLs');
+      return null;
+    }
+
+    const model = 'openai/gpt-5-nano-2025-08-07';
+    const truncated = htmlContent.slice(0, 16000);
+
+    const response = await fetch(this.endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0,
+        max_tokens: 4000,
+        messages: [
+          {
+            role: 'system',
+            content: [
+              'You are a web scraper assistant that extracts real estate listing URLs from listing directory page HTML.',
+              `You are analyzing content from ${sourceDomain}.`,
+              'Return JSON only. No commentary.',
+              'Extract every individual property listing link you can find on this page.',
+              'Each listing should have a URL, optional title, and whether price/area info is visible in the preview.',
+              'Ignore navigation links, footer links, social media links, and non-listing links.',
+              'Include all listings visible on the page, not just a sample.',
+              'Determine if there is a next page link. If so, include its URL.',
+            ].join(' '),
+          },
+          {
+            role: 'user',
+            content: `Extract all listing URLs from this listing directory page HTML:\n\n${truncated}`,
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      this.logger.warn(
+        `AI/ML crawl extraction failed ${response.status}: ${body.slice(0, 500)}`,
+      );
+      return null;
+    }
+
+    const json = (await response.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    const content = json.choices?.[0]?.message?.content;
+    if (!content) return null;
+
+    return this.parseCrawlPageJson(content);
+  }
+
   parseExtractedJsonForTest(content: string): ExtractedListingPayload | null {
     return this.parseExtractedJson(content);
   }
@@ -138,6 +220,26 @@ export class AimlapiExtractionService {
       return parsed.data;
     } catch {
       this.logger.warn('AI/ML extraction returned invalid JSON');
+      return null;
+    }
+  }
+
+  private parseCrawlPageJson(content: string): CrawlPageResult | null {
+    const cleaned = content
+      .replace(/^```json\s*/i, '')
+      .replace(/```$/i, '')
+      .trim();
+    try {
+      const parsed = crawlPageResultSchema.safeParse(JSON.parse(cleaned));
+      if (!parsed.success) {
+        this.logger.warn(
+          `AI/ML crawl extraction failed schema validation: ${parsed.error.message}`,
+        );
+        return null;
+      }
+      return parsed.data;
+    } catch {
+      this.logger.warn('AI/ML crawl extraction returned invalid JSON');
       return null;
     }
   }

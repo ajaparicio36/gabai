@@ -17,6 +17,7 @@ allowBuilds:
   prisma: true
   bcrypt: true
   msgpackr-extract: true
+  puppeteer: true
 
 onlyBuiltDependencies:
   - '@nestjs/core'

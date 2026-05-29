@@ -13,8 +13,11 @@ import { ConfidenceBadge } from '@/components/ConfidenceBadge';
 import { AreaIntelCard } from '@/components/AreaIntelCard';
 import { DataCompletenessMeter } from '@/components/DataCompletenessMeter';
 import { DisclaimerBanner } from '@/components/DisclaimerBanner';
+import { ElevationLabel } from '@/components/ElevationLabel';
+import { SpiderChart } from '@/components/SpiderChart';
 import type { ValuationResponse } from '@/types/api';
 import type { AreaIntelligenceResponse } from '@/types/api';
+import type { RiskAssessmentResponse } from '@/types/api';
 import { FileText } from 'lucide-react';
 
 interface ValuationPanelProps {
@@ -25,6 +28,10 @@ interface ValuationPanelProps {
   onGenerateReport: () => void;
   isReportPending: boolean;
   onClose: () => void;
+  selectedLat?: number | null;
+  selectedLng?: number | null;
+  riskScores?: RiskAssessmentResponse | undefined;
+  isRiskScoresLoading?: boolean;
 }
 
 function getPriceSignal(birCompliance: ValuationResponse['birCompliance']): {
@@ -53,6 +60,10 @@ export function ValuationPanel({
   onGenerateReport,
   isReportPending,
   onClose,
+  selectedLat,
+  selectedLng,
+  riskScores,
+  isRiskScoresLoading,
 }: ValuationPanelProps): React.ReactNode {
   return (
     <Sheet open onOpenChange={(open) => !open && onClose()}>
@@ -76,6 +87,9 @@ export function ValuationPanel({
               <p className="font-serif text-3xl font-semibold">
                 PHP {valuation.pointEstimatePhp.toLocaleString()}
               </p>
+              {selectedLat != null && selectedLng != null && (
+                <ElevationLabel lat={selectedLat} lng={selectedLng} />
+              )}
               <p className="text-sm text-muted-foreground">
                 PHP {valuation.pricePerSqmPhp.toLocaleString()}/sqm
               </p>
@@ -104,6 +118,18 @@ export function ValuationPanel({
             </div>
 
             <DataCompletenessMeter completeness={valuation.dataCompleteness} />
+
+            {isRiskScoresLoading ? (
+              <div className="rounded-md border p-3">
+                <p className="text-xs text-muted-foreground">
+                  Loading risk scores...
+                </p>
+              </div>
+            ) : riskScores ? (
+              <div className="rounded-md border p-3">
+                <SpiderChart riskScores={riskScores} />
+              </div>
+            ) : null}
 
             {valuation.birCompliance && (
               <div className="space-y-1 rounded-md border p-3">

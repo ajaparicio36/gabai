@@ -11,8 +11,8 @@ const mapContainerStyle = {
 };
 
 const defaultCenter = {
-  lat: 10.3157,
-  lng: 123.8854,
+  lat: 14.5995,
+  lng: 120.9842,
 };
 
 interface MapContextValue {

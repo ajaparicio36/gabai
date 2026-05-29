@@ -184,6 +184,26 @@ AI-powered Automated Valuation Model for Philippine real estate.
 
 ---
 
+## Phase 5.5 — Spider Chart (Multi-Factor Risk Assessment)
+
+| Status | Task                                                            | Detail Doc                                 |
+| ------ | --------------------------------------------------------------- | ------------------------------------------ |
+| `[ ]`  | Map center switched to Metro Manila (lat: 14.60, lng: 120.98)   | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | Satellite view toggle + 3D tilt                                 | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | Elevation display at pin location (Google Elevation API)        | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | `AreaRiskScores` Prisma model + migration                       | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | FloodRiskService — PMTiles query from HuggingFace CDN           | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | TrafficScoreService — Google Distance Matrix historical traffic | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | YieldScoreService — Gemini Flash sentiment on area news         | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | MarketPremiumService — AVM price / BIR zonal ratio              | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | `GET /area/risk-assessment` endpoint (JWT-gated)                | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | `SpiderChart` component (recharts RadarChart)                   | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | Spider chart wired into ValuationPanel                          | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | BIR CSV parser script (Tondo + Mandaluyong formats)             | [10-spider-chart.md](./10-spider-chart.md) |
+| `[ ]`  | Metro Manila seed script (GovernmentReference + ZonalValue)     | [10-spider-chart.md](./10-spider-chart.md) |
+
+---
+
 ## Phase 7 — Polish & Demo
 
 | Status | Task                                                                               | Detail Doc                             |
@@ -247,6 +267,7 @@ apps/gavai/nest/src/
 │   ├── valuation/                     ← [x] Done (Chapter 5)
 │   ├── heatmap/                       ← [x] Done (GeoJSON tiles + quick estimate)
 │   ├── area/                          ← [x] Done (cache + BrightData + Gemini)
+│   ├── area-risk/                     ← [ ] New (spider chart risk scores)
 │   ├── report/                        ← [x] Done (generate + retrieval)
 │   ├── admin/                         ← [x] Done (train/promote endpoints)
 │   └── payment/                       ← [D] Deferred
@@ -265,8 +286,8 @@ apps/gavai/web/src/
 │   ├── Providers.tsx               ← composed client providers wrapper
 │   ├── QueryProvider.tsx           ← TanStack QueryClientProvider
 │   └── AuthProvider.tsx            ← React context for auth state
-├── hooks/                           ← [x] Populated (useValuation, useHeatmap, useAreaIntel, useQuickEstimate, useReport)
-├── components/                       ← [x] All feature components (MapContainer, ViewToggle, HeatmapLayer, FilterBar, ValuationPanel, ConfidenceBadge, AreaIntelCard, DataCompletenessMeter, DisclaimerBanner, ModelCaveat)
+├── hooks/                           ← [x] useValuation, useHeatmap, useAreaIntel, useQuickEstimate, useReport, useRiskScores
+├── components/                       ← [x] MapContainer, ViewToggle, FilterBar, HeatmapLayer, QuickEstimatePopup, ValuationPanel, ConfidenceBadge, AreaIntelCard, DataCompletenessMeter, DisclaimerBanner, ModelCaveat, SpiderChart, ElevationLabel
 ├── types/
 │   └── api.ts                      ← [x] TypeScript types for all API responses
 ├── app/

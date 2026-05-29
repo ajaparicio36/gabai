@@ -13,6 +13,7 @@ export class PipelineService {
     @InjectQueue('scraping') private readonly scrapingQueue: Queue,
     @InjectQueue('normalization') private readonly normalizationQueue: Queue,
     @InjectQueue('enrichment') private readonly enrichmentQueue: Queue,
+    @InjectQueue('crawling') private readonly crawlingQueue: Queue,
   ) {}
 
   async discover(
@@ -127,6 +128,7 @@ export class PipelineService {
     scraping: { active: number; waiting: number };
     normalization: { active: number; waiting: number };
     enrichment: { active: number; waiting: number };
+    crawling: { active: number; waiting: number };
   }> {
     const [
       scrapingActive,
@@ -135,6 +137,8 @@ export class PipelineService {
       normalizationWaiting,
       enrichmentActive,
       enrichmentWaiting,
+      crawlingActive,
+      crawlingWaiting,
     ] = await Promise.all([
       this.scrapingQueue.getActiveCount(),
       this.scrapingQueue.getWaitingCount(),
@@ -142,6 +146,8 @@ export class PipelineService {
       this.normalizationQueue.getWaitingCount(),
       this.enrichmentQueue.getActiveCount(),
       this.enrichmentQueue.getWaitingCount(),
+      this.crawlingQueue.getActiveCount(),
+      this.crawlingQueue.getWaitingCount(),
     ]);
     return {
       scraping: { active: scrapingActive, waiting: scrapingWaiting },
@@ -150,6 +156,7 @@ export class PipelineService {
         waiting: normalizationWaiting,
       },
       enrichment: { active: enrichmentActive, waiting: enrichmentWaiting },
+      crawling: { active: crawlingActive, waiting: crawlingWaiting },
     };
   }
 
@@ -166,5 +173,117 @@ export class PipelineService {
 
   async editRecord(id: string, data: Record<string, unknown>) {
     return this.pipelineRepository.updateRecord(id, data);
+  }
+
+  async createCrawlSeed(data: {
+    url: string;
+    site: string;
+    propertyType?: string;
+    maxPages?: number;
+    requestDelayMs?: number;
+    enabled?: boolean;
+  }) {
+    return this.pipelineRepository.createCrawlSeed(data);
+  }
+
+  async getCrawlSeeds(filter?: { enabled?: boolean; site?: string }) {
+    return this.pipelineRepository.findCrawlSeeds(filter);
+  }
+
+  async getCrawlSeedById(id: string) {
+    const seed = await this.pipelineRepository.findCrawlSeedById(id);
+    if (!seed) {
+      throw new BadRequestException({
+        code: ERROR_CODES.CRAWL.SEED_NOT_FOUND,
+        message: 'Crawl seed not found',
+      });
+    }
+    return seed;
+  }
+
+  async updateCrawlSeed(
+    id: string,
+    data: {
+      url?: string;
+      site?: string;
+      propertyType?: string;
+      maxPages?: number;
+      requestDelayMs?: number;
+      enabled?: boolean;
+    },
+  ) {
+    const seed = await this.pipelineRepository.findCrawlSeedById(id);
+    if (!seed) {
+      throw new BadRequestException({
+        code: ERROR_CODES.CRAWL.SEED_NOT_FOUND,
+        message: 'Crawl seed not found',
+      });
+    }
+    return this.pipelineRepository.updateCrawlSeed(id, data);
+  }
+
+  async deleteCrawlSeed(id: string) {
+    const seed = await this.pipelineRepository.findCrawlSeedById(id);
+    if (!seed) {
+      throw new BadRequestException({
+        code: ERROR_CODES.CRAWL.SEED_NOT_FOUND,
+        message: 'Crawl seed not found',
+      });
+    }
+    return this.pipelineRepository.deleteCrawlSeed(id);
+  }
+
+  async runCrawl(
+    seedIds: string[],
+    options?: { maxPages?: number; requestDelayMs?: number },
+  ): Promise<{ queued: number }> {
+    for (const seedId of seedIds) {
+      const seed = await this.pipelineRepository.findCrawlSeedById(seedId);
+      if (!seed) {
+        throw new BadRequestException({
+          code: ERROR_CODES.CRAWL.SEED_NOT_FOUND,
+          message: `Crawl seed not found: ${seedId}`,
+        });
+      }
+      await this.crawlingQueue.add('crawl-seed', {
+        seedId: seed.id,
+        maxPages: options?.maxPages,
+        requestDelayMs: options?.requestDelayMs,
+      });
+    }
+    return { queued: seedIds.length };
+  }
+
+  async getCrawlJobs(limit = 20) {
+    return this.pipelineRepository.findCrawlJobs(limit);
+  }
+
+  async getCrawlJobById(id: string) {
+    const job = await this.pipelineRepository.findCrawlJobById(id);
+    if (!job) {
+      throw new BadRequestException({
+        code: ERROR_CODES.CRAWL.JOB_NOT_FOUND,
+        message: 'Crawl job not found',
+      });
+    }
+    return job;
+  }
+
+  async autoScrapeCrawledTargets(): Promise<{ queued: number }> {
+    const targets = await this.pipelineRepository.findQueuedTargets();
+    if (targets.length === 0) return { queued: 0 };
+
+    for (const target of targets) {
+      await this.pipelineRepository.updateTargetStatus(target.id, {
+        status: 'scraping',
+      });
+      await this.scrapingQueue.add('scrape-url', {
+        targetId: target.id,
+        url: target.url,
+        propertyType: target.propertyType ?? 'unknown',
+      });
+    }
+
+    return { queued: targets.length };
   }
 }

@@ -187,3 +187,24 @@ export interface NearbyProperty {
   city: string | null;
   addressRaw: string | null;
 }
+
+export interface RiskAssessmentResponse {
+  scores: {
+    flood: number | null;
+    traffic: number | null;
+    yield: number | null;
+    marketPremium: number | null;
+    fault: number;
+  };
+  metadata: {
+    flood: { level: string; source: string; returnPeriod: string } | null;
+    traffic: { speedRatio: number; cachedAt: string } | null;
+    yield: { articleCount: number; positiveRatio: number } | null;
+    marketPremium: {
+      avmPerSqm: number;
+      zonalPerSqm: number;
+      ratio: number;
+    } | null;
+    fault: { status: string };
+  };
+}

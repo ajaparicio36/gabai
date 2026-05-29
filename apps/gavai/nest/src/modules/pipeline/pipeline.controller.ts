@@ -1,9 +1,24 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  Delete,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { PipelineService } from './pipeline.service';
 import { DiscoverDto, DiscoverApproveDto } from './dto/discover.dto';
 import { ScrapeApproveDto, ScrapeRejectDto } from './dto/scrape.dto';
+import {
+  CreateCrawlSeedDto,
+  UpdateCrawlSeedDto,
+  CrawlRunDto,
+} from './dto/crawl.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -73,5 +88,63 @@ export class PipelineController {
   @Post('normalize/approve')
   async approveNormalize(@Body() dto: ScrapeApproveDto) {
     return this.pipelineService.approveNormalizedRecords(dto.ids);
+  }
+
+  @Post('crawl/seeds')
+  async createCrawlSeed(@Body() dto: CreateCrawlSeedDto) {
+    return this.pipelineService.createCrawlSeed(dto);
+  }
+
+  @Get('crawl/seeds')
+  async getCrawlSeeds(
+    @Query('enabled') enabled?: string,
+    @Query('site') site?: string,
+  ) {
+    return this.pipelineService.getCrawlSeeds({
+      enabled: enabled !== undefined ? enabled === 'true' : undefined,
+      site,
+    });
+  }
+
+  @Get('crawl/seeds/:id')
+  async getCrawlSeedById(@Param('id') id: string) {
+    return this.pipelineService.getCrawlSeedById(id);
+  }
+
+  @Patch('crawl/seeds/:id')
+  async updateCrawlSeed(
+    @Param('id') id: string,
+    @Body() dto: UpdateCrawlSeedDto,
+  ) {
+    return this.pipelineService.updateCrawlSeed(id, dto);
+  }
+
+  @Delete('crawl/seeds/:id')
+  async deleteCrawlSeed(@Param('id') id: string) {
+    return this.pipelineService.deleteCrawlSeed(id);
+  }
+
+  @Post('crawl/run')
+  async runCrawl(@Body() dto: CrawlRunDto) {
+    return this.pipelineService.runCrawl(dto.seedIds, {
+      maxPages: dto.maxPages,
+      requestDelayMs: dto.requestDelayMs,
+    });
+  }
+
+  @Get('crawl/jobs')
+  async getCrawlJobs(@Query('limit') limit?: string) {
+    const parsed = limit ? parseInt(limit, 10) : 20;
+    return this.pipelineService.getCrawlJobs(parsed);
+  }
+
+  @Get('crawl/jobs/:id')
+  async getCrawlJobById(@Param('id') id: string) {
+    return this.pipelineService.getCrawlJobById(id);
+  }
+
+  @Post('crawl/auto-scrape')
+  async autoScrapeCrawledTargets() {
+    return this.pipelineService.autoScrapeCrawledTargets();
   }
 }

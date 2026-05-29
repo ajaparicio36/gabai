@@ -12,6 +12,7 @@ import { AimlapiExtractionService } from './services/aimlapi-extraction.service'
 import { ScrapingProcessor } from './scraping.processor';
 import { NormalizationProcessor } from './normalization.processor';
 import { EnrichmentProcessor } from './enrichment.processor';
+import { CrawlingProcessor } from './crawling.processor';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EnrichmentProcessor } from './enrichment.processor';
       { name: 'scraping' },
       { name: 'normalization' },
       { name: 'enrichment' },
+      { name: 'crawling' },
     ),
   ],
   controllers: [PipelineController],
@@ -34,6 +36,7 @@ import { EnrichmentProcessor } from './enrichment.processor';
     ScrapingProcessor,
     NormalizationProcessor,
     EnrichmentProcessor,
+    CrawlingProcessor,
   ],
   exports: [
     PipelineService,

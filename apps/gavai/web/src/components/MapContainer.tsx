@@ -13,6 +13,8 @@ interface MapContainerProps {
   onClick?: (e: google.maps.MapMouseEvent) => void;
   defaultZoom?: number;
   center?: google.maps.LatLngLiteral;
+  mapTypeId?: string;
+  tilt?: number;
 }
 
 export function MapContainer({
@@ -20,6 +22,8 @@ export function MapContainer({
   onClick,
   defaultZoom = 13,
   center = defaultCenter,
+  mapTypeId,
+  tilt = 0,
 }: MapContainerProps): ReactNode {
   const { isLoaded } = useMapContext();
 
@@ -39,6 +43,8 @@ export function MapContainer({
         zoom={defaultZoom}
         onClick={onClick}
         options={{
+          mapTypeId,
+          tilt,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,

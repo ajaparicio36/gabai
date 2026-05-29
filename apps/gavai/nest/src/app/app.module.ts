@@ -12,6 +12,7 @@ import { ValuationModule } from '../modules/valuation/valuation.module';
 import { AdminModule } from '../modules/admin/admin.module';
 import { HeatmapModule } from '../modules/heatmap/heatmap.module';
 import { AreaModule } from '../modules/area/area.module';
+import { AreaRiskModule } from '../modules/area-risk/area-risk.module';
 import { ReportModule } from '../modules/report/report.module';
 import { validateEnv } from '../config/env.validation';
 
@@ -35,6 +36,7 @@ import { validateEnv } from '../config/env.validation';
     AdminModule,
     HeatmapModule,
     AreaModule,
+    AreaRiskModule,
     ReportModule,
   ],
   controllers: [AppController],

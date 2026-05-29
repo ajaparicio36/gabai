@@ -106,6 +106,7 @@
   "dependencies": {
     "@gavai/pipeline": "workspace:*",
     "@gavai/platform": "workspace:*",
+    "@mapbox/vector-tile": "^3.0.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/bull": "^11.0.4",
     "@nestjs/common": "^11.0.0",
@@ -116,12 +117,15 @@
     "@nestjs/swagger": "^11.4.4",
     "@nestjs/throttler": "^6.5.0",
     "@scalar/nestjs-api-reference": "^1.1.19",
+    "@turf/turf": "^7.3.5",
     "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
     "bull": "^4.16.5",
     "bullmq": "^5.77.4",
     "class-transformer": "^0.4.1",
     "class-validator": "^0.15.1",
+    "pbf": "^5.0.0",
+    "pmtiles": "^4.4.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "tslib": "^2.3.0",
@@ -131,6 +135,7 @@
     "@nestjs/testing": "^11.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^3.0.0",
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "@types/geojson": "^7946.0.16"
   }
 }
