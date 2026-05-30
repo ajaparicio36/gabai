@@ -38,7 +38,7 @@ export function HeroSection(): React.ReactNode {
             <Button
               size="lg"
               variant="outline"
-              className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10"
+              className="border-secondary-foreground/30 text-secondary hover:bg-secondary-foreground/10"
             >
               Learn More
             </Button>
