@@ -5,7 +5,7 @@ const features = [
     icon: Map,
     title: 'Smart Map',
     description:
-      'Interactive Google Maps with four view modes — Heatmap, Listings, Valuation, and Hazard overlays. Navigate Metro Manila with ease.',
+      'Interactive Google Maps with four view modes — Heatmap, Listings, Valuation, and Hazard overlays. Navigate your city with ease.',
   },
   {
     icon: Crosshair,
@@ -17,7 +17,7 @@ const features = [
     icon: Layers,
     title: 'Price Heatmap',
     description:
-      'Color-coded price density polygons reveal affordable and premium areas. Spot market trends across the metro at a glance.',
+      'Color-coded price density polygons reveal affordable and premium areas. Spot market trends across any metro at a glance.',
   },
   {
     icon: Brain,
@@ -33,9 +33,9 @@ const features = [
   },
   {
     icon: FileCheck,
-    title: 'BIR Compliance',
+    title: 'Regulatory Compliance',
     description:
-      'Instantly check if a valuation aligns with government zonal values to avoid overpaying or audit risk.',
+      'Instantly check if a valuation aligns with official government benchmarks to avoid overpaying or audit risk.',
   },
 ];
 

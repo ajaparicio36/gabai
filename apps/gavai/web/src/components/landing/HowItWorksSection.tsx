@@ -5,19 +5,19 @@ const steps = [
     icon: Search,
     title: 'Find a location',
     description:
-      'Pan and zoom the interactive map to any area in Metro Manila. Switch between satellite and road view.',
+      'Pan and zoom the interactive map to any area worldwide. Switch between satellite and road view.',
   },
   {
     icon: Cpu,
     title: 'AI analyzes the data',
     description:
-      'Our XGBoost model factors in comparable listings, zonal values, flood risk, traffic, and area intelligence.',
+      'Our XGBoost model factors in comparable listings, government benchmarks, flood risk, traffic, and area intelligence.',
   },
   {
     icon: FileText,
     title: 'Get your valuation',
     description:
-      'Receive a full estimate with confidence bands, BIR compliance check, risk assessment, and a downloadable report.',
+      'Receive a full estimate with confidence bands, regulatory compliance check, risk assessment, and a downloadable report.',
   },
 ];
 

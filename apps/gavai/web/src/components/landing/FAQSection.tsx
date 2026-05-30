@@ -8,15 +8,15 @@ import {
 const faqs = [
   {
     q: 'How accurate are the valuations?',
-    a: 'Our XGBoost model achieves strong accuracy in Metro Manila where we have sufficient training data. Each estimate includes a confidence band and score. In areas with fewer comparables, accuracy may decrease — we clearly indicate this.',
+    a: 'Our XGBoost model achieves strong accuracy in major urban centers where we have sufficient training data. Each estimate includes a confidence band and score. In areas with fewer comparables, accuracy may decrease — we clearly indicate this.',
   },
   {
     q: 'What areas are covered?',
-    a: 'Currently we cover Metro Manila with detailed data on 100+ barangays. We aggregate property listings, BIR zonal values, flood hazard maps, traffic data, and news intelligence for every location.',
+    a: 'Currently we cover major metropolitan areas with detailed data on thousands of neighborhoods. We aggregate property listings, official government benchmarks, flood hazard maps, traffic data, and news intelligence for every location.',
   },
   {
     q: 'What data sources are used?',
-    a: 'Valuations draw from thousands of normalized property listings, official BIR zonal values, Phivolcs flood hazard data, Google Maps traffic and elevation data, and AI-summarized local news.',
+    a: 'Valuations draw from thousands of normalized property listings, official government benchmarks, official hazard data, Google Maps traffic and elevation data, and AI-summarized local news.',
   },
   {
     q: 'How is confidence calculated?',

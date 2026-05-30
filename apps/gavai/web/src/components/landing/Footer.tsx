@@ -30,7 +30,7 @@ export function Footer(): React.ReactNode {
               GAVAI
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-primary-foreground/60">
-              AI-powered Automated Valuation Model for Philippine real estate.
+              AI-powered Automated Valuation Model for global real estate.
             </p>
           </div>
 
