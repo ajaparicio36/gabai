@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { MapProvider, defaultCenter } from '@/providers/MapProvider';
-import { MapContainer, Marker } from '@/components/MapContainer';
+import { MapContainer, Marker, InfoWindow } from '@/components/MapContainer';
 import { ViewToggle, type MapViewMode } from '@/components/ViewToggle';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { FilterBar, type HeatmapFilters } from '@/components/FilterBar';
@@ -22,6 +22,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LogOut, Settings, Satellite } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FloodOverlay } from '@/components/FloodOverlay';
+import type { NearbyProperty } from '@/types/api';
 
 function MapContent(): React.ReactNode {
   const { user, logout, isLoading } = useAuth();
@@ -35,6 +37,9 @@ function MapContent(): React.ReactNode {
   });
   const [selectedLat, setSelectedLat] = useState<number | null>(null);
   const [selectedLng, setSelectedLng] = useState<number | null>(null);
+  const [selectedListing, setSelectedListing] = useState<NearbyProperty | null>(
+    null,
+  );
   const [showValuationPanel, setShowValuationPanel] = useState(false);
   const [mapTypeId, setMapTypeId] = useState<string>('roadmap');
 
@@ -52,7 +57,7 @@ function MapContent(): React.ReactNode {
     );
   }
 
-  const bboxQuery = '120.9,14.3,121.2,14.75';
+  const bboxQuery = '120.93,14.33,121.17,14.78';
   const heatmapParams = {
     bbox: bboxQuery,
     propertyType:
@@ -79,10 +84,10 @@ function MapContent(): React.ReactNode {
   );
 
   const listingsBounds = {
-    minLat: 14.3,
-    minLng: 120.9,
-    maxLat: 14.75,
-    maxLng: 121.2,
+    minLat: 14.33,
+    minLng: 120.93,
+    maxLat: 14.78,
+    maxLng: 121.17,
   };
   const { data: listings } = useListings(
     listingsBounds.minLat,
@@ -107,6 +112,7 @@ function MapContent(): React.ReactNode {
       const lng = e.latLng.lng();
       setSelectedLat(lat);
       setSelectedLng(lng);
+      setSelectedListing(null);
 
       if (viewMode === 'valuation') {
         setShowValuationPanel(true);
@@ -122,6 +128,12 @@ function MapContent(): React.ReactNode {
     },
     [viewMode, filters.propertyType, valuation],
   );
+
+  const handleTileClick = useCallback((lat: number, lng: number) => {
+    setSelectedLat(lat);
+    setSelectedLng(lng);
+    setSelectedListing(null);
+  }, []);
 
   const handleGenerateReport = useCallback(() => {
     if (valuation.data?.id) {
@@ -201,9 +213,21 @@ function MapContent(): React.ReactNode {
           center={defaultCenter}
           mapTypeId={mapTypeId}
           tilt={mapTypeId === 'satellite' ? 45 : 0}
+          restriction={{
+            latLngBounds: {
+              north: 14.8,
+              south: 14.3,
+              east: 121.2,
+              west: 120.9,
+            },
+            strictBounds: true,
+          }}
         >
           {viewMode === 'heatmap' && heatmapData?.features && (
-            <HeatmapLayer features={heatmapData.features} />
+            <HeatmapLayer
+              features={heatmapData.features}
+              onTileClick={handleTileClick}
+            />
           )}
 
           {viewMode === 'listings' &&
@@ -216,8 +240,68 @@ function MapContent(): React.ReactNode {
                   url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2"%3E%3Cpath d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"%3E%3C/path%3E%3Ccircle cx="12" cy="10" r="3"%3E%3C/circle%3E%3C/svg%3E',
                 }}
                 title={`PHP ${(p.pricePerSqmPhp ?? 0).toLocaleString()}/sqm — ${p.barangay ?? ''}, ${p.city ?? ''}`}
+                onClick={() => setSelectedListing(p)}
               />
             ))}
+
+          {selectedListing && (
+            <InfoWindow
+              position={{ lat: selectedListing.lat, lng: selectedListing.lng }}
+              onCloseClick={() => setSelectedListing(null)}
+            >
+              <div className="min-w-[200px] space-y-1 p-1">
+                <p className="text-sm font-semibold capitalize">
+                  {selectedListing.propertyType.replace(/_/g, ' ')}
+                </p>
+                <p className="text-sm font-medium">
+                  PHP {selectedListing.askingPricePhp.toLocaleString()}
+                </p>
+                {selectedListing.pricePerSqmPhp && (
+                  <p className="text-xs text-muted-foreground">
+                    PHP {selectedListing.pricePerSqmPhp.toLocaleString()}/sqm
+                  </p>
+                )}
+                {(selectedListing.lotAreaSqm ||
+                  selectedListing.floorAreaSqm) && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedListing.lotAreaSqm
+                      ? `${selectedListing.lotAreaSqm} sqm lot`
+                      : ''}
+                    {selectedListing.lotAreaSqm && selectedListing.floorAreaSqm
+                      ? ' · '
+                      : ''}
+                    {selectedListing.floorAreaSqm
+                      ? `${selectedListing.floorAreaSqm} sqm floor`
+                      : ''}
+                  </p>
+                )}
+                {(selectedListing.barangay || selectedListing.city) && (
+                  <p className="text-xs text-muted-foreground">
+                    {[selectedListing.barangay, selectedListing.city]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </p>
+                )}
+                {(selectedListing.bedrooms != null ||
+                  selectedListing.bathrooms != null) && (
+                  <p className="text-xs text-muted-foreground">
+                    {selectedListing.bedrooms != null
+                      ? `${selectedListing.bedrooms} bed`
+                      : ''}
+                    {selectedListing.bedrooms != null &&
+                    selectedListing.bathrooms != null
+                      ? ' · '
+                      : ''}
+                    {selectedListing.bathrooms != null
+                      ? `${selectedListing.bathrooms} bath`
+                      : ''}
+                  </p>
+                )}
+              </div>
+            </InfoWindow>
+          )}
+
+          {viewMode === 'hazard' && <FloodOverlay />}
 
           {selectedLat != null && selectedLng != null && (
             <Marker

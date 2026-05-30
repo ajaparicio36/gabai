@@ -93,6 +93,9 @@ export interface AreaIntelligenceResponse {
   sources: { title: string; url: string; domain: string }[];
   lastUpdated: string;
   stale: boolean;
+  yieldScore: number | null;
+  yieldArticleCount: number | null;
+  yieldPositiveRatio: number | null;
 }
 
 export interface ReportResponse {

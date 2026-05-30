@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ERROR_CODES } from '@gavai/platform';
 import { roundToGrid } from '@gavai/pipeline';
 import { AreaRepository } from './area.repository';
@@ -13,6 +17,7 @@ import {
   ArticleCacheService,
   type CachedArticleSet,
 } from '../pipeline/services/article-cache.service';
+import { YieldScoreService, type YieldResult } from './yield-score.service';
 
 export interface AreaIntelligenceResult {
   areaName: string;
@@ -20,10 +25,14 @@ export interface AreaIntelligenceResult {
   sources: { title: string; url: string; domain: string }[];
   lastUpdated: Date;
   stale: boolean;
+  yieldScore: number | null;
+  yieldArticleCount: number | null;
+  yieldPositiveRatio: number | null;
 }
 
 @Injectable()
 export class AreaService {
+  private readonly logger = new Logger(AreaService.name);
   private readonly DEFAULT_RADIUS_M = 1500;
   private readonly TTL_HOURS = 24;
 
@@ -33,6 +42,7 @@ export class AreaService {
     private readonly brightdataService: BrightDataService,
     private readonly googleMapsService: GoogleMapsService,
     private readonly articleCacheService: ArticleCacheService,
+    private readonly yieldScoreService: YieldScoreService,
   ) {}
 
   async getIntelligence(
@@ -61,6 +71,9 @@ export class AreaService {
         })),
         lastUpdated: cached.fetchedAt,
         stale: false,
+        yieldScore: null,
+        yieldArticleCount: null,
+        yieldPositiveRatio: null,
       };
     }
 
@@ -86,6 +99,9 @@ export class AreaService {
           })),
           lastUpdated: expired.fetchedAt,
           stale: true,
+          yieldScore: null,
+          yieldArticleCount: null,
+          yieldPositiveRatio: null,
         };
       }
 
@@ -156,7 +172,12 @@ export class AreaService {
     lngKey: number,
     radiusM: number,
   ): Promise<AreaIntelligenceResult> {
-    const geoCoding = await this.googleMapsService.reverseGeocode(lat, lng);
+    let geoCoding: { addressComponents?: Record<string, string> } | null = null;
+    try {
+      geoCoding = await this.googleMapsService.reverseGeocode(lat, lng);
+    } catch {
+      this.logger.warn('reverseGeocode failed in fetchFresh, using fallback');
+    }
     const ac =
       (geoCoding?.addressComponents as Record<string, string> | undefined) ??
       {};
@@ -243,14 +264,22 @@ export class AreaService {
     }
 
     let bulletPoints: string[] = [];
+    let yieldResult: YieldResult | null = null;
 
     if (validArticles.length > 0) {
-      try {
-        bulletPoints =
-          await this.aimlapiService.summarizeArticles(validArticles);
-      } catch {
-        // Return raw article titles if summarization fails
+      const [summaryResult, yieldScoreResult] = await Promise.allSettled([
+        this.aimlapiService.summarizeArticles(validArticles),
+        this.yieldScoreService.getScore(lat, lng),
+      ]);
+
+      if (summaryResult.status === 'fulfilled') {
+        bulletPoints = summaryResult.value;
+      } else {
         bulletPoints = validArticles.map((a, i) => `[${i + 1}] ${a.title}`);
+      }
+
+      if (yieldScoreResult.status === 'fulfilled') {
+        yieldResult = yieldScoreResult.value;
       }
     }
 
@@ -283,6 +312,9 @@ export class AreaService {
       sources: articles,
       lastUpdated: new Date(),
       stale: false,
+      yieldScore: yieldResult?.score ?? null,
+      yieldArticleCount: yieldResult?.articleCount ?? null,
+      yieldPositiveRatio: yieldResult?.positiveRatio ?? null,
     };
   }
 

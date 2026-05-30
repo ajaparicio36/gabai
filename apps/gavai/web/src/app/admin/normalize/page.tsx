@@ -21,6 +21,7 @@ export default function AdminNormalizePage(): React.ReactNode {
   const [records, setRecords] = useState<NormalizedRecord[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [approving, setApproving] = useState(false);
+  const [approvingAll, setApprovingAll] = useState(false);
   const [rejecting, setRejecting] = useState(false);
 
   const loadRecords = useCallback(async (): Promise<void> => {
@@ -59,6 +60,25 @@ export default function AdminNormalizePage(): React.ReactNode {
       toast.error('Rejection failed');
     } finally {
       setRejecting(false);
+    }
+  };
+
+  const approveAll = async (): Promise<void> => {
+    if (selectableIds.length === 0) return;
+    const confirmed = window.confirm(
+      `Approve all ${selectableIds.length} selectable records?`,
+    );
+    if (!confirmed) return;
+    setApprovingAll(true);
+    try {
+      await api.post('/admin/normalize/approve', { ids: selectableIds });
+      toast.success(`Approved ${selectableIds.length} records`);
+      setSelected(new Set());
+      await loadRecords();
+    } catch {
+      toast.error('Approval failed');
+    } finally {
+      setApprovingAll(false);
     }
   };
 
@@ -118,6 +138,18 @@ export default function AdminNormalizePage(): React.ReactNode {
                 size="sm"
               >
                 {rejecting ? 'Rejecting...' : `Reject (${selected.size})`}
+              </Button>
+            )}
+            {selectableIds.length > 0 && (
+              <Button
+                onClick={approveAll}
+                disabled={approvingAll}
+                variant="default"
+                size="sm"
+              >
+                {approvingAll
+                  ? 'Approving...'
+                  : `Approve All (${selectableIds.length})`}
               </Button>
             )}
             {failedCount > 0 && (

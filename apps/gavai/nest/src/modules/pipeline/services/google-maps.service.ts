@@ -150,6 +150,7 @@ export class GoogleMapsService {
     originLat: number,
     originLng: number,
     destinations: { lat: number; lng: number; label: string }[],
+    departureTime?: Date,
   ): Promise<DistanceMatrixResult> {
     const travelTimes: Record<string, number> = {};
 
@@ -166,6 +167,14 @@ export class GoogleMapsService {
     url.searchParams.set('destinations', destStr);
     url.searchParams.set('mode', 'driving');
     url.searchParams.set('key', this.apiKey);
+
+    if (departureTime) {
+      url.searchParams.set(
+        'departure_time',
+        Math.floor(departureTime.getTime() / 1000).toString(),
+      );
+      url.searchParams.set('traffic_model', 'best_guess');
+    }
 
     const response = await fetch(url.toString());
     const data = (await response.json()) as {

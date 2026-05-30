@@ -1,6 +1,6 @@
 'use client';
 
-import { GoogleMap, Marker, Polygon } from '@react-google-maps/api';
+import { GoogleMap, Marker, Polygon, InfoWindow } from '@react-google-maps/api';
 import {
   useMapContext,
   mapContainerStyle,
@@ -15,6 +15,7 @@ interface MapContainerProps {
   center?: google.maps.LatLngLiteral;
   mapTypeId?: string;
   tilt?: number;
+  restriction?: google.maps.MapRestriction | null;
 }
 
 export function MapContainer({
@@ -24,6 +25,7 @@ export function MapContainer({
   center = defaultCenter,
   mapTypeId,
   tilt = 0,
+  restriction,
 }: MapContainerProps): ReactNode {
   const { isLoaded } = useMapContext();
 
@@ -48,6 +50,7 @@ export function MapContainer({
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
+          restriction,
           styles: [
             {
               featureType: 'poi.business',
@@ -62,4 +65,4 @@ export function MapContainer({
   );
 }
 
-export { Marker, Polygon };
+export { Marker, Polygon, InfoWindow };

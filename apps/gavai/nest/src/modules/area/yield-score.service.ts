@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { GoogleMapsService } from '../pipeline/services/google-maps.service';
 import { BrightDataService } from '../pipeline/services/brightdata.service';
 import {
@@ -25,6 +25,8 @@ export interface YieldResult {
 
 @Injectable()
 export class YieldScoreService {
+  private readonly logger = new Logger(YieldScoreService.name);
+
   constructor(
     private readonly googleMapsService: GoogleMapsService,
     private readonly brightdataService: BrightDataService,
@@ -33,7 +35,12 @@ export class YieldScoreService {
   ) {}
 
   async getScore(lat: number, lng: number): Promise<YieldResult> {
-    const geoCoding = await this.googleMapsService.reverseGeocode(lat, lng);
+    let geoCoding: { addressComponents?: Record<string, string> } | null = null;
+    try {
+      geoCoding = await this.googleMapsService.reverseGeocode(lat, lng);
+    } catch {
+      this.logger.warn('reverseGeocode failed in getScore, using fallback');
+    }
     const ac =
       (geoCoding?.addressComponents as Record<string, string> | undefined) ??
       {};

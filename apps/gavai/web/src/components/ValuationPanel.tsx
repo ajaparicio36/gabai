@@ -175,6 +175,9 @@ export function ValuationPanel({
                 sources={areaIntel.sources}
                 lastUpdated={areaIntel.lastUpdated}
                 stale={isAreaIntelStale}
+                yieldScore={areaIntel.yieldScore}
+                yieldArticleCount={areaIntel.yieldArticleCount}
+                yieldPositiveRatio={areaIntel.yieldPositiveRatio}
               />
             )}
 

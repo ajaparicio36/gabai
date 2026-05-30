@@ -3,7 +3,7 @@
 import { MapPin, Layers, Crosshair } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-export type MapViewMode = 'heatmap' | 'listings' | 'valuation';
+export type MapViewMode = 'heatmap' | 'listings' | 'valuation' | 'hazard';
 
 interface ViewToggleProps {
   value: MapViewMode;

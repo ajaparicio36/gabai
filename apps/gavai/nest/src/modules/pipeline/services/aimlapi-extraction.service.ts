@@ -17,6 +17,29 @@ export interface ChatMessage {
 
 const confidenceSchema = z.enum(['high', 'medium', 'low', 'missing']);
 
+const summarizeArticlesSchema = z
+  .object({
+    bulletPoints: z.array(z.string()),
+  })
+  .strict();
+
+const classifyArticlesSchema = z
+  .object({
+    classifications: z.array(
+      z.object({
+        sentiment: z.enum(['positive', 'neutral', 'negative']),
+        category: z.enum([
+          'infrastructure',
+          'commercial',
+          'residential',
+          'risk',
+        ]),
+        horizon_years: z.number(),
+      }),
+    ),
+  })
+  .strict();
+
 const extractedListingSchema = z
   .object({
     title: z.string().nullable(),
@@ -286,6 +309,74 @@ const EXTRACT_LISTING_URLS_TOOL = {
   },
 };
 
+const SUMMARIZE_ARTICLES_TOOL = {
+  type: 'function' as const,
+  function: {
+    name: 'summarize_articles',
+    description:
+      'Summarize news articles about infrastructure, development, and community changes in a specific real estate area into key bullet points.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      required: ['bulletPoints'],
+      additionalProperties: false,
+      properties: {
+        bulletPoints: {
+          type: 'array',
+          description:
+            'At most 5 bullet points summarizing the most important facts from the articles. Each bullet must include source references like [1], [2].',
+          items: { type: 'string' },
+        },
+      },
+    },
+  },
+};
+
+const CLASSIFY_ARTICLES_TOOL = {
+  type: 'function' as const,
+  function: {
+    name: 'classify_articles',
+    description:
+      'Classify news articles about infrastructure and development by sentiment, category, and estimated time horizon.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      required: ['classifications'],
+      additionalProperties: false,
+      properties: {
+        classifications: {
+          type: 'array',
+          description:
+            'One classification per article, in the same order as the input articles.',
+          items: {
+            type: 'object',
+            required: ['sentiment', 'category', 'horizon_years'],
+            additionalProperties: false,
+            properties: {
+              sentiment: {
+                type: 'string',
+                enum: ['positive', 'neutral', 'negative'],
+                description:
+                  'Sentiment of the article for property value impact.',
+              },
+              category: {
+                type: 'string',
+                enum: ['infrastructure', 'commercial', 'residential', 'risk'],
+                description: 'Category of the development described.',
+              },
+              horizon_years: {
+                type: 'number',
+                description:
+                  'Estimated years until the development materializes.',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 // ── System prompts ─────────────────────────────────────────────────────────
 
 const EXTRACTION_SYSTEM_PROMPT = [
@@ -307,6 +398,24 @@ const CRAWL_SYSTEM_PROMPT = [
   'Ignore navigation, footer, social media, and non-listing links.',
   'Determine if there is a next page link.',
   'You MUST call the extract_listing_urls function — do not reply with text.',
+].join(' ');
+
+const SUMMARIZE_SYSTEM_PROMPT = [
+  'You are a real estate area intelligence summarizer.',
+  'Based on the provided news articles about infrastructure, development, and community changes, extract the most important facts.',
+  'ONLY use information explicitly stated in the articles.',
+  'Do NOT add any information, speculation, or commentary not found in the articles.',
+  'Each bullet point MUST include a source reference in brackets like [1], [2], etc.',
+  'Be specific about project names, dates, and locations when available.',
+  'Return at most 5 bullet points.',
+  'You MUST call the summarize_articles function — do not reply with text.',
+].join(' ');
+
+const CLASSIFY_SYSTEM_PROMPT = [
+  'You are a real estate market analyst.',
+  'Based on the provided news articles about infrastructure and development, classify each article.',
+  'For each article, provide sentiment, category, and estimated time horizon.',
+  'You MUST call the classify_articles function — do not reply with text.',
 ].join(' ');
 
 @Injectable()
@@ -477,6 +586,85 @@ export class AimlapiExtractionService {
       )
       .join('\n\n---\n\n');
 
+    const apiKey = this.configService.get<string>('AIML_API_KEY');
+    if (!apiKey) {
+      this.logger.warn('AIML_API_KEY is missing; cannot summarize articles');
+      return [];
+    }
+
+    const model = 'gpt-4o-mini';
+
+    try {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.2,
+          max_tokens: 1024,
+          tools: [SUMMARIZE_ARTICLES_TOOL],
+          tool_choice: {
+            type: 'function',
+            function: { name: 'summarize_articles' },
+          },
+          messages: [
+            { role: 'system', content: SUMMARIZE_SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: `Summarize these articles:\n\n${articleTexts}`,
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(60_000),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        this.logger.warn(
+          `summarizeArticles tool call failed ${response.status}: ${body.slice(0, 500)}`,
+        );
+        return this.summarizeArticlesFallback(articleTexts);
+      }
+
+      const json = (await response.json()) as {
+        choices?: {
+          message?: {
+            tool_calls?: {
+              function?: { name: string; arguments: string };
+            }[];
+          };
+        }[];
+      };
+
+      const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall?.function?.arguments) {
+        this.logger.warn('summarizeArticles returned no tool call');
+        return this.summarizeArticlesFallback(articleTexts);
+      }
+
+      const result = this.parseToolCallArgs(
+        toolCall.function.arguments,
+        summarizeArticlesSchema,
+      );
+      if (result && result.bulletPoints.length > 0) {
+        return result.bulletPoints;
+      }
+
+      return this.summarizeArticlesFallback(articleTexts);
+    } catch (error: unknown) {
+      this.logger.warn(`summarizeArticles error: ${(error as Error).message}`);
+      return this.summarizeArticlesFallback(articleTexts);
+    }
+  }
+
+  private async summarizeArticlesFallback(
+    articleTexts: string,
+  ): Promise<string[]> {
+    this.logger.debug('Falling back to text-based article summarization');
+
     const prompt = `You are a real estate area intelligence summarizer. Based on the following news articles about infrastructure, development, and community changes in a specific area, extract the most important facts.
 
 RULES (follow strictly):
@@ -497,10 +685,6 @@ ${articleTexts}`;
       timeoutMs: 60_000,
     });
     if (!content) return [];
-
-    this.logger.debug(
-      `summarizeArticles raw response (${articles.length} articles): ${content.slice(0, 500)}`,
-    );
 
     return content
       .split('\n')
@@ -565,6 +749,87 @@ ${articleText}
           `Article ${i + 1}: "${a.title}"\nContent:\n${a.markdown.slice(0, 3000)}`,
       )
       .join('\n\n---\n\n');
+
+    const apiKey = this.configService.get<string>('AIML_API_KEY');
+    if (!apiKey) {
+      this.logger.warn('AIML_API_KEY is missing; cannot classify articles');
+      return null;
+    }
+
+    const model = 'gpt-4o-mini';
+
+    try {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.1,
+          max_tokens: 2048,
+          tools: [CLASSIFY_ARTICLES_TOOL],
+          tool_choice: {
+            type: 'function',
+            function: { name: 'classify_articles' },
+          },
+          messages: [
+            { role: 'system', content: CLASSIFY_SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: `Classify these articles:\n\n${articleTexts}`,
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(60_000),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        this.logger.warn(
+          `classifyArticles tool call failed ${response.status}: ${body.slice(0, 500)}`,
+        );
+        return this.classifyArticlesFallback(articleTexts);
+      }
+
+      const json = (await response.json()) as {
+        choices?: {
+          message?: {
+            tool_calls?: {
+              function?: { name: string; arguments: string };
+            }[];
+          };
+        }[];
+      };
+
+      const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall?.function?.arguments) {
+        this.logger.warn('classifyArticles returned no tool call');
+        return this.classifyArticlesFallback(articleTexts);
+      }
+
+      const result = this.parseToolCallArgs(
+        toolCall.function.arguments,
+        classifyArticlesSchema,
+      );
+      if (result && result.classifications.length > 0) {
+        return result.classifications;
+      }
+
+      return this.classifyArticlesFallback(articleTexts);
+    } catch (error: unknown) {
+      this.logger.warn(`classifyArticles error: ${(error as Error).message}`);
+      return this.classifyArticlesFallback(articleTexts);
+    }
+  }
+
+  private async classifyArticlesFallback(articleTexts: string): Promise<Array<{
+    sentiment: 'positive' | 'neutral' | 'negative';
+    category: 'infrastructure' | 'commercial' | 'residential' | 'risk';
+    horizon_years: number;
+  }> | null> {
+    this.logger.debug('Falling back to text-based article classification');
 
     const prompt = `You are a real estate market analyst. Based on the following news articles about infrastructure and development, classify each article.
 

@@ -5,6 +5,7 @@ import type { HeatmapFeature } from '@/types/api';
 
 interface HeatmapLayerProps {
   features: HeatmapFeature[];
+  onTileClick?: (lat: number, lng: number) => void;
 }
 
 const QUINTILE_COLORS = ['#a1a1aa', '#84cc16', '#eab308', '#f97316', '#ef4444'];
@@ -17,7 +18,10 @@ function getColor(intensity: number): string {
   return QUINTILE_COLORS[4];
 }
 
-export function HeatmapLayer({ features }: HeatmapLayerProps): React.ReactNode {
+export function HeatmapLayer({
+  features,
+  onTileClick,
+}: HeatmapLayerProps): React.ReactNode {
   if (!features.length) {
     return null;
   }
@@ -39,6 +43,11 @@ export function HeatmapLayer({ features }: HeatmapLayerProps): React.ReactNode {
               strokeColor: getColor(feature.properties.colorIntensity),
               strokeOpacity: 0.6,
               strokeWeight: 1,
+            }}
+            onClick={(e) => {
+              if (e.latLng && onTileClick) {
+                onTileClick(e.latLng.lat(), e.latLng.lng());
+              }
             }}
           />
         );

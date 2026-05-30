@@ -71,6 +71,7 @@ export class TrafficScoreService {
         lat,
         lng,
         destinations,
+        offPeak,
       );
       freeflowDuration = offResult.travelTimes[nearestCbd.label] ?? 1800;
 
@@ -78,6 +79,7 @@ export class TrafficScoreService {
         lat,
         lng,
         destinations,
+        amPeak,
       );
       const amTime = amResult.travelTimes[nearestCbd.label] ?? 1800;
 
@@ -85,6 +87,7 @@ export class TrafficScoreService {
         lat,
         lng,
         destinations,
+        pmPeak,
       );
       const pmTime = pmResult.travelTimes[nearestCbd.label] ?? 1800;
 

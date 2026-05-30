@@ -14,6 +14,28 @@ interface AreaIntelCardProps {
   sources: Source[];
   lastUpdated: string;
   stale: boolean;
+  yieldScore?: number | null;
+  yieldArticleCount?: number | null;
+  yieldPositiveRatio?: number | null;
+}
+
+function YieldBadge({ score }: { score: number }): React.ReactNode {
+  let label = 'Neutral';
+  let color = 'bg-yellow-100 text-yellow-800';
+  if (score >= 0.7) {
+    label = 'High';
+    color = 'bg-green-100 text-green-800';
+  } else if (score <= 0.3) {
+    label = 'Low';
+    color = 'bg-red-100 text-red-800';
+  }
+  return (
+    <span
+      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${color}`}
+    >
+      {label}
+    </span>
+  );
 }
 
 export function AreaIntelCard({
@@ -22,7 +44,12 @@ export function AreaIntelCard({
   sources,
   lastUpdated,
   stale,
+  yieldScore,
+  yieldArticleCount,
+  yieldPositiveRatio,
 }: AreaIntelCardProps): React.ReactNode {
+  const hasYield = yieldScore !== null && yieldScore !== undefined;
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -36,6 +63,31 @@ export function AreaIntelCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {hasYield && (
+          <div className="space-y-1.5 rounded-md border bg-muted/40 p-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium">Yield Score</span>
+              <YieldBadge score={yieldScore} />
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${Math.round(yieldScore * 100)}%` }}
+              />
+            </div>
+            <div className="flex gap-2 text-[10px] text-muted-foreground">
+              {yieldArticleCount !== null &&
+                yieldArticleCount !== undefined && (
+                  <span>{yieldArticleCount} articles</span>
+                )}
+              {yieldPositiveRatio !== null &&
+                yieldPositiveRatio !== undefined && (
+                  <span>{Math.round(yieldPositiveRatio * 100)}% positive</span>
+                )}
+            </div>
+          </div>
+        )}
+
         {bulletPoints.length === 0 ? (
           <p className="text-xs text-muted-foreground">
             No recent developments found for this area.

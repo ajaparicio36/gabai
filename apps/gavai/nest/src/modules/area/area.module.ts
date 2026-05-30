@@ -8,6 +8,7 @@ import { AreaRepository } from './area.repository';
 import { TrafficScoreService } from './traffic-score.service';
 import { YieldScoreService } from './yield-score.service';
 import { FloodRiskService } from './flood-risk.service';
+import { FloodOverlayService } from './flood-overlay.service';
 import { MarketPremiumService } from './market-premium.service';
 
 @Module({
@@ -19,6 +20,7 @@ import { MarketPremiumService } from './market-premium.service';
     TrafficScoreService,
     YieldScoreService,
     FloodRiskService,
+    FloodOverlayService,
     MarketPremiumService,
   ],
   exports: [
@@ -26,6 +28,7 @@ import { MarketPremiumService } from './market-premium.service';
     TrafficScoreService,
     YieldScoreService,
     FloodRiskService,
+    FloodOverlayService,
     MarketPremiumService,
   ],
 })
