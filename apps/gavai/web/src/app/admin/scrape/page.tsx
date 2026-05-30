@@ -66,6 +66,7 @@ export default function AdminScrapePage(): React.ReactNode {
   );
   const [approvingNormalized, setApprovingNormalized] = useState(false);
   const [rejectingNormalized, setRejectingNormalized] = useState(false);
+  const [approvingAllNormalized, setApprovingAllNormalized] = useState(false);
 
   const loadRecords = useCallback(async (): Promise<void> => {
     try {
@@ -220,6 +221,64 @@ export default function AdminScrapePage(): React.ReactNode {
     }
   };
 
+  const normalizedReadyCount = normalizedRecords.filter(
+    (r) => r.normalizationStatus === 'normalized',
+  ).length;
+  const normalizedFailedCount = normalizedRecords.filter(
+    (r) => r.normalizationStatus === 'failed',
+  ).length;
+  const normalizedLowConfidenceCount = normalizedRecords.filter(
+    (r) => r.normalizationStatus === 'low_confidence',
+  ).length;
+
+  const normalizedSelectableIds = normalizedRecords
+    .filter(
+      (r) =>
+        (r.normalizationStatus === 'normalized' ||
+          r.normalizationStatus === 'low_confidence') &&
+        r.trainingEligible,
+    )
+    .map((r) => r.id);
+
+  const approveAllNormalized = async (): Promise<void> => {
+    if (normalizedSelectableIds.length === 0) return;
+    const confirmed = window.confirm(
+      `Approve all ${normalizedSelectableIds.length} selectable records?`,
+    );
+    if (!confirmed) return;
+    setApprovingAllNormalized(true);
+    try {
+      await api.post('/admin/normalize/approve', {
+        ids: normalizedSelectableIds,
+      });
+      toast.success(`Approved ${normalizedSelectableIds.length} records`);
+      setSelectedNormalized(new Set());
+      await loadNormalizedRecords();
+    } catch {
+      toast.error('Normalized approval failed');
+    } finally {
+      setApprovingAllNormalized(false);
+    }
+  };
+
+  const rejectAllFailedNormalized = async (): Promise<void> => {
+    const failedIds = normalizedRecords
+      .filter((r) => r.normalizationStatus === 'failed')
+      .map((r) => r.id);
+    if (failedIds.length === 0) return;
+    setRejectingNormalized(true);
+    try {
+      await api.post('/admin/normalize/reject', { ids: failedIds });
+      toast.success(`Rejected ${failedIds.length} records`);
+      setSelectedNormalized(new Set());
+      await loadNormalizedRecords();
+    } catch {
+      toast.error('Rejection failed');
+    } finally {
+      setRejectingNormalized(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card data-ob="scrape-records-table">
@@ -338,8 +397,17 @@ export default function AdminScrapePage(): React.ReactNode {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {selectedNormalized.size > 0 && (
-              <div className="flex gap-2">
+            <div className="mb-4 flex gap-3">
+              <Badge variant="secondary">{normalizedReadyCount} ready</Badge>
+              <Badge variant="outline">
+                {normalizedLowConfidenceCount} low confidence
+              </Badge>
+              <Badge variant="destructive">
+                {normalizedFailedCount} failed
+              </Badge>
+            </div>
+            <div className="flex gap-2">
+              {selectedNormalized.size > 0 && (
                 <Button
                   onClick={handleApproveNormalized}
                   disabled={approvingNormalized}
@@ -349,6 +417,8 @@ export default function AdminScrapePage(): React.ReactNode {
                     ? 'Approving...'
                     : `Approve (${selectedNormalized.size})`}
                 </Button>
+              )}
+              {selectedNormalized.size > 0 && (
                 <Button
                   onClick={handleRejectNormalized}
                   disabled={rejectingNormalized}
@@ -359,8 +429,30 @@ export default function AdminScrapePage(): React.ReactNode {
                     ? 'Rejecting...'
                     : `Reject (${selectedNormalized.size})`}
                 </Button>
-              </div>
-            )}
+              )}
+              {normalizedSelectableIds.length > 0 && (
+                <Button
+                  onClick={approveAllNormalized}
+                  disabled={approvingAllNormalized}
+                  variant="default"
+                  size="sm"
+                >
+                  {approvingAllNormalized
+                    ? 'Approving...'
+                    : `Approve All (${normalizedSelectableIds.length})`}
+                </Button>
+              )}
+              {normalizedFailedCount > 0 && (
+                <Button
+                  onClick={rejectAllFailedNormalized}
+                  disabled={rejectingNormalized}
+                  variant="destructive"
+                  size="sm"
+                >
+                  Reject All Failed ({normalizedFailedCount})
+                </Button>
+              )}
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>

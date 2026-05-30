@@ -66,7 +66,7 @@ function MapContent(): React.ReactNode {
     );
   }
 
-  const bboxQuery = '120.93,14.33,121.17,14.78';
+  const bboxQuery = '120.6,14.0,121.4,15.0';
   const heatmapParams = {
     bbox: bboxQuery,
     propertyType:
@@ -99,10 +99,10 @@ function MapContent(): React.ReactNode {
   );
 
   const listingsBounds = {
-    minLat: 14.33,
-    minLng: 120.93,
-    maxLat: 14.78,
-    maxLng: 121.17,
+    minLat: 14.0,
+    minLng: 120.6,
+    maxLat: 15.0,
+    maxLng: 121.4,
   };
   const { data: listings } = useListings(
     listingsBounds.minLat,
@@ -172,6 +172,31 @@ function MapContent(): React.ReactNode {
           <SatelliteToggle />
         </div>
 
+        {showHeatmap && (
+          <div className="absolute left-4 top-[4.5rem] z-10 rounded-md bg-background/90 px-3 py-2 text-xs shadow backdrop-blur border">
+            <p className="font-medium mb-1.5">Price per sqm</p>
+            <div className="flex items-center gap-0.5">
+              <span
+                className="h-3 flex-1 rounded-l-sm"
+                style={{ backgroundColor: '#22c55e' }}
+              />
+              <span
+                className="h-3 flex-1"
+                style={{ backgroundColor: '#f97316' }}
+              />
+              <span
+                className="h-3 flex-1 rounded-r-sm"
+                style={{ backgroundColor: '#ef4444' }}
+              />
+            </div>
+            <div className="flex justify-between mt-0.5 text-[10px] text-muted-foreground">
+              <span>Lower</span>
+              <span>Mid-range</span>
+              <span>Higher</span>
+            </div>
+          </div>
+        )}
+
         <div
           data-ob="filter-bar"
           className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow backdrop-blur border-t-2 border-t-secondary"
@@ -216,16 +241,16 @@ function MapContent(): React.ReactNode {
 
         <MapContainer
           onClick={handleMapClick}
-          defaultZoom={12}
+          defaultZoom={10}
           center={defaultCenter}
           mapTypeId={mapTypeId}
           tilt={mapTypeId === 'satellite' ? 45 : 0}
           restriction={{
             latLngBounds: {
-              north: 14.8,
-              south: 14.3,
-              east: 121.2,
-              west: 120.9,
+              north: 15.0,
+              south: 14.0,
+              east: 121.4,
+              west: 120.6,
             },
             strictBounds: true,
           }}
@@ -362,11 +387,12 @@ function MapContent(): React.ReactNode {
             isLoading={isComparablesLoading}
             medianPrice={quickEstimate?.medianPhp ?? null}
             count={quickEstimate?.comparablesCount}
+            radiusM={3000}
           />
         )}
 
         {selectedLat != null && selectedLng != null && (
-          <div className="absolute bottom-4 right-4 z-10">
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
             <Button
               size="lg"
               className="shadow-lg rounded-full px-6 py-3 text-base"
@@ -382,7 +408,7 @@ function MapContent(): React.ReactNode {
                 });
               }}
             >
-              Valuate
+              Valuate This Location
             </Button>
           </div>
         )}

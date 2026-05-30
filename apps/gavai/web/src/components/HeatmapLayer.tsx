@@ -8,14 +8,12 @@ interface HeatmapLayerProps {
   onTileClick?: (lat: number, lng: number) => void;
 }
 
-const QUINTILE_COLORS = ['#a1a1aa', '#84cc16', '#eab308', '#f97316', '#ef4444'];
+const HEATMAP_COLORS = ['#22c55e', '#f97316', '#ef4444'];
 
 function getColor(intensity: number): string {
-  if (intensity <= 0.2) return QUINTILE_COLORS[0];
-  if (intensity <= 0.4) return QUINTILE_COLORS[1];
-  if (intensity <= 0.6) return QUINTILE_COLORS[2];
-  if (intensity <= 0.8) return QUINTILE_COLORS[3];
-  return QUINTILE_COLORS[4];
+  if (intensity <= 0.33) return HEATMAP_COLORS[0];
+  if (intensity <= 0.66) return HEATMAP_COLORS[1];
+  return HEATMAP_COLORS[2];
 }
 
 export function HeatmapLayer({

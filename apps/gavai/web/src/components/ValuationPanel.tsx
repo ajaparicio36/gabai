@@ -15,7 +15,7 @@ import { AreaIntelCard } from '@/components/AreaIntelCard';
 import { DataCompletenessMeter } from '@/components/DataCompletenessMeter';
 import { DisclaimerBanner } from '@/components/DisclaimerBanner';
 import { ElevationLabel } from '@/components/ElevationLabel';
-import { SpiderChart } from '@/components/SpiderChart';
+import { RiskProgressBars } from '@/components/RiskProgressBars';
 import type { ValuationResponse } from '@/types/api';
 import type { AreaIntelligenceResponse } from '@/types/api';
 import type { RiskAssessmentResponse } from '@/types/api';
@@ -134,7 +134,7 @@ export function ValuationPanel({
               </div>
             ) : riskScores ? (
               <div className="rounded-md border p-3">
-                <SpiderChart riskScores={riskScores} />
+                <RiskProgressBars riskScores={riskScores} />
               </div>
             ) : null}
 
