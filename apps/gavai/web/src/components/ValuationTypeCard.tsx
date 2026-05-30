@@ -14,6 +14,7 @@ import type { ValuationResponse } from '@/types/api';
 
 interface ValuationTypeCardProps {
   valuation: ValuationResponse;
+  propertyType: string;
 }
 
 const TYPE_CONFIG: Record<
@@ -34,10 +35,11 @@ function getConfidenceColor(score: number): string {
 
 export function ValuationTypeCard({
   valuation,
+  propertyType,
 }: ValuationTypeCardProps): React.ReactNode {
   const [expanded, setExpanded] = useState(false);
-  const config = TYPE_CONFIG[valuation.propertyType] ?? {
-    label: valuation.propertyType,
+  const config = TYPE_CONFIG[propertyType] ?? {
+    label: propertyType,
     icon: Home,
   };
   const Icon = config.icon;
@@ -79,13 +81,6 @@ export function ValuationTypeCard({
       {expanded && (
         <div className="space-y-2 pt-2 border-t">
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Confidence Range</span>
-            <span>
-              PHP {valuation.confidenceLowPhp.toLocaleString()} –{' '}
-              {valuation.confidenceHighPhp.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Confidence Score</span>
             <span className={getConfidenceColor(valuation.confidenceScore)}>
               {Math.round(valuation.confidenceScore * 100)}%
@@ -95,16 +90,6 @@ export function ValuationTypeCard({
             <span className="text-muted-foreground">Data Completeness</span>
             <span>{Math.round(valuation.dataCompleteness * 100)}%</span>
           </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Comparables Used</span>
-            <span>{valuation.comparablesUsed}</span>
-          </div>
-          {valuation.modelVersion !== 'formula_fallback' && (
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Model</span>
-              <span className="font-mono">{valuation.modelVersion}</span>
-            </div>
-          )}
         </div>
       )}
     </div>

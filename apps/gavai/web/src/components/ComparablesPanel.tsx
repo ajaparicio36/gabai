@@ -6,10 +6,25 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DealBadge } from '@/components/DealBadge';
 import type { NearbyProperty } from '@/types/api';
+
+const TYPE_LABELS: Record<string, string> = {
+  residential_lot: 'Residential Lot',
+  house_and_lot: 'House & Lot',
+  condo: 'Condo',
+  commercial: 'Commercial',
+};
 
 interface ComparablesPanelProps {
   open: boolean;
@@ -108,6 +123,17 @@ export function ComparablesPanel({
   count,
   radiusM = 3000,
 }: ComparablesPanelProps): React.ReactNode {
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+
+  const uniqueTypes = comparables
+    ? [...new Set(comparables.map((c) => c.propertyType))]
+    : [];
+
+  const filteredComparables =
+    typeFilter === 'all'
+      ? comparables
+      : comparables?.filter((c) => c.propertyType === typeFilter);
+
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
@@ -118,6 +144,21 @@ export function ComparablesPanel({
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
+          {uniqueTypes.length > 0 && (
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="h-8 w-full text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {uniqueTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {TYPE_LABELS[type] ?? formatPropertyType(type)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {medianPrice != null && (
             <div className="rounded-md bg-muted p-3 text-center">
               <p className="text-xs text-muted-foreground">Area Median Price</p>
@@ -148,9 +189,9 @@ export function ComparablesPanel({
                 </div>
               ))}
             </div>
-          ) : comparables && comparables.length > 0 ? (
+          ) : filteredComparables && filteredComparables.length > 0 ? (
             <div className="space-y-3">
-              {comparables.map((p) => (
+              {filteredComparables.map((p) => (
                 <ComparableCard
                   key={p.id}
                   property={p}

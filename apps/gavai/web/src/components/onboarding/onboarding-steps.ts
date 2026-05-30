@@ -67,7 +67,7 @@ export const MAP_ONBOARDING_STEPS: OnboardingStep[] = [
     targetSelector: '[data-ob="valuation-panel"]',
     title: 'Valuation Panel',
     description:
-      'This slide-in panel shows your estimated property value, confidence score, BIR compliance check, risk radar chart (flood, traffic, yield, market, fault-line), area intelligence, and a Generate Report button.',
+      'This slide-in panel shows your estimated property value, confidence score, BIR compliance check, risk radar chart (flood, traffic, yield, market, fault-line), and area intelligence.',
     placement: 'left',
     sideOffset: -8,
   },

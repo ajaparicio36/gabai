@@ -19,7 +19,6 @@ import {
 } from '@/hooks/useQuickEstimate';
 import { useMultiValuation } from '@/hooks/useValuation';
 import { useAreaIntel } from '@/hooks/useAreaIntel';
-import { useGenerateReport } from '@/hooks/useReport';
 import { useRiskScores } from '@/hooks/useRiskScores';
 import { useListings } from '@/hooks/useListings';
 import { useComparables } from '@/hooks/useComparables';
@@ -30,11 +29,11 @@ import { Button } from '@/components/ui/button';
 import type { NearbyProperty } from '@/types/api';
 
 const LISTING_PIN_ICON = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#2563eb" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
+  '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#2563eb" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
 )}`;
 
 const SELECTED_PIN_ICON = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#10b981" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
+  '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#10b981" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
 )}`;
 
 interface DealAwareInfoWindowProps {
@@ -151,7 +150,6 @@ function MapContent(): React.ReactNode {
     selectedLat,
     selectedLng,
   );
-  const report = useGenerateReport();
 
   const { data: riskScores, isLoading: isRiskScoresLoading } = useRiskScores(
     selectedLat,
@@ -201,13 +199,6 @@ function MapContent(): React.ReactNode {
     setSelectedLng(lng);
     setSelectedListing(null);
   }, []);
-
-  const handleGenerateReport = useCallback(
-    (valuationId: string) => {
-      report.mutate(valuationId);
-    },
-    [report],
-  );
 
   if (isLoading) {
     return (
@@ -337,6 +328,7 @@ function MapContent(): React.ReactNode {
                 position={{ lat: p.lat, lng: p.lng }}
                 icon={{
                   url: LISTING_PIN_ICON,
+                  scaledSize: new google.maps.Size(56, 56),
                 }}
                 title={`PHP ${(p.pricePerSqmPhp ?? 0).toLocaleString()}/sqm — ${p.barangay ?? ''}, ${p.city ?? ''}`}
                 onClick={() => setSelectedListing(p)}
@@ -360,6 +352,7 @@ function MapContent(): React.ReactNode {
               position={{ lat: selectedLat, lng: selectedLng }}
               icon={{
                 url: SELECTED_PIN_ICON,
+                scaledSize: new google.maps.Size(64, 64),
               }}
             />
           )}
@@ -382,8 +375,6 @@ function MapContent(): React.ReactNode {
             areaIntel={areaIntel}
             isAreaIntelStale={isAreaIntelStale}
             isValuationPending={multiValuation.isPending}
-            onGenerateReport={handleGenerateReport}
-            isReportPending={report.isPending}
             onClose={() => setShowValuationPanel(false)}
             selectedLat={selectedLat}
             selectedLng={selectedLng}

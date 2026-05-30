@@ -1,22 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { AreaIntelCard } from '@/components/AreaIntelCard';
 import { DisclaimerBanner } from '@/components/DisclaimerBanner';
 import { ElevationLabel } from '@/components/ElevationLabel';
@@ -25,22 +15,12 @@ import { ValuationTypeCard } from '@/components/ValuationTypeCard';
 import type { ValuationByTypeResponse } from '@/types/api';
 import type { AreaIntelligenceResponse } from '@/types/api';
 import type { RiskAssessmentResponse } from '@/types/api';
-import { FileText } from 'lucide-react';
-
-const TYPE_LABELS: Record<string, string> = {
-  residential_lot: 'Residential Lot',
-  house_and_lot: 'House & Lot',
-  condo: 'Condo',
-  commercial: 'Commercial',
-};
 
 interface ValuationPanelProps {
   valuations: ValuationByTypeResponse | undefined;
   areaIntel: AreaIntelligenceResponse | undefined;
   isAreaIntelStale: boolean;
   isValuationPending: boolean;
-  onGenerateReport: (valuationId: string) => void;
-  isReportPending: boolean;
   onClose: () => void;
   selectedLat?: number | null;
   selectedLng?: number | null;
@@ -55,8 +35,6 @@ export function ValuationPanel({
   areaIntel,
   isAreaIntelStale,
   isValuationPending,
-  onGenerateReport,
-  isReportPending,
   onClose,
   selectedLat,
   selectedLng,
@@ -68,10 +46,6 @@ export function ValuationPanel({
         (type) => valuations[type],
       )
     : [];
-
-  const [reportType, setReportType] = useState<string>(
-    valuationEntries.length > 0 ? valuationEntries[0].propertyType : '',
-  );
 
   return (
     <Sheet open onOpenChange={(open) => !open && onClose()}>
@@ -134,50 +108,17 @@ export function ValuationPanel({
               />
             )}
 
-            <Separator />
-
             <div className="space-y-3">
               <p className="text-sm font-medium text-muted-foreground">
                 Estimated Value by Property Type
               </p>
-              {valuationEntries.map((v) => (
-                <ValuationTypeCard key={v.propertyType} valuation={v} />
+              {TYPE_ORDER.filter((type) => valuations![type]).map((type) => (
+                <ValuationTypeCard
+                  key={type}
+                  valuation={valuations![type]}
+                  propertyType={type}
+                />
               ))}
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Select value={reportType} onValueChange={setReportType}>
-                  <SelectTrigger className="h-8 w-full text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {valuationEntries.map((v) => (
-                      <SelectItem key={v.propertyType} value={v.propertyType}>
-                        {TYPE_LABELS[v.propertyType] ?? v.propertyType}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  const selected = valuationEntries.find(
-                    (v) => v.propertyType === reportType,
-                  );
-                  if (selected?.id) {
-                    onGenerateReport(selected.id);
-                  }
-                }}
-                disabled={isReportPending}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                {isReportPending ? 'Generating Report...' : 'Generate Report'}
-              </Button>
             </div>
 
             <DisclaimerBanner />
