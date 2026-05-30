@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -8,25 +9,37 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ConfidenceBadge } from '@/components/ConfidenceBadge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { AreaIntelCard } from '@/components/AreaIntelCard';
-import { DataCompletenessMeter } from '@/components/DataCompletenessMeter';
 import { DisclaimerBanner } from '@/components/DisclaimerBanner';
 import { ElevationLabel } from '@/components/ElevationLabel';
 import { RiskProgressBars } from '@/components/RiskProgressBars';
-import type { ValuationResponse } from '@/types/api';
+import { ValuationTypeCard } from '@/components/ValuationTypeCard';
+import type { ValuationByTypeResponse } from '@/types/api';
 import type { AreaIntelligenceResponse } from '@/types/api';
 import type { RiskAssessmentResponse } from '@/types/api';
 import { FileText } from 'lucide-react';
 
+const TYPE_LABELS: Record<string, string> = {
+  residential_lot: 'Residential Lot',
+  house_and_lot: 'House & Lot',
+  condo: 'Condo',
+  commercial: 'Commercial',
+};
+
 interface ValuationPanelProps {
-  valuation: ValuationResponse | undefined;
+  valuations: ValuationByTypeResponse | undefined;
   areaIntel: AreaIntelligenceResponse | undefined;
   isAreaIntelStale: boolean;
   isValuationPending: boolean;
-  onGenerateReport: () => void;
+  onGenerateReport: (valuationId: string) => void;
   isReportPending: boolean;
   onClose: () => void;
   selectedLat?: number | null;
@@ -35,12 +48,10 @@ interface ValuationPanelProps {
   isRiskScoresLoading?: boolean;
 }
 
-function formatPropertyType(type: string): string {
-  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
+const TYPE_ORDER = ['residential_lot', 'house_and_lot', 'condo', 'commercial'];
 
 export function ValuationPanel({
-  valuation,
+  valuations,
   areaIntel,
   isAreaIntelStale,
   isValuationPending,
@@ -52,6 +63,16 @@ export function ValuationPanel({
   riskScores,
   isRiskScoresLoading,
 }: ValuationPanelProps): React.ReactNode {
+  const valuationEntries = valuations
+    ? TYPE_ORDER.filter((type) => valuations[type]).map(
+        (type) => valuations[type],
+      )
+    : [];
+
+  const [reportType, setReportType] = useState<string>(
+    valuationEntries.length > 0 ? valuationEntries[0].propertyType : '',
+  );
+
   return (
     <Sheet open onOpenChange={(open) => !open && onClose()}>
       <SheetContent
@@ -62,19 +83,18 @@ export function ValuationPanel({
         {isValuationPending ? (
           <div className="space-y-6 pt-8">
             <Skeleton className="h-7 w-48" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-56" />
-              <Skeleton className="h-4 w-32" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="rounded-lg border p-4 space-y-3">
+                  <Skeleton className="h-5 w-28" />
+                  <Skeleton className="h-7 w-40" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              ))}
             </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-6 w-32 rounded-full" />
-            </div>
-            <Skeleton className="h-16 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
             <Skeleton className="h-32 w-full rounded-lg" />
           </div>
-        ) : valuation ? (
+        ) : valuationEntries.length > 0 ? (
           <div className="space-y-6 pt-8">
             <SheetHeader>
               <SheetTitle className="font-serif text-xl">
@@ -82,50 +102,9 @@ export function ValuationPanel({
               </SheetTitle>
             </SheetHeader>
 
-            <div>
-              <p className="text-sm text-muted-foreground">Estimated Value</p>
-              <p className="font-serif text-3xl font-semibold">
-                PHP {valuation.pointEstimatePhp.toLocaleString()}
-              </p>
-              {selectedLat != null && selectedLng != null && (
-                <ElevationLabel lat={selectedLat} lng={selectedLng} />
-              )}
-              <p className="text-sm text-muted-foreground">
-                PHP {valuation.pricePerSqmPhp.toLocaleString()}/sqm
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2" data-ob="confidence-badges">
-              <ConfidenceBadge
-                score={valuation.confidenceScore}
-                comparablesCount={valuation.comparablesUsed}
-              />
-            </div>
-
-            <div className="space-y-2 rounded-md border p-3">
-              <div className="flex items-center gap-2">
-                <p className="text-xs font-medium">
-                  {valuation.propertyType
-                    ? `${formatPropertyType(valuation.propertyType)} Confidence Range`
-                    : 'Confidence Range'}
-                </p>
-                {valuation.propertyType && (
-                  <Badge variant="secondary" className="text-xs">
-                    {formatPropertyType(valuation.propertyType)}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>PHP {valuation.confidenceLowPhp.toLocaleString()}</span>
-                <span className="text-muted-foreground">-</span>
-                <span>PHP {valuation.confidenceHighPhp.toLocaleString()}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Range varies by property type.
-              </p>
-            </div>
-
-            <DataCompletenessMeter completeness={valuation.dataCompleteness} />
+            {selectedLat != null && selectedLng != null && (
+              <ElevationLabel lat={selectedLat} lng={selectedLng} />
+            )}
 
             {isRiskScoresLoading ? (
               <div className="rounded-md border p-3 space-y-2">
@@ -137,8 +116,6 @@ export function ValuationPanel({
                 <RiskProgressBars riskScores={riskScores} />
               </div>
             ) : null}
-
-            <Separator />
 
             {areaIntel && (
               <AreaIntelCard
@@ -159,15 +136,49 @@ export function ValuationPanel({
 
             <Separator />
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={onGenerateReport}
-              disabled={isReportPending}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              {isReportPending ? 'Generating Report...' : 'Generate Report'}
-            </Button>
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-muted-foreground">
+                Estimated Value by Property Type
+              </p>
+              {valuationEntries.map((v) => (
+                <ValuationTypeCard key={v.propertyType} valuation={v} />
+              ))}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger className="h-8 w-full text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {valuationEntries.map((v) => (
+                      <SelectItem key={v.propertyType} value={v.propertyType}>
+                        {TYPE_LABELS[v.propertyType] ?? v.propertyType}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const selected = valuationEntries.find(
+                    (v) => v.propertyType === reportType,
+                  );
+                  if (selected?.id) {
+                    onGenerateReport(selected.id);
+                  }
+                }}
+                disabled={isReportPending}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {isReportPending ? 'Generating Report...' : 'Generate Report'}
+              </Button>
+            </div>
 
             <DisclaimerBanner />
           </div>

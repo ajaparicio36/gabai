@@ -9,11 +9,15 @@ import { FilterBar, type HeatmapFilters } from '@/components/FilterBar';
 import { QuickEstimatePopup } from '@/components/QuickEstimatePopup';
 import { ValuationPanel } from '@/components/ValuationPanel';
 import { ComparablesPanel } from '@/components/ComparablesPanel';
+import { DealBadge } from '@/components/DealBadge';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { useHeatmap } from '@/hooks/useHeatmap';
-import { useQuickEstimate } from '@/hooks/useQuickEstimate';
-import { useValuation } from '@/hooks/useValuation';
+import {
+  useQuickEstimate,
+  useQuickEstimateByType,
+} from '@/hooks/useQuickEstimate';
+import { useMultiValuation } from '@/hooks/useValuation';
 import { useAreaIntel } from '@/hooks/useAreaIntel';
 import { useGenerateReport } from '@/hooks/useReport';
 import { useRiskScores } from '@/hooks/useRiskScores';
@@ -32,6 +36,65 @@ const LISTING_PIN_ICON = `data:image/svg+xml,${encodeURIComponent(
 const SELECTED_PIN_ICON = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#10b981" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
 )}`;
+
+interface DealAwareInfoWindowProps {
+  listing: NearbyProperty;
+  areaMedianPhp: number | null;
+}
+
+function DealAwareInfoWindow({
+  listing,
+  areaMedianPhp,
+}: DealAwareInfoWindowProps): React.ReactNode {
+  return (
+    <div className="min-w-[200px] space-y-1 p-1">
+      {listing.photoUrls && listing.photoUrls.length > 0 && (
+        <img
+          src={listing.photoUrls[0]}
+          alt={listing.propertyType}
+          className="w-full max-w-[200px] h-24 object-cover rounded-md"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      )}
+      <p className="text-sm font-semibold capitalize">
+        {listing.propertyType.replace(/_/g, ' ')}
+      </p>
+      <p className="text-sm font-medium">
+        PHP {listing.askingPricePhp.toLocaleString()}
+      </p>
+      {listing.pricePerSqmPhp && (
+        <p className="text-xs text-muted-foreground">
+          PHP {listing.pricePerSqmPhp.toLocaleString()}/sqm
+        </p>
+      )}
+      <DealBadge
+        listingPricePerSqm={listing.pricePerSqmPhp}
+        areaMedianPerSqm={areaMedianPhp}
+      />
+      {(listing.lotAreaSqm || listing.floorAreaSqm) && (
+        <p className="text-xs text-muted-foreground">
+          {listing.lotAreaSqm ? `${listing.lotAreaSqm} sqm lot` : ''}
+          {listing.lotAreaSqm && listing.floorAreaSqm ? ' · ' : ''}
+          {listing.floorAreaSqm ? `${listing.floorAreaSqm} sqm floor` : ''}
+        </p>
+      )}
+      {(listing.barangay || listing.city) && (
+        <p className="text-xs text-muted-foreground">
+          {[listing.barangay, listing.city].filter(Boolean).join(', ')}
+        </p>
+      )}
+      {(listing.bedrooms != null || listing.bathrooms != null) && (
+        <p className="text-xs text-muted-foreground">
+          {listing.bedrooms != null ? `${listing.bedrooms} bed` : ''}
+          {listing.bedrooms != null && listing.bathrooms != null ? ' · ' : ''}
+          {listing.bathrooms != null ? `${listing.bathrooms} bath` : ''}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function MapContent(): React.ReactNode {
   const { user, logout, isLoading } = useAuth();
@@ -79,7 +142,11 @@ function MapContent(): React.ReactNode {
     useHeatmap(heatmapParams);
   const { data: quickEstimate, isLoading: isQuickEstimateLoading } =
     useQuickEstimate(selectedLat, selectedLng);
-  const valuation = useValuation();
+  const { data: estimateByType } = useQuickEstimateByType(
+    selectedLat,
+    selectedLng,
+  );
+  const multiValuation = useMultiValuation();
   const { data: areaIntel, isStale: isAreaIntelStale } = useAreaIntel(
     selectedLat,
     selectedLng,
@@ -89,7 +156,7 @@ function MapContent(): React.ReactNode {
   const { data: riskScores, isLoading: isRiskScoresLoading } = useRiskScores(
     selectedLat,
     selectedLng,
-    showValuationPanel && !!valuation.data,
+    showValuationPanel && !!multiValuation.data,
   );
 
   const { data: comparables, isLoading: isComparablesLoading } = useComparables(
@@ -135,11 +202,12 @@ function MapContent(): React.ReactNode {
     setSelectedListing(null);
   }, []);
 
-  const handleGenerateReport = useCallback(() => {
-    if (valuation.data?.id) {
-      report.mutate(valuation.data.id);
-    }
-  }, [valuation.data, report]);
+  const handleGenerateReport = useCallback(
+    (valuationId: string) => {
+      report.mutate(valuationId);
+    },
+    [report],
+  );
 
   if (isLoading) {
     return (
@@ -280,66 +348,10 @@ function MapContent(): React.ReactNode {
               position={{ lat: selectedListing.lat, lng: selectedListing.lng }}
               onCloseClick={() => setSelectedListing(null)}
             >
-              <div className="min-w-[200px] space-y-1 p-1">
-                {selectedListing.photoUrls &&
-                  selectedListing.photoUrls.length > 0 && (
-                    <img
-                      src={selectedListing.photoUrls[0]}
-                      alt={selectedListing.propertyType}
-                      className="w-full max-w-[200px] h-24 object-cover rounded-md"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                <p className="text-sm font-semibold capitalize">
-                  {selectedListing.propertyType.replace(/_/g, ' ')}
-                </p>
-                <p className="text-sm font-medium">
-                  PHP {selectedListing.askingPricePhp.toLocaleString()}
-                </p>
-                {selectedListing.pricePerSqmPhp && (
-                  <p className="text-xs text-muted-foreground">
-                    PHP {selectedListing.pricePerSqmPhp.toLocaleString()}/sqm
-                  </p>
-                )}
-                {(selectedListing.lotAreaSqm ||
-                  selectedListing.floorAreaSqm) && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedListing.lotAreaSqm
-                      ? `${selectedListing.lotAreaSqm} sqm lot`
-                      : ''}
-                    {selectedListing.lotAreaSqm && selectedListing.floorAreaSqm
-                      ? ' · '
-                      : ''}
-                    {selectedListing.floorAreaSqm
-                      ? `${selectedListing.floorAreaSqm} sqm floor`
-                      : ''}
-                  </p>
-                )}
-                {(selectedListing.barangay || selectedListing.city) && (
-                  <p className="text-xs text-muted-foreground">
-                    {[selectedListing.barangay, selectedListing.city]
-                      .filter(Boolean)
-                      .join(', ')}
-                  </p>
-                )}
-                {(selectedListing.bedrooms != null ||
-                  selectedListing.bathrooms != null) && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedListing.bedrooms != null
-                      ? `${selectedListing.bedrooms} bed`
-                      : ''}
-                    {selectedListing.bedrooms != null &&
-                    selectedListing.bathrooms != null
-                      ? ' · '
-                      : ''}
-                    {selectedListing.bathrooms != null
-                      ? `${selectedListing.bathrooms} bath`
-                      : ''}
-                  </p>
-                )}
-              </div>
+              <DealAwareInfoWindow
+                listing={selectedListing}
+                areaMedianPhp={quickEstimate?.medianPhp ?? null}
+              />
             </InfoWindow>
           )}
 
@@ -357,6 +369,7 @@ function MapContent(): React.ReactNode {
           <div className="absolute left-4 top-32 z-10" data-ob="quick-estimate">
             <QuickEstimatePopup
               estimate={quickEstimate}
+              estimateByType={estimateByType}
               isLoading={isQuickEstimateLoading}
               onViewComparables={() => setShowComparablesPanel(true)}
             />
@@ -365,10 +378,10 @@ function MapContent(): React.ReactNode {
 
         {showValuationPanel && (
           <ValuationPanel
-            valuation={valuation.data}
+            valuations={multiValuation.data}
             areaIntel={areaIntel}
             isAreaIntelStale={isAreaIntelStale}
-            isValuationPending={valuation.isPending}
+            isValuationPending={multiValuation.isPending}
             onGenerateReport={handleGenerateReport}
             isReportPending={report.isPending}
             onClose={() => setShowValuationPanel(false)}
@@ -398,13 +411,9 @@ function MapContent(): React.ReactNode {
               className="shadow-lg rounded-full px-6 py-3 text-base"
               onClick={() => {
                 setShowValuationPanel(true);
-                valuation.mutate({
+                multiValuation.mutate({
                   lat: selectedLat,
                   lng: selectedLng,
-                  propertyType:
-                    filters.propertyType === 'all'
-                      ? 'house_and_lot'
-                      : filters.propertyType,
                 });
               }}
             >

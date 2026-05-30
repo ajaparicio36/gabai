@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DealBadge } from '@/components/DealBadge';
 import type { NearbyProperty } from '@/types/api';
 
 interface ComparablesPanelProps {
@@ -17,6 +18,7 @@ interface ComparablesPanelProps {
   isLoading: boolean;
   medianPrice?: number | null;
   count?: number;
+  radiusM?: number;
 }
 
 function formatPropertyType(type: string): string {
@@ -25,8 +27,10 @@ function formatPropertyType(type: string): string {
 
 function ComparableCard({
   property,
+  medianPrice,
 }: {
   property: NearbyProperty;
+  medianPrice?: number | null;
 }): React.ReactNode {
   const hasPhotos =
     property.photoUrls && (property.photoUrls as string[]).length > 0;
@@ -64,6 +68,12 @@ function ComparableCard({
             PHP {property.pricePerSqmPhp.toLocaleString()}/sqm
           </p>
         )}
+        {medianPrice != null && (
+          <DealBadge
+            listingPricePerSqm={property.pricePerSqmPhp}
+            areaMedianPerSqm={medianPrice}
+          />
+        )}
         <p className="text-xs text-muted-foreground">
           {[
             property.lotAreaSqm ? `${property.lotAreaSqm} sqm lot` : null,
@@ -96,6 +106,7 @@ export function ComparablesPanel({
   isLoading,
   medianPrice,
   count,
+  radiusM = 3000,
 }: ComparablesPanelProps): React.ReactNode {
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -115,7 +126,9 @@ export function ComparablesPanel({
               </p>
               {count != null && (
                 <p className="text-xs text-muted-foreground">
-                  Based on {count} nearby listing{count !== 1 ? 's' : ''}
+                  Based on {count} nearby listing{count !== 1 ? 's' : ''} within{' '}
+                  {radiusM >= 1000 ? `${radiusM / 1000}km` : `${radiusM}m`}{' '}
+                  radius
                 </p>
               )}
             </div>
@@ -138,7 +151,11 @@ export function ComparablesPanel({
           ) : comparables && comparables.length > 0 ? (
             <div className="space-y-3">
               {comparables.map((p) => (
-                <ComparableCard key={p.id} property={p} />
+                <ComparableCard
+                  key={p.id}
+                  property={p}
+                  medianPrice={medianPrice}
+                />
               ))}
             </div>
           ) : (

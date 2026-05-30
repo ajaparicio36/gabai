@@ -128,6 +128,13 @@ export class HeatmapService {
     };
   }
 
+  async getAllTypeEstimates(
+    lat: number,
+    lng: number,
+  ): Promise<Record<string, QuickEstimateResult>> {
+    return this.heatmapRepository.getQuickEstimateByType(lat, lng);
+  }
+
   async getNearbyProperties(
     minLat: number,
     minLng: number,

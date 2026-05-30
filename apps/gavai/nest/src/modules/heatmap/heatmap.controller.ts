@@ -35,6 +35,14 @@ export class HeatmapController {
     return this.heatmapService.getQuickEstimate(Number(lat), Number(lng));
   }
 
+  @Get('estimate/all-types')
+  async getAllTypeEstimates(
+    @Query('lat') lat: string,
+    @Query('lng') lng: string,
+  ): Promise<Record<string, QuickEstimateResult>> {
+    return this.heatmapService.getAllTypeEstimates(Number(lat), Number(lng));
+  }
+
   @Get('properties')
   async getProperties(
     @Query('minLat') minLat: string,

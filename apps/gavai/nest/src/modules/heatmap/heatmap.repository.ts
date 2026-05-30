@@ -151,6 +151,68 @@ export class HeatmapRepository {
     };
   }
 
+  async getQuickEstimateByType(
+    lat: number,
+    lng: number,
+    radiusM = 3000,
+  ): Promise<Record<string, QuickEstimateResult>> {
+    interface PerTypeRow {
+      propertyType: string;
+      p25: number | null;
+      p50: number | null;
+      p75: number | null;
+      count: number;
+    }
+
+    const rows: PerTypeRow[] = await this.prisma.$queryRawUnsafe(`
+      SELECT
+        "propertyType",
+        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY "pricePerSqmPhp") AS p25,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "pricePerSqmPhp") AS p50,
+        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "pricePerSqmPhp") AS p75,
+        COUNT(*)::int AS count
+      FROM "Property"
+      WHERE ST_DWithin(
+        ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
+        ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
+        ${radiusM}
+      )
+      AND "pricePerSqmPhp" IS NOT NULL
+      AND "listingType" = 'standard'
+      AND "approved" = true
+      GROUP BY "propertyType"
+    `);
+
+    const result: Record<string, QuickEstimateResult> = {};
+    for (const row of rows) {
+      result[row.propertyType] = {
+        lowPhp: Math.round(row.p25 ?? 0),
+        medianPhp: Math.round(row.p50 ?? 0),
+        highPhp: Math.round(row.p75 ?? 0),
+        comparablesCount: row.count,
+      };
+    }
+
+    const allTypes = [
+      'residential_lot',
+      'house_and_lot',
+      'condo',
+      'commercial',
+    ];
+    for (const type of allTypes) {
+      if (!result[type]) {
+        result[type] = {
+          lowPhp: 0,
+          medianPhp: 0,
+          highPhp: 0,
+          comparablesCount: 0,
+        };
+      }
+    }
+
+    return result;
+  }
+
   async getNearbyProperties(
     minLat: number,
     minLng: number,

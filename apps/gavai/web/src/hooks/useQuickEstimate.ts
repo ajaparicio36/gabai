@@ -2,7 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import type { QuickEstimateResponse } from '@/types/api';
+import type {
+  QuickEstimateResponse,
+  QuickEstimateByTypeResponse,
+} from '@/types/api';
 
 export function useQuickEstimate(
   lat: number | null,
@@ -19,6 +22,33 @@ export function useQuickEstimate(
         '/heatmap/estimate',
         { params: { lat, lng } },
       );
+      return response.data.data;
+    },
+    enabled: lat !== null && lng !== null,
+    staleTime: 30 * 1000,
+  });
+
+  return {
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+}
+
+export function useQuickEstimateByType(
+  lat: number | null,
+  lng: number | null,
+): {
+  data: QuickEstimateByTypeResponse | undefined;
+  isLoading: boolean;
+  error: Error | null;
+} {
+  const query = useQuery<QuickEstimateByTypeResponse, Error>({
+    queryKey: ['quickEstimateByType', lat, lng],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: QuickEstimateByTypeResponse;
+      }>('/heatmap/estimate/all-types', { params: { lat, lng } });
       return response.data.data;
     },
     enabled: lat !== null && lng !== null,

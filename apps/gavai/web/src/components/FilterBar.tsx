@@ -48,7 +48,10 @@ export function FilterBar({
       <div className="flex items-center gap-2">
         <Label className="text-xs whitespace-nowrap">Type</Label>
         <Select value={propertyType} onValueChange={setPropertyType}>
-          <SelectTrigger className="h-8 w-[140px] text-xs">
+          <SelectTrigger
+            className="h-8 w-[140px] text-xs"
+            title="Heatmap filter only — valuation shows all types"
+          >
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>

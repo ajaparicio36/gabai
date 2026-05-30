@@ -54,6 +54,23 @@ export class ValuationService {
     this.sidecarUrl = this.configService.getOrThrow<string>('ML_SIDECAR_URL');
   }
 
+  async createAllValuations(
+    input: Omit<ValuationInput, 'propertyType'>,
+  ): Promise<Record<string, ValuationResult>> {
+    const types = ['residential_lot', 'house_and_lot', 'condo', 'commercial'];
+    const results = await Promise.all(
+      types.map((type) =>
+        this.createValuation({ ...input, propertyType: type }),
+      ),
+    );
+
+    const resultMap: Record<string, ValuationResult> = {};
+    types.forEach((type, i) => {
+      resultMap[type] = results[i];
+    });
+    return resultMap;
+  }
+
   async createValuation(input: ValuationInput): Promise<ValuationResult> {
     const { features, comparables, proximityBreakdown } =
       await this.assembleFeatures(input);

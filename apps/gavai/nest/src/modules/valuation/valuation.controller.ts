@@ -16,6 +16,18 @@ interface ValuationRequest {
   developer?: string;
 }
 
+interface AllTypesValuationRequest {
+  lat: number;
+  lng: number;
+  lotAreaSqm?: number;
+  floorAreaSqm?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  buildingAgeYears?: number;
+  address?: string;
+  developer?: string;
+}
+
 @Controller('valuation')
 @UseGuards(JwtAuthGuard)
 export class ValuationController {
@@ -29,6 +41,23 @@ export class ValuationController {
       lat: body.lat,
       lng: body.lng,
       propertyType: body.propertyType,
+      lotAreaSqm: body.lotAreaSqm,
+      floorAreaSqm: body.floorAreaSqm,
+      bedrooms: body.bedrooms,
+      bathrooms: body.bathrooms,
+      buildingAgeYears: body.buildingAgeYears,
+      address: body.address,
+      developer: body.developer,
+    });
+  }
+
+  @Post('all-types')
+  async createAllValuations(
+    @Body() body: AllTypesValuationRequest,
+  ): Promise<Record<string, ValuationResult>> {
+    return this.valuationService.createAllValuations({
+      lat: body.lat,
+      lng: body.lng,
       lotAreaSqm: body.lotAreaSqm,
       floorAreaSqm: body.floorAreaSqm,
       bedrooms: body.bedrooms,

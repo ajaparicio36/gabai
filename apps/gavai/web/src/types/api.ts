@@ -89,6 +89,10 @@ export interface QuickEstimateResponse {
   comparablesCount: number;
 }
 
+export type QuickEstimateByTypeResponse = Record<string, QuickEstimateResponse>;
+
+export type ValuationByTypeResponse = Record<string, ValuationResponse>;
+
 export interface AreaIntelligenceResponse {
   areaName: string;
   bulletPoints: string[];
