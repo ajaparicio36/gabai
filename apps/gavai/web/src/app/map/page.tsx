@@ -8,6 +8,7 @@ import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { FilterBar, type HeatmapFilters } from '@/components/FilterBar';
 import { QuickEstimatePopup } from '@/components/QuickEstimatePopup';
 import { ValuationPanel } from '@/components/ValuationPanel';
+import { ComparablesPanel } from '@/components/ComparablesPanel';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { useHeatmap } from '@/hooks/useHeatmap';
@@ -17,6 +18,7 @@ import { useAreaIntel } from '@/hooks/useAreaIntel';
 import { useGenerateReport } from '@/hooks/useReport';
 import { useRiskScores } from '@/hooks/useRiskScores';
 import { useListings } from '@/hooks/useListings';
+import { useComparables } from '@/hooks/useComparables';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LogOut, Settings, Satellite, Eye, EyeOff } from 'lucide-react';
@@ -47,6 +49,7 @@ function MapContent(): React.ReactNode {
     null,
   );
   const [showValuationPanel, setShowValuationPanel] = useState(false);
+  const [showComparablesPanel, setShowComparablesPanel] = useState(false);
   const [mapTypeId, setMapTypeId] = useState<string>('roadmap');
 
   function SatelliteToggle(): React.ReactNode {
@@ -87,6 +90,12 @@ function MapContent(): React.ReactNode {
     selectedLat,
     selectedLng,
     showValuationPanel && !!valuation.data,
+  );
+
+  const { data: comparables, isLoading: isComparablesLoading } = useComparables(
+    selectedLat,
+    selectedLng,
+    filters.propertyType === 'all' ? undefined : filters.propertyType,
   );
 
   const listingsBounds = {
@@ -324,6 +333,7 @@ function MapContent(): React.ReactNode {
             <QuickEstimatePopup
               estimate={quickEstimate}
               isLoading={isQuickEstimateLoading}
+              onViewComparables={() => setShowComparablesPanel(true)}
             />
           </div>
         )}
@@ -341,6 +351,17 @@ function MapContent(): React.ReactNode {
             selectedLng={selectedLng}
             riskScores={riskScores}
             isRiskScoresLoading={isRiskScoresLoading}
+          />
+        )}
+
+        {showComparablesPanel && (
+          <ComparablesPanel
+            open={showComparablesPanel}
+            onClose={() => setShowComparablesPanel(false)}
+            comparables={comparables}
+            isLoading={isComparablesLoading}
+            medianPrice={quickEstimate?.medianPhp ?? null}
+            count={quickEstimate?.comparablesCount}
           />
         )}
 
