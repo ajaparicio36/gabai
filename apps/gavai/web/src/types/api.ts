@@ -213,7 +213,7 @@ export interface RiskAssessmentResponse {
   };
   metadata: {
     flood: { level: string; source: string; returnPeriod: string } | null;
-    traffic: { speedRatio: number; cachedAt: string } | null;
+    traffic: { delayPercent: number; cachedAt: string } | null;
     yield: { articleCount: number; positiveRatio: number } | null;
     marketPremium: {
       avmPerSqm: number;

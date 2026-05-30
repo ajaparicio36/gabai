@@ -56,7 +56,7 @@ function formatDetail(
         : 'No data';
     case 'Traffic':
       return metadata.traffic
-        ? `Speed Ratio: ${metadata.traffic.speedRatio.toFixed(2)}\nCached: ${new Date(metadata.traffic.cachedAt).toLocaleDateString()}`
+        ? `Traffic Delay: ${(metadata.traffic.delayPercent * 100).toFixed(0)}%\nCached: ${new Date(metadata.traffic.cachedAt).toLocaleDateString()}`
         : 'No data';
     case 'Growth':
       return metadata.yield
@@ -78,9 +78,9 @@ export function SpiderChart({ riskScores }: SpiderChartProps): React.ReactNode {
     },
     {
       axis: 'Traffic',
-      score: riskScores.scores.traffic ?? 0.5,
+      score: 1 - (riskScores.scores.traffic ?? 0.5),
       fullMark: 1,
-      color: scoreToColor(riskScores.scores.traffic ?? 0.5),
+      color: scoreToColor(1 - (riskScores.scores.traffic ?? 0.5)),
       detail: formatDetail('Traffic', riskScores.scores, riskScores.metadata),
     },
     {

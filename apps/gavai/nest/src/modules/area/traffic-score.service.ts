@@ -10,7 +10,7 @@ const CBD_CENTROIDS = [
 
 interface TrafficResult {
   score: number;
-  speedRatio: number;
+  delayPercent: number;
   freeflowDuration: number;
   avgPeakDuration: number;
   nearestCbd: string;
@@ -96,16 +96,19 @@ export class TrafficScoreService {
       void 0;
     }
 
-    const speedRatio =
-      freeflowDuration > 0
-        ? Math.min(1, freeflowDuration / Math.max(avgPeakDuration, 1))
+    const delayPercent =
+      avgPeakDuration > 0
+        ? Math.max(
+            0,
+            Math.min(1, (avgPeakDuration - freeflowDuration) / avgPeakDuration),
+          )
         : 0;
 
-    const score = Math.max(0, Math.min(1, speedRatio));
+    const score = delayPercent;
 
     const result: TrafficResult = {
       score,
-      speedRatio,
+      delayPercent,
       freeflowDuration,
       avgPeakDuration,
       nearestCbd: nearestCbd.label,

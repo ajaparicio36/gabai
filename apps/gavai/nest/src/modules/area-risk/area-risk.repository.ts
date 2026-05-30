@@ -98,7 +98,7 @@ export class AreaRiskRepository {
           : null,
         traffic: trafficMeta
           ? {
-              speedRatio: (trafficMeta.speedRatio as number) ?? 0,
+              delayPercent: (trafficMeta.delayPercent as number) ?? 0,
               cachedAt:
                 (trafficMeta.cachedAt as string) ?? new Date().toISOString(),
             }

@@ -38,7 +38,7 @@ function getBarLabel(axis: string): { left: string; right: string } {
     case 'Flood':
       return { left: 'High flood risk', right: 'No flood risk' };
     case 'Traffic':
-      return { left: 'Heavy congestion', right: 'Smooth traffic' };
+      return { left: 'Smooth traffic', right: 'Heavy congestion' };
     case 'Growth':
       return { left: 'Stagnant area', right: 'Booming growth' };
     default:
@@ -58,7 +58,7 @@ function formatDetail(
         : 'No data';
     case 'Traffic':
       return metadata.traffic
-        ? `Speed Ratio: ${metadata.traffic.speedRatio.toFixed(2)}\nCached: ${new Date(metadata.traffic.cachedAt).toLocaleDateString()}`
+        ? `Delay: ${(metadata.traffic.delayPercent * 100).toFixed(0)}%\nCached: ${new Date(metadata.traffic.cachedAt).toLocaleDateString()}`
         : 'No data';
     case 'Growth':
       return metadata.yield
@@ -89,8 +89,11 @@ export function RiskProgressBars({
         <p className="text-xs font-medium mb-3">Risk Assessment</p>
         <div className="space-y-3">
           {bars.map((bar) => {
-            const percentage = Math.round(bar.score * 100);
+            const displayScore =
+              bar.axis === 'Traffic' ? 1 - bar.score : bar.score;
+            const percentage = Math.round(displayScore * 100);
             const labels = getBarLabel(bar.axis);
+            const color = scoreToColor(displayScore);
             const detail = formatDetail(
               bar.axis,
               riskScores.scores,
@@ -111,7 +114,7 @@ export function RiskProgressBars({
                   <TooltipTrigger asChild>
                     <div className="relative h-2.5 w-full cursor-pointer rounded-full bg-muted">
                       <div
-                        className={`absolute inset-y-0 left-0 rounded-full transition-all ${scoreToColor(bar.score)}`}
+                        className={`absolute inset-y-0 left-0 rounded-full transition-all ${color}`}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>

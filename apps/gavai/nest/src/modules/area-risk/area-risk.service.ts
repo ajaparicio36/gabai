@@ -73,8 +73,8 @@ export class AreaRiskService {
         traffic:
           traffic.status === 'fulfilled'
             ? {
-                speedRatio:
-                  (traffic.value as { speedRatio: number }).speedRatio ?? 0,
+                delayPercent:
+                  (traffic.value as { delayPercent: number }).delayPercent ?? 0,
                 cachedAt:
                   (traffic.value as { cachedAt: string }).cachedAt ??
                   new Date().toISOString(),

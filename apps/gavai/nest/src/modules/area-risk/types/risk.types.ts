@@ -7,7 +7,7 @@ export interface FloodScore {
 
 export interface TrafficScore {
   score: number;
-  speedRatio: number;
+  delayPercent: number;
   freeflowDuration: number;
   avgPeakDuration: number;
   nearestCbd: string;
@@ -43,7 +43,7 @@ export interface RiskMetadata {
     returnPeriod: string;
     description: string;
   } | null;
-  traffic: { speedRatio: number; cachedAt: string } | null;
+  traffic: { delayPercent: number; cachedAt: string } | null;
   yield: { articleCount: number; positiveRatio: number } | null;
   marketPremium: {
     avmPerSqm: number;
