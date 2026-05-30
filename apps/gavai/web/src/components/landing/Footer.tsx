@@ -19,23 +19,23 @@ const footerLinks = {
 
 export function Footer(): React.ReactNode {
   return (
-    <footer className="border-t border-primary-foreground/10 bg-primary px-4 py-12 text-primary-foreground/80 sm:py-16">
+    <footer className="border-t border-border/40 bg-secondary px-4 py-12 text-secondary-foreground/80 sm:py-16">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link
               href="/"
-              className="font-serif text-xl tracking-wide text-primary-foreground"
+              className="font-serif text-xl tracking-wide text-secondary-foreground"
             >
               GAVAI
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-primary-foreground/60">
+            <p className="mt-3 text-sm leading-relaxed text-secondary-foreground/60">
               AI-powered Automated Valuation Model for global real estate.
             </p>
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-primary-foreground">
+            <h3 className="mb-4 text-sm font-semibold text-secondary-foreground">
               Product
             </h3>
             <ul className="space-y-3">
@@ -43,7 +43,7 @@ export function Footer(): React.ReactNode {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+                    className="text-sm text-secondary-foreground/60 hover:text-secondary-foreground transition-colors"
                   >
                     {link.label}
                   </a>
@@ -53,7 +53,7 @@ export function Footer(): React.ReactNode {
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-primary-foreground">
+            <h3 className="mb-4 text-sm font-semibold text-secondary-foreground">
               Legal
             </h3>
             <ul className="space-y-3">
@@ -61,7 +61,7 @@ export function Footer(): React.ReactNode {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+                    className="text-sm text-secondary-foreground/60 hover:text-secondary-foreground transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -71,7 +71,7 @@ export function Footer(): React.ReactNode {
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-primary-foreground">
+            <h3 className="mb-4 text-sm font-semibold text-secondary-foreground">
               Connect
             </h3>
             <ul className="space-y-3">
@@ -79,7 +79,7 @@ export function Footer(): React.ReactNode {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+                    className="text-sm text-secondary-foreground/60 hover:text-secondary-foreground transition-colors"
                   >
                     {link.label}
                   </a>
@@ -89,8 +89,8 @@ export function Footer(): React.ReactNode {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-primary-foreground/10 pt-8 text-center">
-          <p className="text-sm text-primary-foreground/40">
+        <div className="mt-12 border-t border-border/40 pt-8 text-center">
+          <p className="text-sm text-secondary-foreground/40">
             &copy; 2026 GAVAI. All rights reserved.
           </p>
         </div>

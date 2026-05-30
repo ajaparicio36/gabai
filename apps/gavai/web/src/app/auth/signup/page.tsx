@@ -57,7 +57,7 @@ export default function SignupPage(): React.ReactNode {
   if (success) {
     return (
       <div className="flex items-center justify-center">
-        <Card className="w-full max-w-sm border-t-4 border-t-secondary">
+        <Card className="w-full max-w-sm border-t-4 border-t-primary">
           <CardHeader className="text-center">
             <CardTitle className="font-serif text-2xl">GAVAI</CardTitle>
             <CardDescription>Account created successfully</CardDescription>
@@ -81,7 +81,7 @@ export default function SignupPage(): React.ReactNode {
 
   return (
     <div className="flex items-center justify-center">
-      <Card className="w-full max-w-sm border-t-4 border-t-secondary">
+      <Card className="w-full max-w-sm border-t-4 border-t-primary">
         <CardHeader className="text-center">
           <CardTitle className="font-serif text-2xl">GAVAI</CardTitle>
           <CardDescription>Create your account</CardDescription>

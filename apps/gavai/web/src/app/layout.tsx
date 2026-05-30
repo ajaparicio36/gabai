@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Playfair_Display, Fira_Code } from 'next/font/google';
+import { Open_Sans, Bricolage_Grotesque, Fira_Code } from 'next/font/google';
 import { Providers } from '@/providers/Providers';
 import { Toaster } from '@/components/ui/sonner';
 import './global.css';
 
-const fontSans = DM_Sans({
+const fontSans = Open_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
-const fontSerif = Playfair_Display({
+const fontSerif = Bricolage_Grotesque({
   subsets: ['latin'],
   variable: '--font-serif',
 });
@@ -22,7 +22,7 @@ const fontMono = Fira_Code({
 export const metadata: Metadata = {
   title: 'GAVAI — AI Property Valuation',
   description:
-    'AI-powered Automated Valuation Model for Philippine real estate. Get instant property valuations with confidence bands in Metro Cebu.',
+    'AI-powered Automated Valuation Model for global real estate. Get instant property valuations with confidence bands.',
 };
 
 export default function RootLayout({
