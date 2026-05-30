@@ -179,6 +179,7 @@ export interface NormalizedRecord {
   trainingEligible: boolean;
   flagged: boolean;
   flagReason: string | null;
+  sourceUrl: string | null;
 }
 
 export interface PromoteResponse {

@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import type { NormalizedRecord } from '@/types/api';
 
@@ -173,6 +174,7 @@ export default function AdminNormalizePage(): React.ReactNode {
                 <TableHead>Confidence</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Issues</TableHead>
+                <TableHead>Source</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -223,6 +225,20 @@ export default function AdminNormalizePage(): React.ReactNode {
                       {(record.normalizationIssues ?? []).join('; ') ||
                         record.flagReason ||
                         '-'}
+                    </TableCell>
+                    <TableCell>
+                      {record.sourceUrl ? (
+                        <a
+                          href={record.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          View <ExternalLink size={12} />
+                        </a>
+                      ) : (
+                        '-'
+                      )}
                     </TableCell>
                   </TableRow>
                 );

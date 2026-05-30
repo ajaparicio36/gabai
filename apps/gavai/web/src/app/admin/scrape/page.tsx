@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import type { NormalizedRecord } from '@/types/api';
 
@@ -472,6 +473,7 @@ export default function AdminScrapePage(): React.ReactNode {
                   <TableHead>Confidence</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Issues</TableHead>
+                  <TableHead>Source</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -518,12 +520,26 @@ export default function AdminScrapePage(): React.ReactNode {
                         r.flagReason ||
                         '-'}
                     </TableCell>
+                    <TableCell>
+                      {r.sourceUrl ? (
+                        <a
+                          href={r.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          View <ExternalLink size={12} />
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
                 {normalizedRecords.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center text-muted-foreground"
                     >
                       No normalized records
