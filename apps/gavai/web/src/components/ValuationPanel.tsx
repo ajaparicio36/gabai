@@ -178,6 +178,10 @@ export function ValuationPanel({
                 yieldScore={areaIntel.yieldScore}
                 yieldArticleCount={areaIntel.yieldArticleCount}
                 yieldPositiveRatio={areaIntel.yieldPositiveRatio}
+                growthScore={areaIntel.growthScore}
+                growthConfidence={areaIntel.growthConfidence}
+                growthReasoning={areaIntel.growthReasoning}
+                growthDisclaimer={areaIntel.growthDisclaimer}
               />
             )}
 

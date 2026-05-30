@@ -377,6 +377,39 @@ const CLASSIFY_ARTICLES_TOOL = {
   },
 };
 
+const ESTIMATE_GROWTH_TOOL = {
+  type: 'function' as const,
+  function: {
+    name: 'estimate_growth',
+    description:
+      'Estimate the annual property value growth potential for a real estate area based on recent news articles about infrastructure, commercial, and residential developments.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      required: ['estimatedGrowthPercent', 'confidence', 'reasoning'],
+      additionalProperties: false,
+      properties: {
+        estimatedGrowthPercent: {
+          type: 'number',
+          description:
+            'Estimated annual property value growth percentage (0-100) based on developments described in the articles.',
+        },
+        confidence: {
+          type: 'string',
+          enum: ['low', 'medium', 'high'],
+          description:
+            'Confidence in this growth estimate based on the quantity and quality of evidence in the articles.',
+        },
+        reasoning: {
+          type: 'string',
+          description:
+            'A concise explanation of the key factors driving this growth estimate, referencing specific projects or developments from the articles.',
+        },
+      },
+    },
+  },
+};
+
 // ── System prompts ─────────────────────────────────────────────────────────
 
 const EXTRACTION_SYSTEM_PROMPT = [
@@ -411,11 +444,28 @@ const SUMMARIZE_SYSTEM_PROMPT = [
   'You MUST call the summarize_articles function — do not reply with text.',
 ].join(' ');
 
+const estimateGrowthSchema = z
+  .object({
+    estimatedGrowthPercent: z.number(),
+    confidence: z.enum(['low', 'medium', 'high']),
+    reasoning: z.string(),
+  })
+  .strict();
+
 const CLASSIFY_SYSTEM_PROMPT = [
   'You are a real estate market analyst.',
   'Based on the provided news articles about infrastructure and development, classify each article.',
   'For each article, provide sentiment, category, and estimated time horizon.',
   'You MUST call the classify_articles function — do not reply with text.',
+].join(' ');
+
+const ESTIMATE_GROWTH_SYSTEM_PROMPT = [
+  'You are a real estate market analyst specializing in Philippine property valuation.',
+  'Based on the provided news articles about infrastructure, commercial, and residential developments in a specific area, estimate the potential annual property value growth.',
+  'ONLY use information explicitly stated in the articles — do not speculate or add outside knowledge.',
+  'Consider factors like: new infrastructure (roads, bridges, transport), commercial developments (malls, offices, BPOs), residential projects, and overall development sentiment.',
+  'Return a single estimated annual growth percentage, your confidence level, and a concise reasoning explanation.',
+  'You MUST call the estimate_growth function — do not reply with text.',
 ].join(' ');
 
 @Injectable()
@@ -855,6 +905,139 @@ ${articleTexts}`;
 
     try {
       return JSON.parse(jsonMatch[0]);
+    } catch {
+      return null;
+    }
+  }
+
+  async estimateGrowth(articles: ArticleContent[]): Promise<{
+    estimatedGrowthPercent: number;
+    confidence: 'low' | 'medium' | 'high';
+    reasoning: string;
+  } | null> {
+    const articleTexts = articles
+      .map(
+        (a, i) =>
+          `Article ${i + 1}: "${a.title}"\nSource: ${a.url}\nContent:\n${a.markdown.slice(0, 3000)}`,
+      )
+      .join('\n\n---\n\n');
+
+    const apiKey = this.configService.get<string>('AIML_API_KEY');
+    if (!apiKey) {
+      this.logger.warn('AIML_API_KEY is missing; cannot estimate growth');
+      return null;
+    }
+
+    const model = 'gpt-4o-mini';
+
+    try {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.2,
+          max_tokens: 1024,
+          tools: [ESTIMATE_GROWTH_TOOL],
+          tool_choice: {
+            type: 'function',
+            function: { name: 'estimate_growth' },
+          },
+          messages: [
+            { role: 'system', content: ESTIMATE_GROWTH_SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: `Estimate the growth potential for this area based on these articles:\n\n${articleTexts}`,
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(60_000),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        this.logger.warn(
+          `estimateGrowth tool call failed ${response.status}: ${body.slice(0, 500)}`,
+        );
+        return this.estimateGrowthFallback(articleTexts);
+      }
+
+      const json = (await response.json()) as {
+        choices?: {
+          message?: {
+            tool_calls?: {
+              function?: { name: string; arguments: string };
+            }[];
+          };
+        }[];
+      };
+
+      const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall?.function?.arguments) {
+        this.logger.warn('estimateGrowth returned no tool call');
+        return this.estimateGrowthFallback(articleTexts);
+      }
+
+      const result = this.parseToolCallArgs(
+        toolCall.function.arguments,
+        estimateGrowthSchema,
+      );
+      if (result) {
+        return {
+          estimatedGrowthPercent: result.estimatedGrowthPercent,
+          confidence: result.confidence,
+          reasoning: result.reasoning,
+        };
+      }
+
+      return this.estimateGrowthFallback(articleTexts);
+    } catch (error: unknown) {
+      this.logger.warn(`estimateGrowth error: ${(error as Error).message}`);
+      return this.estimateGrowthFallback(articleTexts);
+    }
+  }
+
+  private async estimateGrowthFallback(articleTexts: string): Promise<{
+    estimatedGrowthPercent: number;
+    confidence: 'low' | 'medium' | 'high';
+    reasoning: string;
+  } | null> {
+    this.logger.debug('Falling back to text-based growth estimation');
+
+    const prompt = `You are a real estate market analyst specializing in Philippine property valuation. Based on the following news articles about infrastructure and development, estimate the annual property value growth for this area.
+
+RULES:
+- ONLY use information explicitly stated in the articles
+- Do NOT speculate or add outside knowledge
+- Output ONLY a valid JSON object with these fields:
+  - "estimatedGrowthPercent": a number (0-100) representing estimated annual growth
+  - "confidence": one of "low", "medium", or "high"
+  - "reasoning": a short explanation of the key factors
+
+ARTICLES:
+${articleTexts}`;
+
+    const content = await this.chatCompletion(prompt, {
+      temperature: 0.2,
+      maxTokens: 1024,
+    });
+    if (!content) return null;
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    try {
+      const parsed = estimateGrowthSchema.safeParse(JSON.parse(jsonMatch[0]));
+      return parsed.success
+        ? {
+            estimatedGrowthPercent: parsed.data.estimatedGrowthPercent,
+            confidence: parsed.data.confidence,
+            reasoning: parsed.data.reasoning,
+          }
+        : null;
     } catch {
       return null;
     }

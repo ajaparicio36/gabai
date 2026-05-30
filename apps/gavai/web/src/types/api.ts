@@ -96,6 +96,10 @@ export interface AreaIntelligenceResponse {
   yieldScore: number | null;
   yieldArticleCount: number | null;
   yieldPositiveRatio: number | null;
+  growthScore: number | null;
+  growthConfidence: string | null;
+  growthReasoning: string | null;
+  growthDisclaimer: string;
 }
 
 export interface ReportResponse {

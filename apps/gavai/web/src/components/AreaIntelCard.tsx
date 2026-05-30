@@ -17,6 +17,10 @@ interface AreaIntelCardProps {
   yieldScore?: number | null;
   yieldArticleCount?: number | null;
   yieldPositiveRatio?: number | null;
+  growthScore?: number | null;
+  growthConfidence?: string | null;
+  growthReasoning?: string | null;
+  growthDisclaimer?: string;
 }
 
 function YieldBadge({ score }: { score: number }): React.ReactNode {
@@ -47,8 +51,13 @@ export function AreaIntelCard({
   yieldScore,
   yieldArticleCount,
   yieldPositiveRatio,
+  growthScore,
+  growthConfidence,
+  growthReasoning,
+  growthDisclaimer,
 }: AreaIntelCardProps): React.ReactNode {
   const hasYield = yieldScore !== null && yieldScore !== undefined;
+  const hasGrowth = growthScore !== null && growthScore !== undefined;
 
   return (
     <Card>
@@ -88,7 +97,43 @@ export function AreaIntelCard({
           </div>
         )}
 
-        {bulletPoints.length === 0 ? (
+        {hasGrowth ? (
+          <div className="space-y-1.5 rounded-md border bg-primary/5 p-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium">Growth Estimate</span>
+              <span className="text-xs font-semibold tabular-nums">
+                ~{Math.round(growthScore)}% annually
+              </span>
+            </div>
+            {growthConfidence && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-muted-foreground capitalize">
+                  Confidence:
+                </span>
+                <span
+                  className={`text-[10px] font-medium capitalize ${
+                    growthConfidence === 'high'
+                      ? 'text-green-600'
+                      : growthConfidence === 'medium'
+                        ? 'text-yellow-600'
+                        : 'text-muted-foreground'
+                  }`}
+                >
+                  {growthConfidence}
+                </span>
+              </div>
+            )}
+            {growthReasoning && (
+              <p className="text-[10px] leading-relaxed text-muted-foreground">
+                {growthReasoning}
+              </p>
+            )}
+            <p className="text-[9px] italic text-muted-foreground/70">
+              {growthDisclaimer ??
+                'AI-generated estimate based on recent news and development data.'}
+            </p>
+          </div>
+        ) : bulletPoints.length === 0 ? (
           <p className="text-xs text-muted-foreground">
             No recent developments found for this area.
           </p>

@@ -28,6 +28,10 @@ export interface AreaIntelligenceResult {
   yieldScore: number | null;
   yieldArticleCount: number | null;
   yieldPositiveRatio: number | null;
+  growthScore: number | null;
+  growthConfidence: string | null;
+  growthReasoning: string | null;
+  growthDisclaimer: string;
 }
 
 @Injectable()
@@ -74,6 +78,11 @@ export class AreaService {
         yieldScore: null,
         yieldArticleCount: null,
         yieldPositiveRatio: null,
+        growthScore: null,
+        growthConfidence: null,
+        growthReasoning: null,
+        growthDisclaimer:
+          'Growth estimates are AI-generated projections based on recent news articles and development data. These are estimates only and should not be taken as financial or investment advice. Actual property growth depends on many factors including market conditions, economic policies, and unforeseen events.',
       };
     }
 
@@ -102,6 +111,11 @@ export class AreaService {
           yieldScore: null,
           yieldArticleCount: null,
           yieldPositiveRatio: null,
+          growthScore: null,
+          growthConfidence: null,
+          growthReasoning: null,
+          growthDisclaimer:
+            'Growth estimates are AI-generated projections based on recent news articles and development data. These are estimates only and should not be taken as financial or investment advice. Actual property growth depends on many factors including market conditions, economic policies, and unforeseen events.',
         };
       }
 
@@ -266,11 +280,19 @@ export class AreaService {
     let bulletPoints: string[] = [];
     let yieldResult: YieldResult | null = null;
 
+    let growthResult: {
+      estimatedGrowthPercent: number;
+      confidence: 'low' | 'medium' | 'high';
+      reasoning: string;
+    } | null = null;
+
     if (validArticles.length > 0) {
-      const [summaryResult, yieldScoreResult] = await Promise.allSettled([
-        this.aimlapiService.summarizeArticles(validArticles),
-        this.yieldScoreService.getScore(lat, lng),
-      ]);
+      const [summaryResult, yieldScoreResult, growthEstimateResult] =
+        await Promise.allSettled([
+          this.aimlapiService.summarizeArticles(validArticles),
+          this.yieldScoreService.getScore(lat, lng),
+          this.aimlapiService.estimateGrowth(validArticles),
+        ]);
 
       if (summaryResult.status === 'fulfilled') {
         bulletPoints = summaryResult.value;
@@ -280,6 +302,10 @@ export class AreaService {
 
       if (yieldScoreResult.status === 'fulfilled') {
         yieldResult = yieldScoreResult.value;
+      }
+
+      if (growthEstimateResult.status === 'fulfilled') {
+        growthResult = growthEstimateResult.value;
       }
     }
 
@@ -315,6 +341,11 @@ export class AreaService {
       yieldScore: yieldResult?.score ?? null,
       yieldArticleCount: yieldResult?.articleCount ?? null,
       yieldPositiveRatio: yieldResult?.positiveRatio ?? null,
+      growthScore: growthResult?.estimatedGrowthPercent ?? null,
+      growthConfidence: growthResult?.confidence ?? null,
+      growthReasoning: growthResult?.reasoning ?? null,
+      growthDisclaimer:
+        'Growth estimates are AI-generated projections based on recent news articles and development data. These are estimates only and should not be taken as financial or investment advice. Actual property growth depends on many factors including market conditions, economic policies, and unforeseen events.',
     };
   }
 
