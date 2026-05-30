@@ -93,6 +93,7 @@ export class PipelineRepository {
     trainingEligible?: boolean;
     flagged?: boolean;
     flagReason?: string;
+    photoUrls?: unknown;
   }) {
     return this.prisma.pendingTrainingRecord.create({ data: data as any });
   }
@@ -122,6 +123,7 @@ export class PipelineRepository {
       status: string;
       flagged?: boolean;
       flagReason?: string | null;
+      photoUrls?: unknown;
     },
   ) {
     return this.prisma.pendingTrainingRecord.update({
@@ -249,6 +251,7 @@ export class PipelineRepository {
     crepPhp?: number;
     normalizationConfidenceScore?: number;
     normalizationIssues?: unknown;
+    photoUrls?: unknown;
     approved: boolean;
   }) {
     return this.prisma.property.create({ data: data as any });

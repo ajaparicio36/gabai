@@ -34,6 +34,7 @@ export interface ValuationRequest {
 }
 
 export interface ValuationResponse {
+  propertyType: string;
   pricePerSqmPhp: number;
   pointEstimatePhp: number;
   confidenceLowPhp: number;
@@ -77,6 +78,7 @@ export interface HeatmapFeature {
     medianPricePerSqm: number;
     propertyCount: number;
     colorIntensity: number;
+    formula: string;
   };
 }
 
@@ -193,6 +195,8 @@ export interface NearbyProperty {
   barangay: string | null;
   city: string | null;
   addressRaw: string | null;
+  photoUrls: string[] | null;
+  sourceUrl: string | null;
 }
 
 export interface RiskAssessmentResponse {

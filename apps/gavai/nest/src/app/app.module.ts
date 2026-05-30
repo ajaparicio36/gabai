@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -20,6 +22,7 @@ import { validateEnv } from '../config/env.validation';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: resolve(__dirname, '..', '..', '..', '..', '.env'),
       validate: validateEnv,
     }),
     ThrottlerModule.forRoot([

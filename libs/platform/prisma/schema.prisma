@@ -82,6 +82,7 @@ model Property {
   crepPhp                      Float?
   normalizationConfidenceScore Float?
   normalizationIssues          Json?
+  photoUrls                    Json?
   userSubmitted                Boolean    @default(false)
   approved                     Boolean    @default(false)
   createdAt                    DateTime   @default(now())
@@ -212,6 +213,7 @@ model PendingTrainingRecord {
   rawTextReference    String?
   aiExtraction        Json?
   fieldConfidence     Json?
+  photoUrls           Json?
   confidenceScore     Float?
   locationStatus      String?
   normalizationStatus String    @default("pending")

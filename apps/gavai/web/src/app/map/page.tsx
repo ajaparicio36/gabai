@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { MapProvider, defaultCenter } from '@/providers/MapProvider';
 import { MapContainer, Marker, InfoWindow } from '@/components/MapContainer';
-import { ViewToggle, type MapViewMode } from '@/components/ViewToggle';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { FilterBar, type HeatmapFilters } from '@/components/FilterBar';
 import { QuickEstimatePopup } from '@/components/QuickEstimatePopup';
@@ -20,16 +19,23 @@ import { useRiskScores } from '@/hooks/useRiskScores';
 import { useListings } from '@/hooks/useListings';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { LogOut, Settings, Satellite } from 'lucide-react';
+import { LogOut, Settings, Satellite, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FloodOverlay } from '@/components/FloodOverlay';
 import type { NearbyProperty } from '@/types/api';
+
+const LISTING_PIN_ICON = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#2563eb" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
+)}`;
+
+const SELECTED_PIN_ICON = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#10b981" stroke="#ffffff" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>',
+)}`;
 
 function MapContent(): React.ReactNode {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
 
-  const [viewMode, setViewMode] = useState<MapViewMode>('heatmap');
+  const [showHeatmap, setShowHeatmap] = useState(true);
   const [filters, setFilters] = useState<HeatmapFilters>({
     propertyType: 'all',
     priceMin: 0,
@@ -105,29 +111,14 @@ function MapContent(): React.ReactNode {
     }
   }, [user, isLoading, router]);
 
-  const handleMapClick = useCallback(
-    (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return;
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setSelectedLat(lat);
-      setSelectedLng(lng);
-      setSelectedListing(null);
-
-      if (viewMode === 'valuation') {
-        setShowValuationPanel(true);
-        valuation.mutate({
-          lat,
-          lng,
-          propertyType:
-            filters.propertyType === 'all'
-              ? 'house_and_lot'
-              : filters.propertyType,
-        });
-      }
-    },
-    [viewMode, filters.propertyType, valuation],
-  );
+  const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (!e.latLng) return;
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    setSelectedLat(lat);
+    setSelectedLng(lng);
+    setSelectedListing(null);
+  }, []);
 
   const handleTileClick = useCallback((lat: number, lng: number) => {
     setSelectedLat(lat);
@@ -158,31 +149,38 @@ function MapContent(): React.ReactNode {
           <span className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border-l-2 border-l-secondary">
             GAVAI
           </span>
+          <button
+            onClick={() => setShowHeatmap((v) => !v)}
+            className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border"
+          >
+            {showHeatmap ? (
+              <Eye className="inline h-4 w-4 mr-1" />
+            ) : (
+              <EyeOff className="inline h-4 w-4 mr-1" />
+            )}
+            Heatmap
+          </button>
           <SatelliteToggle />
         </div>
 
-        <ViewToggle value={viewMode} onChange={setViewMode} />
-
-        {viewMode === 'heatmap' && (
-          <div
-            data-ob="filter-bar"
-            className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow backdrop-blur border-t-2 border-t-secondary"
-          >
-            {isHeatmapNoData && (
-              <div className="mb-3 rounded-md bg-muted px-3 py-2 text-center text-xs text-muted-foreground">
-                No property data yet.{' '}
-                <button
-                  className="underline hover:text-primary"
-                  onClick={() => router.push('/admin/discover')}
-                >
-                  Go to Admin &rarr; Discover
-                </button>{' '}
-                to start finding properties.
-              </div>
-            )}
-            <FilterBar onFiltersChange={setFilters} />
-          </div>
-        )}
+        <div
+          data-ob="filter-bar"
+          className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow backdrop-blur border-t-2 border-t-secondary"
+        >
+          {isHeatmapNoData && (
+            <div className="mb-3 rounded-md bg-muted px-3 py-2 text-center text-xs text-muted-foreground">
+              No property data yet.{' '}
+              <button
+                className="underline hover:text-primary"
+                onClick={() => router.push('/admin/discover')}
+              >
+                Go to Admin &rarr; Discover
+              </button>{' '}
+              to start finding properties.
+            </div>
+          )}
+          <FilterBar onFiltersChange={setFilters} />
+        </div>
 
         <div className="absolute right-4 top-4 z-10 flex gap-2">
           {user.role === 'admin' && (
@@ -223,21 +221,20 @@ function MapContent(): React.ReactNode {
             strictBounds: true,
           }}
         >
-          {viewMode === 'heatmap' && heatmapData?.features && (
+          {showHeatmap && heatmapData?.features && (
             <HeatmapLayer
               features={heatmapData.features}
               onTileClick={handleTileClick}
             />
           )}
 
-          {viewMode === 'listings' &&
-            listings &&
+          {listings &&
             listings.slice(0, 100).map((p) => (
               <Marker
                 key={p.id}
                 position={{ lat: p.lat, lng: p.lng }}
                 icon={{
-                  url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2"%3E%3Cpath d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"%3E%3C/path%3E%3Ccircle cx="12" cy="10" r="3"%3E%3C/circle%3E%3C/svg%3E',
+                  url: LISTING_PIN_ICON,
                 }}
                 title={`PHP ${(p.pricePerSqmPhp ?? 0).toLocaleString()}/sqm — ${p.barangay ?? ''}, ${p.city ?? ''}`}
                 onClick={() => setSelectedListing(p)}
@@ -250,6 +247,17 @@ function MapContent(): React.ReactNode {
               onCloseClick={() => setSelectedListing(null)}
             >
               <div className="min-w-[200px] space-y-1 p-1">
+                {selectedListing.photoUrls &&
+                  selectedListing.photoUrls.length > 0 && (
+                    <img
+                      src={selectedListing.photoUrls[0]}
+                      alt={selectedListing.propertyType}
+                      className="w-full max-w-[200px] h-24 object-cover rounded-md"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  )}
                 <p className="text-sm font-semibold capitalize">
                   {selectedListing.propertyType.replace(/_/g, ' ')}
                 </p>
@@ -301,33 +309,26 @@ function MapContent(): React.ReactNode {
             </InfoWindow>
           )}
 
-          {viewMode === 'hazard' && <FloodOverlay />}
-
           {selectedLat != null && selectedLng != null && (
             <Marker
               position={{ lat: selectedLat, lng: selectedLng }}
               icon={{
-                url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2310b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"%3E%3C/path%3E%3Ccircle cx="12" cy="10" r="3"%3E%3C/circle%3E%3C/svg%3E',
+                url: SELECTED_PIN_ICON,
               }}
             />
           )}
         </MapContainer>
 
-        {viewMode === 'heatmap' &&
-          selectedLat != null &&
-          selectedLng != null && (
-            <div
-              className="absolute left-4 top-20 z-10"
-              data-ob="quick-estimate"
-            >
-              <QuickEstimatePopup
-                estimate={quickEstimate}
-                isLoading={isQuickEstimateLoading}
-              />
-            </div>
-          )}
+        {selectedLat != null && selectedLng != null && (
+          <div className="absolute left-4 top-20 z-10" data-ob="quick-estimate">
+            <QuickEstimatePopup
+              estimate={quickEstimate}
+              isLoading={isQuickEstimateLoading}
+            />
+          </div>
+        )}
 
-        {viewMode === 'valuation' && showValuationPanel && (
+        {showValuationPanel && (
           <ValuationPanel
             valuation={valuation.data}
             areaIntel={areaIntel}
@@ -341,6 +342,28 @@ function MapContent(): React.ReactNode {
             riskScores={riskScores}
             isRiskScoresLoading={isRiskScoresLoading}
           />
+        )}
+
+        {selectedLat != null && selectedLng != null && (
+          <div className="absolute bottom-4 right-4 z-10">
+            <Button
+              size="lg"
+              className="shadow-lg rounded-full px-6 py-3 text-base"
+              onClick={() => {
+                setShowValuationPanel(true);
+                valuation.mutate({
+                  lat: selectedLat,
+                  lng: selectedLng,
+                  propertyType:
+                    filters.propertyType === 'all'
+                      ? 'house_and_lot'
+                      : filters.propertyType,
+                });
+              }}
+            >
+              Valuate
+            </Button>
+          </div>
         )}
 
         <OnboardingTour />

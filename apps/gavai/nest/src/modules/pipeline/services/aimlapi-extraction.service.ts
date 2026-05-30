@@ -80,6 +80,7 @@ const extractedListingSchema = z
         confidence: confidenceSchema,
       })
       .strict(),
+    photoUrls: z.array(z.string()).nullable(),
     issues: z.array(z.string()),
   })
   .strict();
@@ -121,6 +122,7 @@ const EXTRACT_LISTING_TOOL = {
         'price',
         'lotArea',
         'floorArea',
+        'photoUrls',
         'issues',
       ],
       additionalProperties: false,
@@ -224,6 +226,12 @@ const EXTRACT_LISTING_TOOL = {
               enum: ['high', 'medium', 'low', 'missing'],
             },
           },
+        },
+        photoUrls: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'URLs of property photos/images visible in the listing. Extract all image URLs that appear to be property photos (not icons, logos, or UI elements). Maximum 10 URLs.',
         },
         issues: {
           type: 'array',
@@ -422,6 +430,7 @@ const EXTRACTION_SYSTEM_PROMPT = [
   'For price: convert shorthand — "5M" → 5000000, "₱1.2M" → 1200000. Include PHP value only.',
   'For propertyType: normalize to one of: house_and_lot, residential_lot, condo, townhouse, commercial, apartment, warehouse, office.',
   'Include short evidence snippets for location and price.',
+  'For photoUrls: extract all visible property photo/image URLs from the listing source. Ignore icons, logos, and UI decorative images. Capture only actual property photographs.',
   'You MUST call the extract_listing function — do not reply with text.',
 ].join(' ');
 

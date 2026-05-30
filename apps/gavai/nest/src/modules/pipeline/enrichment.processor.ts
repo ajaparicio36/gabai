@@ -135,6 +135,7 @@ export class EnrichmentProcessor {
         normalizationConfidenceScore: record.confidenceScore ?? undefined,
         normalizationIssues:
           (record.normalizationIssues as unknown[]) ?? undefined,
+        photoUrls: (record.photoUrls as string[]) ?? [],
         approved: true,
       });
 

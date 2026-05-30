@@ -37,7 +37,12 @@ export interface RiskScores {
 }
 
 export interface RiskMetadata {
-  flood: { level: string; source: string; returnPeriod: string } | null;
+  flood: {
+    level: string;
+    source: string;
+    returnPeriod: string;
+    description: string;
+  } | null;
   traffic: { speedRatio: number; cachedAt: string } | null;
   yield: { articleCount: number; positiveRatio: number } | null;
   marketPremium: {

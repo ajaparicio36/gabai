@@ -29,30 +29,39 @@ function scoreToColor(score: number): string {
   return '#ef4444';
 }
 
+function floodDescription(level: string): string {
+  switch (level) {
+    case 'none':
+      return 'No known hazard (safe area)';
+    case 'low':
+      return 'Low risk (0\u20130.5m shallow flooding)';
+    case 'medium':
+      return 'Medium risk (0.5\u20131.5m flooding)';
+    case 'high':
+      return 'High risk (>1.5m deep flooding)';
+    default:
+      return level;
+  }
+}
+
 function formatDetail(
   axis: string,
-  scores: RiskAssessmentResponse['scores'],
+  _scores: RiskAssessmentResponse['scores'],
   metadata: RiskAssessmentResponse['metadata'],
 ): string {
   switch (axis) {
     case 'Flood':
       return metadata.flood
-        ? `Level: ${metadata.flood.level}\nSource: ${metadata.flood.source}\nPeriod: ${metadata.flood.returnPeriod}`
+        ? `${metadata.flood.returnPeriod || '5yr'} Flood: ${floodDescription(metadata.flood.level)}\nSource: ${metadata.flood.source}`
         : 'No data';
     case 'Traffic':
       return metadata.traffic
         ? `Speed Ratio: ${metadata.traffic.speedRatio.toFixed(2)}\nCached: ${new Date(metadata.traffic.cachedAt).toLocaleDateString()}`
         : 'No data';
-    case 'Yield':
+    case 'Growth':
       return metadata.yield
-        ? `Articles: ${metadata.yield.articleCount}\nPositive: ${(metadata.yield.positiveRatio * 100).toFixed(0)}%`
+        ? `Growth Outlook: Based on ${metadata.yield.articleCount} area news articles\n${(metadata.yield.positiveRatio * 100).toFixed(0)}% positive sentiment\nHigher = more development activity nearby. This is NOT rental yield.`
         : 'No data';
-    case 'Market':
-      return metadata.marketPremium
-        ? `AVM/sqm: PHP ${metadata.marketPremium.avmPerSqm.toLocaleString()}\nZonal/sqm: PHP ${metadata.marketPremium.zonalPerSqm.toLocaleString()}\nRatio: ${metadata.marketPremium.ratio.toFixed(2)}x`
-        : 'No data';
-    case 'Fault':
-      return metadata.fault?.status ?? 'Placeholder';
     default:
       return '';
   }
@@ -75,25 +84,11 @@ export function SpiderChart({ riskScores }: SpiderChartProps): React.ReactNode {
       detail: formatDetail('Traffic', riskScores.scores, riskScores.metadata),
     },
     {
-      axis: 'Yield',
+      axis: 'Growth',
       score: riskScores.scores.yield ?? 0.5,
       fullMark: 1,
       color: scoreToColor(riskScores.scores.yield ?? 0.5),
-      detail: formatDetail('Yield', riskScores.scores, riskScores.metadata),
-    },
-    {
-      axis: 'Market',
-      score: riskScores.scores.marketPremium ?? 0.5,
-      fullMark: 1,
-      color: scoreToColor(riskScores.scores.marketPremium ?? 0.5),
-      detail: formatDetail('Market', riskScores.scores, riskScores.metadata),
-    },
-    {
-      axis: 'Fault',
-      score: riskScores.scores.fault ?? 0.5,
-      fullMark: 1,
-      color: scoreToColor(riskScores.scores.fault ?? 0.5),
-      detail: formatDetail('Fault', riskScores.scores, riskScores.metadata),
+      detail: formatDetail('Growth', riskScores.scores, riskScores.metadata),
     },
   ];
 

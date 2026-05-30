@@ -89,8 +89,11 @@ export class AreaRiskRepository {
         flood: floodMeta
           ? {
               level: (floodMeta.level as string) ?? 'unknown',
-              source: (floodMeta.source as string) ?? 'Project NOAH',
-              returnPeriod: (floodMeta.returnPeriod as string) ?? '100yr',
+              source: (floodMeta.source as string) ?? 'Project NOAH (DOST)',
+              returnPeriod: (floodMeta.returnPeriod as string) ?? '5yr',
+              description:
+                (floodMeta.description as string) ??
+                '5-year flood hazard from PAGASA/Project NOAH data. Shows areas likely to flood in a 5-year rainfall event.',
             }
           : null,
         traffic: trafficMeta

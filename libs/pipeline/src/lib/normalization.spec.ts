@@ -22,6 +22,7 @@ describe('normalizeExtractedListing', () => {
         price: { value: 2500000, currency: 'PHP', confidence: 'high' },
         lotArea: { value: 120, unit: 'sqm', confidence: 'high' },
         floorArea: { value: null, unit: 'sqm', confidence: 'missing' },
+        photoUrls: null,
         issues: [],
       },
     });
@@ -54,6 +55,7 @@ describe('normalizeExtractedListing', () => {
         price: { value: null, currency: 'PHP', confidence: 'missing' },
         lotArea: { value: null, unit: 'sqm', confidence: 'missing' },
         floorArea: { value: null, unit: 'sqm', confidence: 'missing' },
+        photoUrls: null,
         issues: [],
       },
     });

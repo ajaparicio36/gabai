@@ -55,4 +55,19 @@ export class HeatmapController {
       priceMax != null ? Number(priceMax) : undefined,
     );
   }
+
+  @Get('comparables')
+  async getComparables(
+    @Query('lat') lat: string,
+    @Query('lng') lng: string,
+    @Query('radius') radius?: string,
+    @Query('propertyType') propertyType?: string,
+  ): Promise<NearbyProperty[]> {
+    return this.heatmapService.getComparables(
+      Number(lat),
+      Number(lng),
+      radius ? Number(radius) : undefined,
+      propertyType,
+    );
+  }
 }

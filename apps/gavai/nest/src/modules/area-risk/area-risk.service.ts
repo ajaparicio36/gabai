@@ -61,10 +61,13 @@ export class AreaRiskService {
             ? {
                 level: (flood.value as { level: string }).level ?? 'unknown',
                 source:
-                  (flood.value as { source: string }).source ?? 'Project NOAH',
+                  (flood.value as { source: string }).source ??
+                  'Project NOAH (DOST)',
                 returnPeriod:
                   (flood.value as { returnPeriod: string }).returnPeriod ??
-                  '100yr',
+                  '5yr',
+                description:
+                  '5-year flood hazard from PAGASA/Project NOAH data. Shows areas likely to flood in a 5-year rainfall event.',
               }
             : null,
         traffic:

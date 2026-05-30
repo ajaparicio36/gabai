@@ -15,6 +15,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import type { NormalizedRecord } from '@/types/api';
 
 interface QueueStatus {
   scraping: { active: number; waiting: number };
@@ -57,6 +58,15 @@ export default function AdminScrapePage(): React.ReactNode {
   const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const [normalizedRecords, setNormalizedRecords] = useState<
+    NormalizedRecord[]
+  >([]);
+  const [selectedNormalized, setSelectedNormalized] = useState<Set<string>>(
+    new Set(),
+  );
+  const [approvingNormalized, setApprovingNormalized] = useState(false);
+  const [rejectingNormalized, setRejectingNormalized] = useState(false);
+
   const loadRecords = useCallback(async (): Promise<void> => {
     try {
       const response = await api.get('/admin/scrape/records');
@@ -75,8 +85,20 @@ export default function AdminScrapePage(): React.ReactNode {
     }
   }, []);
 
+  const loadNormalizedRecords = useCallback(async (): Promise<void> => {
+    try {
+      const response = await api.get<{ data: NormalizedRecord[] }>(
+        '/admin/normalize/records',
+      );
+      setNormalizedRecords(response.data.data ?? []);
+    } catch {
+      toast.error('Failed to load normalized records');
+    }
+  }, []);
+
   useEffect(() => {
     loadRecords();
+    loadNormalizedRecords();
     loadQueueStatus();
     pollingRef.current = setInterval(() => {
       loadQueueStatus();
@@ -84,7 +106,7 @@ export default function AdminScrapePage(): React.ReactNode {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [loadRecords, loadQueueStatus]);
+  }, [loadRecords, loadNormalizedRecords, loadQueueStatus]);
 
   const handleRunScrape = async (): Promise<void> => {
     setRunning(true);
@@ -144,6 +166,57 @@ export default function AdminScrapePage(): React.ReactNode {
       setSelected(new Set());
     } else {
       setSelected(new Set(records.map((r) => r.id)));
+    }
+  };
+
+  const handleApproveNormalized = async (): Promise<void> => {
+    if (selectedNormalized.size === 0) return;
+    setApprovingNormalized(true);
+    try {
+      await api.post('/admin/normalize/approve', {
+        ids: Array.from(selectedNormalized),
+      });
+      toast.success(`Approved ${selectedNormalized.size} records`);
+      setSelectedNormalized(new Set());
+      await loadNormalizedRecords();
+    } catch {
+      toast.error('Normalized approval failed');
+    } finally {
+      setApprovingNormalized(false);
+    }
+  };
+
+  const handleRejectNormalized = async (): Promise<void> => {
+    if (selectedNormalized.size === 0) return;
+    setRejectingNormalized(true);
+    try {
+      await api.post('/admin/normalize/reject', {
+        ids: Array.from(selectedNormalized),
+      });
+      toast.success(`Rejected ${selectedNormalized.size} records`);
+      setSelectedNormalized(new Set());
+      await loadNormalizedRecords();
+    } catch {
+      toast.error('Normalized rejection failed');
+    } finally {
+      setRejectingNormalized(false);
+    }
+  };
+
+  const toggleSelectNormalized = (id: string): void => {
+    setSelectedNormalized((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllNormalized = (): void => {
+    if (selectedNormalized.size === normalizedRecords.length) {
+      setSelectedNormalized(new Set());
+    } else {
+      setSelectedNormalized(new Set(normalizedRecords.map((r) => r.id)));
     }
   };
 
@@ -247,6 +320,121 @@ export default function AdminScrapePage(): React.ReactNode {
                       className="text-center text-muted-foreground"
                     >
                       No records. Run a scrape job first.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card data-ob="normalize-table">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Normalized Records</CardTitle>
+          <Button variant="outline" size="sm" onClick={loadNormalizedRecords}>
+            Refresh
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {selectedNormalized.size > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleApproveNormalized}
+                  disabled={approvingNormalized}
+                  size="sm"
+                >
+                  {approvingNormalized
+                    ? 'Approving...'
+                    : `Approve (${selectedNormalized.size})`}
+                </Button>
+                <Button
+                  onClick={handleRejectNormalized}
+                  disabled={rejectingNormalized}
+                  variant="destructive"
+                  size="sm"
+                >
+                  {rejectingNormalized
+                    ? 'Rejecting...'
+                    : `Reject (${selectedNormalized.size})`}
+                </Button>
+              </div>
+            )}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        normalizedRecords.length > 0 &&
+                        selectedNormalized.size === normalizedRecords.length
+                      }
+                      onCheckedChange={toggleAllNormalized}
+                    />
+                  </TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Confidence</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Issues</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {normalizedRecords.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedNormalized.has(r.id)}
+                        onCheckedChange={() => toggleSelectNormalized(r.id)}
+                      />
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {r.title ?? '-'}
+                    </TableCell>
+                    <TableCell>
+                      {[r.city, r.province].filter(Boolean).join(', ') || '-'}
+                    </TableCell>
+                    <TableCell>
+                      {r.askingPricePhp
+                        ? `PHP ${r.askingPricePhp.toLocaleString()}`
+                        : '-'}
+                    </TableCell>
+                    <TableCell>{r.propertyType ?? '-'}</TableCell>
+                    <TableCell>
+                      {r.confidenceScore != null
+                        ? r.confidenceScore.toFixed(2)
+                        : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          r.normalizationStatus === 'normalized'
+                            ? 'secondary'
+                            : r.normalizationStatus === 'failed'
+                              ? 'destructive'
+                              : 'outline'
+                        }
+                      >
+                        {r.normalizationStatus}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {(r.normalizationIssues ?? []).join('; ') ||
+                        r.flagReason ||
+                        '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {normalizedRecords.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="text-center text-muted-foreground"
+                    >
+                      No normalized records
                     </TableCell>
                   </TableRow>
                 )}

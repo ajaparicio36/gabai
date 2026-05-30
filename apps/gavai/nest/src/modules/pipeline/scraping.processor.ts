@@ -96,6 +96,7 @@ export class ScrapingProcessor {
       trainingEligible: false,
       flagged: flags.length > 0,
       flagReason: flags.join('; ') || undefined,
+      photoUrls: extracted?.photoUrls ?? null,
     });
 
     await this.normalizationQueue.add('normalize-record', {

@@ -9,8 +9,12 @@ export class PrismaService
 {
   constructor() {
     const url = process.env.DATABASE_URL;
-    if (!url) throw new Error('DATABASE_URL is not set');
-    const adapter = new PrismaPg({ connectionString: url });
+    if (!url) {
+      throw new Error(
+        'DATABASE_URL is not set — ensure .env is loaded before PlatformModule',
+      );
+    }
+    const adapter = new PrismaPg(url);
     super({ adapter });
   }
 

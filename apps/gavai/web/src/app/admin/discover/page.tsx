@@ -182,7 +182,16 @@ export default function AdminDiscoverPage(): React.ReactNode {
                         onCheckedChange={() => toggleSelect(t.id)}
                       />
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">{t.url}</TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      <a
+                        href={t.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline truncate"
+                      >
+                        {t.url}
+                      </a>
+                    </TableCell>
                     <TableCell>{t.location}</TableCell>
                     <TableCell>{t.propertyType}</TableCell>
                     <TableCell>{t.status}</TableCell>

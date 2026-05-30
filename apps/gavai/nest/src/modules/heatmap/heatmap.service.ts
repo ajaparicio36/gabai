@@ -87,6 +87,8 @@ export class HeatmapService {
           medianPricePerSqm: Math.round(tile.median_price ?? 0),
           propertyCount: tile.count,
           colorIntensity: Math.round(intensity * 100) / 100,
+          formula:
+            'Neighborhood median price/sqm adjusted for area comparables density',
         },
       };
     });
@@ -143,6 +145,20 @@ export class HeatmapService {
       propertyType,
       priceMin,
       priceMax,
+    );
+  }
+
+  async getComparables(
+    lat: number,
+    lng: number,
+    radiusM?: number,
+    propertyType?: string,
+  ): Promise<NearbyProperty[]> {
+    return this.heatmapRepository.getComparables(
+      lat,
+      lng,
+      radiusM ?? 3000,
+      propertyType,
     );
   }
 }

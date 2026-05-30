@@ -12,6 +12,7 @@ export interface TileFeature {
     medianPricePerSqm: number;
     propertyCount: number;
     colorIntensity: number;
+    formula: string;
   };
 }
 
@@ -46,6 +47,9 @@ export interface NearbyProperty {
   barangay: string | null;
   city: string | null;
   addressRaw: string | null;
+  photoUrls: string[] | null;
+  sourceUrl: string | null;
+  distanceM: number | null;
 }
 
 @Injectable()
@@ -190,10 +194,44 @@ export class HeatmapRepository {
         barangay: true,
         city: true,
         addressRaw: true,
+        sourceUrl: true,
+        photoUrls: true,
       },
       take: 200,
     });
 
     return rows as NearbyProperty[];
+  }
+
+  async getComparables(
+    lat: number,
+    lng: number,
+    radiusM = 3000,
+    propertyType?: string,
+  ): Promise<NearbyProperty[]> {
+    const rows = await this.prisma.$queryRawUnsafe<NearbyProperty[]>(`
+      SELECT
+        id, lat, lng, "propertyType", "askingPricePhp", "pricePerSqmPhp",
+        "lotAreaSqm", "floorAreaSqm", bedrooms, bathrooms,
+        barangay, city, "addressRaw", "sourceUrl", "photoUrls",
+        ST_Distance(
+          ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
+          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
+        ) AS "distanceM"
+      FROM "Property"
+      WHERE "approved" = true
+        AND "listingType" = 'standard'
+        AND "pricePerSqmPhp" IS NOT NULL
+        ${propertyType ? `AND "propertyType" = '${propertyType}'` : ''}
+        AND ST_DWithin(
+          ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
+          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
+          ${radiusM}
+        )
+      ORDER BY "distanceM" ASC
+      LIMIT 20
+    `);
+
+    return rows;
   }
 }

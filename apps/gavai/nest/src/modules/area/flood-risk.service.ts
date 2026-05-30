@@ -39,7 +39,7 @@ export class FloodRiskService {
 
     const layers: { layer: string; varField: string; key: string }[] = [
       { layer: 'flood', varField: 'Var', key: 'flood' },
-      { layer: 'flood_100yr', varField: 'Var', key: 'flood_100yr' },
+      { layer: 'flood_5yr', varField: 'Var', key: 'flood_5yr' },
       { layer: 'landslide', varField: 'Var', key: 'landslide' },
       { layer: 'storm_surge_ssa1', varField: 'Var', key: 'storm_surge_1' },
       { layer: 'storm_surge_ssa2', varField: 'Var', key: 'storm_surge_2' },
@@ -49,7 +49,7 @@ export class FloodRiskService {
 
     let worstScore = 1.0;
     let worstLevel: FloodLevel = 'none';
-    let matchedLayer = 'flood_100yr';
+    let matchedLayer = 'flood_5yr';
 
     try {
       const tile = await pmtiles.getZxy(ZOOM, x, y);
@@ -57,7 +57,7 @@ export class FloodRiskService {
         return {
           score: 1.0,
           level: 'none',
-          returnPeriod: '100yr',
+          returnPeriod: '5yr',
           source: 'Project NOAH',
         };
       }
@@ -111,8 +111,8 @@ export class FloodRiskService {
     let returnPeriod: string;
     if (matchedLayer === 'flood') {
       returnPeriod = '1yr';
-    } else if (matchedLayer === 'flood_100yr') {
-      returnPeriod = '100yr';
+    } else if (matchedLayer === 'flood_5yr') {
+      returnPeriod = '5yr';
     } else if (matchedLayer.startsWith('storm_surge')) {
       returnPeriod = 'various';
     } else if (matchedLayer === 'landslide') {

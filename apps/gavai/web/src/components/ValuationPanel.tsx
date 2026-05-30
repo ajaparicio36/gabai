@@ -35,22 +35,8 @@ interface ValuationPanelProps {
   isRiskScoresLoading?: boolean;
 }
 
-function getPriceSignal(birCompliance: ValuationResponse['birCompliance']): {
-  label: string;
-  variant: 'default' | 'secondary' | 'destructive';
-} | null {
-  if (!birCompliance?.auditRiskScore) return null;
-
-  if (birCompliance.riskLabel === 'green') {
-    return { label: 'Fair Price', variant: 'default' };
-  }
-  if (birCompliance.riskLabel === 'yellow') {
-    return { label: 'Slightly Above Floor', variant: 'secondary' };
-  }
-  if (birCompliance.riskLabel === 'red') {
-    return { label: 'Well Above Floor', variant: 'destructive' };
-  }
-  return null;
+function formatPropertyType(type: string): string {
+  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function ValuationPanel({
@@ -83,7 +69,6 @@ export function ValuationPanel({
             </div>
             <div className="flex gap-2">
               <Skeleton className="h-6 w-32 rounded-full" />
-              <Skeleton className="h-6 w-28 rounded-full" />
             </div>
             <Skeleton className="h-16 w-full rounded-lg" />
             <Skeleton className="h-10 w-full rounded-lg" />
@@ -115,21 +100,29 @@ export function ValuationPanel({
                 score={valuation.confidenceScore}
                 comparablesCount={valuation.comparablesUsed}
               />
-              {getPriceSignal(valuation.birCompliance) &&
-                (() => {
-                  const signal = getPriceSignal(valuation.birCompliance);
-                  if (!signal) return null;
-                  return <Badge variant={signal.variant}>{signal.label}</Badge>;
-                })()}
             </div>
 
             <div className="space-y-2 rounded-md border p-3">
-              <p className="text-xs font-medium">Confidence Range</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-medium">
+                  {valuation.propertyType
+                    ? `${formatPropertyType(valuation.propertyType)} Confidence Range`
+                    : 'Confidence Range'}
+                </p>
+                {valuation.propertyType && (
+                  <Badge variant="secondary" className="text-xs">
+                    {formatPropertyType(valuation.propertyType)}
+                  </Badge>
+                )}
+              </div>
               <div className="flex justify-between text-sm">
                 <span>PHP {valuation.confidenceLowPhp.toLocaleString()}</span>
                 <span className="text-muted-foreground">-</span>
                 <span>PHP {valuation.confidenceHighPhp.toLocaleString()}</span>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Range varies by property type.
+              </p>
             </div>
 
             <DataCompletenessMeter completeness={valuation.dataCompleteness} />
@@ -144,27 +137,6 @@ export function ValuationPanel({
                 <SpiderChart riskScores={riskScores} />
               </div>
             ) : null}
-
-            {valuation.birCompliance && (
-              <div className="space-y-1 rounded-md border p-3">
-                <p className="text-xs font-medium">BIR Compliance</p>
-                {valuation.birCompliance.complianceFloorPhp && (
-                  <p className="text-xs text-muted-foreground">
-                    Floor: PHP{' '}
-                    {valuation.birCompliance.complianceFloorPhp.toLocaleString()}
-                  </p>
-                )}
-                {valuation.birCompliance.auditRiskScore != null && (
-                  <p className="text-xs text-muted-foreground">
-                    Risk: {valuation.birCompliance.auditRiskScore.toFixed(1)}%
-                  </p>
-                )}
-                <p className="text-xs italic text-muted-foreground">
-                  Based on BIR zonal values that may be outdated. Not a legal
-                  assessment.
-                </p>
-              </div>
-            )}
 
             <Separator />
 

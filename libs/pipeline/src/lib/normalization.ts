@@ -24,6 +24,7 @@ export interface ExtractedListingPayload {
   price: { value: number | null; currency: 'PHP'; confidence: FieldConfidence };
   lotArea: { value: number | null; unit: 'sqm'; confidence: FieldConfidence };
   floorArea: { value: number | null; unit: 'sqm'; confidence: FieldConfidence };
+  photoUrls: string[] | null;
   issues: string[];
 }
 

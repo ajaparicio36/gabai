@@ -74,6 +74,7 @@ export class NormalizationProcessor {
           : 'normalization_review',
       flagged: normalized.normalizationStatus !== 'normalized',
       flagReason: flags.join('; ') || null,
+      photoUrls: extracted?.photoUrls ?? record.photoUrls ?? null,
     });
 
     this.logger.log(
@@ -137,6 +138,7 @@ function fallbackExtraction(
       unit: 'sqm',
       confidence: record.floorAreaSqm ? 'low' : 'missing',
     },
+    photoUrls: null,
     issues: rawTextReference
       ? ['AI extraction unavailable — used fallback only']
       : ['No raw source text available'],
