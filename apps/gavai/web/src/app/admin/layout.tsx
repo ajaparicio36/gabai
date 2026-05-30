@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/providers/AuthProvider';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
@@ -19,7 +20,7 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Search, Download, ArrowLeft, BarChart3, Brain } from 'lucide-react';
+import { Search, Download, ArrowLeft, Brain } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
@@ -73,9 +74,14 @@ export default function AdminLayout({
         <Sidebar collapsible="icon">
           <SidebarContent data-ob="admin-sidebar">
             <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2 pt-2">
-                <BarChart3 className="h-4 w-4" />
-                <span>GAVAI Admin</span>
+              <SidebarGroupLabel className="flex items-center pt-2">
+                <Image
+                  src="/gavai_horizontal.png"
+                  alt="GAVAI"
+                  width={120}
+                  height={24}
+                  className="h-6 w-auto"
+                />
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>

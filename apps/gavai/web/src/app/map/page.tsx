@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/providers/AuthProvider';
 import { MapProvider, defaultCenter } from '@/providers/MapProvider';
 import { MapContainer, Marker, InfoWindow } from '@/components/MapContainer';
@@ -214,9 +215,13 @@ function MapContent(): React.ReactNode {
     <OnboardingProvider>
       <div className="relative h-screen w-full">
         <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
-          <span className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border-l-2 border-l-secondary">
-            GAVAI
-          </span>
+          <Image
+            src="/gavai_horizontal.png"
+            alt="GAVAI"
+            width={100}
+            height={24}
+            className="h-6 w-auto"
+          />
           <button
             onClick={() => setShowHeatmap((v) => !v)}
             className="rounded-md bg-background/90 px-3 py-1.5 text-sm font-medium shadow backdrop-blur border"

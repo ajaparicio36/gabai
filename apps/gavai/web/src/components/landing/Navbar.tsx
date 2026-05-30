@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { Button } from '@/components/ui/button';
@@ -32,9 +33,16 @@ export function Navbar(): React.ReactNode {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="font-serif text-xl tracking-wide text-foreground"
+          className="flex items-center gap-0 font-serif text-xl tracking-wide text-foreground"
         >
-          GAVAI
+          <Image
+            src="/gavai_logo.png"
+            alt="GAVAI Logo"
+            width={28}
+            height={28}
+            className="h-7 w-7"
+          />
+          <span className="-ml-1.5">GAVAI</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart3 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export function HeroSection(): React.ReactNode {
   return (
@@ -14,8 +15,14 @@ export function HeroSection(): React.ReactNode {
         }}
       />
       <div className="relative mx-auto max-w-4xl text-center">
-        <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary-foreground/10">
-          <BarChart3 className="h-10 w-10 text-secondary-foreground" />
+        <div className="mx-auto mb-8 flex items-center justify-center">
+          <Image
+            src="/gavai_text_logo.png"
+            alt="GAVAI"
+            width={360}
+            height={180}
+            className="h-auto w-[360px]"
+          />
         </div>
         <h1 className="font-serif text-4xl font-bold tracking-tight text-secondary-foreground sm:text-5xl md:text-6xl">
           AI-Powered Property Valuations for the Philippines
