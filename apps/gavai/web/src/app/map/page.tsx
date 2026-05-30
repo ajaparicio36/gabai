@@ -354,7 +354,7 @@ function MapContent(): React.ReactNode {
         </MapContainer>
 
         {selectedLat != null && selectedLng != null && (
-          <div className="absolute left-4 top-20 z-10" data-ob="quick-estimate">
+          <div className="absolute left-4 top-32 z-10" data-ob="quick-estimate">
             <QuickEstimatePopup
               estimate={quickEstimate}
               isLoading={isQuickEstimateLoading}
