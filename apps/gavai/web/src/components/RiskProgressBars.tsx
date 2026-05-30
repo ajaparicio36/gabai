@@ -3,6 +3,7 @@
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import type { RiskAssessmentResponse } from '@/types/api';
@@ -83,67 +84,69 @@ export function RiskProgressBars({
   ];
 
   return (
-    <div className="w-full">
-      <p className="text-xs font-medium mb-3">Risk Assessment</p>
-      <div className="space-y-3">
-        {bars.map((bar) => {
-          const percentage = Math.round(bar.score * 100);
-          const labels = getBarLabel(bar.axis);
-          const detail = formatDetail(
-            bar.axis,
-            riskScores.scores,
-            riskScores.metadata,
-          );
+    <TooltipProvider>
+      <div className="w-full">
+        <p className="text-xs font-medium mb-3">Risk Assessment</p>
+        <div className="space-y-3">
+          {bars.map((bar) => {
+            const percentage = Math.round(bar.score * 100);
+            const labels = getBarLabel(bar.axis);
+            const detail = formatDetail(
+              bar.axis,
+              riskScores.scores,
+              riskScores.metadata,
+            );
 
-          return (
-            <div key={bar.axis} className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-muted-foreground">
-                  {bar.axis}
-                </span>
-                <span className="font-semibold tabular-nums">
-                  {percentage}%
-                </span>
+            return (
+              <div key={bar.axis} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-muted-foreground">
+                    {bar.axis}
+                  </span>
+                  <span className="font-semibold tabular-nums">
+                    {percentage}%
+                  </span>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="relative h-2.5 w-full cursor-pointer rounded-full bg-muted">
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded-full transition-all ${scoreToColor(bar.score)}`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[240px]">
+                    {detail.split('\n').map((line, i) => (
+                      <p key={i} className="text-xs">
+                        {line}
+                      </p>
+                    ))}
+                  </TooltipContent>
+                </Tooltip>
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span>{labels.left}</span>
+                  <span>{labels.right}</span>
+                </div>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="relative h-2.5 w-full cursor-pointer rounded-full bg-muted">
-                    <div
-                      className={`absolute inset-y-0 left-0 rounded-full transition-all ${scoreToColor(bar.score)}`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[240px]">
-                  {detail.split('\n').map((line, i) => (
-                    <p key={i} className="text-xs">
-                      {line}
-                    </p>
-                  ))}
-                </TooltipContent>
-              </Tooltip>
-              <div className="flex justify-between text-[10px] text-muted-foreground">
-                <span>{labels.left}</span>
-                <span>{labels.right}</span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        <div className="flex justify-center gap-3 mt-3">
+          <span className="flex items-center gap-1 text-xs">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+            Good
+          </span>
+          <span className="flex items-center gap-1 text-xs">
+            <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+            Fair
+          </span>
+          <span className="flex items-center gap-1 text-xs">
+            <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
+            Poor
+          </span>
+        </div>
       </div>
-      <div className="flex justify-center gap-3 mt-3">
-        <span className="flex items-center gap-1 text-xs">
-          <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-          Good
-        </span>
-        <span className="flex items-center gap-1 text-xs">
-          <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-          Fair
-        </span>
-        <span className="flex items-center gap-1 text-xs">
-          <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
-          Poor
-        </span>
-      </div>
-    </div>
+    </TooltipProvider>
   );
 }
