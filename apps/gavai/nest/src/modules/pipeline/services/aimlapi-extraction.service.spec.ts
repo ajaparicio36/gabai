@@ -22,6 +22,7 @@ describe('AimlapiExtractionService JSON validation', () => {
         lotArea: { value: 120, unit: 'sqm', confidence: 'high' },
         floorArea: { value: null, unit: 'sqm', confidence: 'missing' },
         issues: [],
+        photoUrls: [],
       }),
     );
 
@@ -45,6 +46,7 @@ describe('AimlapiExtractionService JSON validation', () => {
         lotArea: { value: 120, unit: 'sqm', confidence: 'high' },
         floorArea: { value: null, unit: 'sqm', confidence: 'missing' },
         issues: [],
+        photoUrls: [],
         inventedNeighborhoodScore: 999,
       }),
     );
@@ -69,6 +71,7 @@ describe('AimlapiExtractionService JSON validation', () => {
         lotArea: { value: 120, unit: 'sqm', confidence: 'high' },
         floorArea: { value: null, unit: 'sqm', confidence: 'missing' },
         issues: [],
+        photoUrls: [],
       }),
     );
 
